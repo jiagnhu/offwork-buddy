@@ -102,7 +102,9 @@ export function createWindows(
     clearTimeout(timer);
   });
   screen.on("display-removed", () => applyPreferences(currentPreferences));
-  screen.on("display-metrics-changed", () => applyPreferences(currentPreferences));
+  screen.on("display-metrics-changed", () =>
+    applyPreferences(currentPreferences),
+  );
   applyPreferences(prefs);
 }
 export function applyPreferences(prefs: Preferences) {

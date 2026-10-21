@@ -55,3 +55,18 @@ it("refuses corrupt file when no backup exists", async () => {
   await writeFile(path.join(d, "state.json"), "broken");
   await expect(loadState(d)).rejects.toThrow();
 });
+it("recovers missing primary from existing backup instead of resetting", async () => {
+  const d = await dir();
+  await saveState(d, fixture());
+  await saveState(d, fixture());
+  await rm(path.join(d, "state.json"));
+  const loaded = await loadState(d);
+  expect(loaded.state.configured).toBe(true);
+  expect(loaded.state.rules[0].amount).toBe("800");
+  expect(loaded.recoveryNotice).toBeTruthy();
+});
+it("does not reset when primary is missing but backup is corrupt", async () => {
+  const d = await dir();
+  await writeFile(path.join(d, "state.backup.json"), "broken");
+  await expect(loadState(d)).rejects.toThrow();
+});

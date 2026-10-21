@@ -27,6 +27,7 @@ const navigation = [
 export default function App() {
   const { snapshot, error } = useSnapshot();
   const [page, setPage] = useState("overview");
+  const [actionError, setActionError] = useState("");
   useEffect(() => {
     if (snapshot) {
       document.documentElement.dataset.theme = snapshot.state.preferences.theme;
@@ -123,12 +124,15 @@ export default function App() {
               aria-label="切换主题"
               className="icon-button"
               onClick={() =>
-                window.buddy.setPreferences({
-                  theme:
-                    snapshot.state.preferences.theme === "light"
-                      ? "dark"
-                      : "light",
-                })
+                window.buddy
+                  .setPreferences({
+                    theme:
+                      snapshot.state.preferences.theme === "light"
+                        ? "dark"
+                        : "light",
+                  })
+                  .then(() => setActionError(""))
+                  .catch((e) => setActionError(e.message))
               }
             >
               {snapshot.state.preferences.theme === "light" ? (
@@ -146,9 +150,9 @@ export default function App() {
             </button>
           </div>
         </header>
-        {snapshot.notice && (
+        {(snapshot.notice || actionError) && (
           <div className="notice" role="alert">
-            {snapshot.notice}
+            {snapshot.notice || actionError}
           </div>
         )}
         {snapshot.progress.calendarMissing && (

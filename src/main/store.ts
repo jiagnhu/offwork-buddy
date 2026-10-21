@@ -3,6 +3,7 @@ import path from "node:path";
 import type { State } from "../shared/model";
 import { parseState } from "../shared/schema";
 import { initialState } from "../shared/defaults";
+import { parseJsonStrict } from "../shared/json";
 export interface LoadResult {
   state: State;
   recoveryNotice?: string;
@@ -11,20 +12,35 @@ export async function loadState(directory: string): Promise<LoadResult> {
   await mkdir(directory, { recursive: true });
   const primary = path.join(directory, "state.json");
   try {
-    return { state: parseState(JSON.parse(await readFile(primary, "utf8"))) };
+    return {
+      state: parseState(parseJsonStrict(await readFile(primary, "utf8"))),
+    };
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT")
-      return { state: initialState() };
+    const missingPrimary = (error as NodeJS.ErrnoException).code === "ENOENT";
+    let backupText: string;
     try {
-      const state = parseState(
-        JSON.parse(
-          await readFile(path.join(directory, "state.backup.json"), "utf8"),
-        ),
+      backupText = await readFile(
+        path.join(directory, "state.backup.json"),
+        "utf8",
       );
-      await copyFile(
-        primary,
-        path.join(directory, `corrupt-${Date.now()}.json`),
+    } catch (backupError) {
+      if (
+        missingPrimary &&
+        (backupError as NodeJS.ErrnoException).code === "ENOENT"
+      )
+        return { state: initialState() };
+      throw new Error(
+        "无法读取本地数据。原文件已保留，请检查数据目录或恢复备份：" +
+          directory,
       );
+    }
+    try {
+      const state = parseState(parseJsonStrict(backupText));
+      if (!missingPrimary)
+        await copyFile(
+          primary,
+          path.join(directory, `corrupt-${Date.now()}.json`),
+        );
       await writeFile(
         path.join(directory, "state.recovery.tmp"),
         JSON.stringify(state),
@@ -32,7 +48,9 @@ export async function loadState(directory: string): Promise<LoadResult> {
       await rename(path.join(directory, "state.recovery.tmp"), primary);
       return {
         state,
-        recoveryNotice: "主数据损坏，已从最近备份恢复。损坏文件已保留。",
+        recoveryNotice: missingPrimary
+          ? "主数据文件缺失，已从最近备份恢复。"
+          : "主数据损坏，已从最近备份恢复。损坏文件已保留。",
       };
     } catch {
       throw new Error(
@@ -53,7 +71,7 @@ export async function saveState(
   await writeFile(temp, JSON.stringify(valid, null, 2), "utf8");
   try {
     const old = await readFile(primary, "utf8");
-    parseState(JSON.parse(old));
+    parseState(parseJsonStrict(old));
     await writeFile(path.join(directory, "state.backup.tmp"), old);
     await rename(
       path.join(directory, "state.backup.tmp"),

@@ -36,8 +36,14 @@ test("desktop windows isolate renderer and apply preferences", async () => {
           .isAlwaysOnTop(),
       ),
     ).toBe(false);
-    await app.evaluate(({ screen }) => screen.emit('display-metrics-changed'));
-    expect(await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows().find(w => w.webContents.getURL().includes('companion'))!.isAlwaysOnTop())).toBe(false);
+    await app.evaluate(({ screen }) => screen.emit("display-metrics-changed"));
+    expect(
+      await app.evaluate(({ BrowserWindow }) =>
+        BrowserWindow.getAllWindows()
+          .find((w) => w.webContents.getURL().includes("companion"))!
+          .isAlwaysOnTop(),
+      ),
+    ).toBe(false);
     await page.evaluate(() =>
       window.buddy.setPreferences({ alwaysOnTop: true }),
     );

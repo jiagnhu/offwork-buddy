@@ -110,5 +110,7 @@ export const stateSchema = z
     if (!Number.isSafeInteger(total)) issue("累计金额超出支持范围");
   });
 export function parseState(input: unknown): State {
-  return stateSchema.parse(input);
+  const state = stateSchema.parse(input);
+  state.rules.sort((a, b) => a.effectiveFrom.localeCompare(b.effectiveFrom));
+  return state;
 }

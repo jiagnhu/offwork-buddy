@@ -1,6 +1,22 @@
 import { it, expect } from "vitest";
 import { validateBackup } from "../src/main/backup";
 import { fixture } from "./fixtures";
+it("normalizes imported rule order before selecting the latest form values", () => {
+  const state = fixture();
+  state.rules = [
+    {
+      ...state.rules[0],
+      id: "future",
+      effectiveFrom: "2026-02-01",
+      amount: "900",
+    },
+    state.rules[0],
+  ];
+  expect(validateBackup(state).rules.map((r) => r.amount)).toEqual([
+    "800",
+    "900",
+  ]);
+});
 it.each(["-1", "Infinity", "NaN", "9007199254740992"])(
   "rejects invalid amount %s",
   (amount) => {

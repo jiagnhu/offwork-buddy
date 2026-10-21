@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   ArrowUpRight,
   Check,
@@ -29,6 +29,16 @@ export function WorkForm({
     [error, setError] = useState(""),
     [saved, setSaved] = useState(false),
     [busy, setBusy] = useState(false);
+  const persistedForm = JSON.stringify({
+    rule: snapshot.state.rules.at(-1) ?? null,
+    startDate: snapshot.state.startDate,
+  });
+  useEffect(() => {
+    const next = JSON.parse(persistedForm);
+    setRule(next.rule ?? defaultRule());
+    setStartDate(next.startDate);
+    setError("");
+  }, [persistedForm]);
   function field<K extends keyof RuleInput>(key: K, value: RuleInput[K]) {
     setRule((r) => ({ ...r, [key]: value }));
     setSaved(false);

@@ -12,8 +12,11 @@ test("onboarding, navigation, appearance and character survive restart", async (
     ),
     BUDDY_DATA_DIR: data,
   };
-  let app = await electron.launch({ executablePath: process.env.BUDDY_EXECUTABLE,
-    args: process.env.BUDDY_EXECUTABLE ? [] : ["."], env });
+  let app = await electron.launch({
+    executablePath: process.env.BUDDY_EXECUTABLE,
+    args: process.env.BUDDY_EXECUTABLE ? [] : ["."],
+    env,
+  });
   try {
     await expect.poll(() => app.windows().length).toBe(2);
     let page = app.windows().find((w) => !w.url().includes("companion"))!;
@@ -35,8 +38,11 @@ test("onboarding, navigation, appearance and character survive restart", async (
     await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
     await page.screenshot({ path: "test-results/settings-dark.png" });
     await app.close();
-    app = await electron.launch({ executablePath: process.env.BUDDY_EXECUTABLE,
-    args: process.env.BUDDY_EXECUTABLE ? [] : ["."], env });
+    app = await electron.launch({
+      executablePath: process.env.BUDDY_EXECUTABLE,
+      args: process.env.BUDDY_EXECUTABLE ? [] : ["."],
+      env,
+    });
     await expect.poll(() => app.windows().length).toBe(2);
     page = app.windows().find((w) => !w.url().includes("companion"))!;
     await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");

@@ -18,6 +18,22 @@ export default function Companion({ snapshot }: { snapshot: Snapshot }) {
     [error, setError] = useState("");
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const previous = useRef(snapshot.progress.status);
+  const [viewport, setViewport] = useState({
+    width: innerWidth,
+    height: innerHeight,
+  });
+  useEffect(() => {
+    const update = () =>
+      setViewport({ width: innerWidth, height: innerHeight });
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+  const canvasHeight = p.collapsed ? 290 : 500;
+  const effectiveScale = Math.min(
+    p.scale,
+    viewport.width / 360,
+    viewport.height / canvasHeight,
+  );
   function say(text: string) {
     if (timer.current) clearTimeout(timer.current);
     setSpeech(text);
@@ -64,8 +80,8 @@ export default function Companion({ snapshot }: { snapshot: Snapshot }) {
       className="companion-root"
       style={{
         width: 360,
-        height: p.collapsed ? 290 : 500,
-        transform: `scale(${p.scale})`,
+        height: canvasHeight,
+        transform: `scale(${effectiveScale})`,
       }}
     >
       <div className="companion-toolbar">

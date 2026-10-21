@@ -27,6 +27,7 @@ import {
   recalculateRange,
 } from "../core/ledger";
 import { calculateDay, emptyProgress } from "../core/earnings";
+import { parseJsonStrict } from "../shared/json";
 if (process.env.BUDDY_DATA_DIR)
   app.setPath("userData", path.resolve(process.env.BUDDY_DATA_DIR));
 app.setName("下班搭子");
@@ -73,15 +74,23 @@ function broadcast() {
   return s;
 }
 async function commit(next: State) {
-  await saveState(directory, next);
+  try {
+    await saveState(directory, next);
+  } catch (error) {
+    console.error("Failed to save state", error);
+    notice = "保存失败，请检查磁盘空间或数据目录权限后重试。";
+    broadcast();
+    throw new Error(notice);
+  }
   state = next;
+  if (notice?.startsWith("保存失败")) notice = null;
   applyPreferences(state.preferences);
   return broadcast();
 }
 async function readJson(file: string) {
   if ((await stat(file)).size > 20 * 1024 * 1024)
     throw new Error("文件超过 20 MB 限制");
-  return JSON.parse(await readFile(file, "utf8"));
+  return parseJsonStrict(await readFile(file, "utf8"));
 }
 async function selectJson() {
   const r = await dialog.showOpenDialog({
@@ -139,7 +148,7 @@ else {
                 alwaysOnTop: !state.preferences.alwaysOnTop,
               },
             }),
-          );
+          ).catch(() => openPanel());
         },
       );
       registerIpc({

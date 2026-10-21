@@ -1,6 +1,7 @@
 import { ipcMain } from "electron";
 import { pathToFileURL } from "node:url";
 import path from "node:path";
+import { ZodError } from "zod";
 export function registerIpc(
   handlers: Record<string, (...args: any[]) => unknown>,
 ) {
@@ -20,7 +21,20 @@ export function registerIpc(
       } catch (error) {
         return {
           ok: false,
-          error: error instanceof Error ? error.message : "操作失败，请重试",
+          error:
+            error instanceof ZodError
+              ? [
+                  ...new Set(
+                    error.issues.map((issue) =>
+                      issue.code === "custom" || issue.code === "invalid_string"
+                        ? issue.message
+                        : "数据格式不正确，请检查输入或备份文件。",
+                    ),
+                  ),
+                ].join("；")
+              : error instanceof Error
+                ? error.message
+                : "操作失败，请重试",
         };
       }
     });
