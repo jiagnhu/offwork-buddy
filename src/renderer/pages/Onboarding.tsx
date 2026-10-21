@@ -1,2 +1,40 @@
-import {Sparkles,ShieldCheck} from 'lucide-react';import type {Snapshot} from '../../shared/model';import {WorkForm} from './Settings';
-export default function Onboarding({snapshot}:{snapshot:Snapshot}){return <div className="onboarding"><div className="onboard-intro"><div className="brandmark"><Sparkles size={28}/></div><span className="eyebrow">HELLO, WORK BUDDY</span><h1>让每一秒，<br/>都有回报。</h1><p>记录努力，期待下班。<br/>一个陪你把日子过得轻快一点的桌面伙伴。</p><div className="welcome-art"><div className="welcome-orbit"/><span>ฅ</span><i>今天也辛苦啦</i></div><div className="privacy-note"><ShieldCheck size={18}/>你的工资与记录，仅保存在本机</div></div><section className="onboard-form"><span className="step-label">01 / 开启你的陪伴</span><h2>先认识一下你的工作日</h2><p className="muted">设置完成，就可以把搭子放到桌面上了。</p><WorkForm snapshot={snapshot} onboarding/></section></div>}
+import { Sparkles, ShieldCheck } from "lucide-react";
+import type { Snapshot } from "../../shared/model";
+import { WorkForm } from "./Settings";
+export default function Onboarding({ snapshot }: { snapshot: Snapshot }) {
+  return (
+    <div className="onboarding">
+      <div className="onboard-intro">
+        <div className="brandmark">
+          <Sparkles size={28} />
+        </div>
+        <span className="eyebrow">HELLO, WORK BUDDY</span>
+        <h1>
+          让每一秒，
+          <br />
+          都有回报。
+        </h1>
+        <p>
+          记录努力，期待下班。
+          <br />
+          一个陪你把日子过得轻快一点的桌面伙伴。
+        </p>
+        <div className="welcome-art">
+          <div className="welcome-orbit" />
+          <span>ฅ</span>
+          <i>今天也辛苦啦</i>
+        </div>
+        <div className="privacy-note">
+          <ShieldCheck size={18} />
+          你的工资与记录，仅保存在本机
+        </div>
+      </div>
+      <section className="onboard-form">
+        <span className="step-label">01 / 开启你的陪伴</span>
+        <h2>先认识一下你的工作日</h2>
+        <p className="muted">设置完成，就可以把搭子放到桌面上了。</p>
+        <WorkForm snapshot={snapshot} onboarding />
+      </section>
+    </div>
+  );
+}

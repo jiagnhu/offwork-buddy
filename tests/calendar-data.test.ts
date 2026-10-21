@@ -1,2 +1,18 @@
-import {it,expect} from 'vitest';import calendar from '../resources/calendar.json';import {calendarSchema} from '../src/shared/schema';import {resolveDay} from '../src/core/calendar';import {rule} from './fixtures';
-it('bundles verified 2026 breaks and make-up workdays',()=>{const c=calendarSchema.parse(calendar);expect(resolveDay('2026-10-01',{...rule,official:true},c,{}).workday).toBe(false);expect(resolveDay('2026-10-10',{...rule,official:true},c,{}).workday).toBe(true);expect(resolveDay('2026-02-23',{...rule,official:true},c,{}).workday).toBe(false);expect(Object.keys(c['2026'].days)).toHaveLength(39)});
+import { it, expect } from "vitest";
+import calendar from "../resources/calendar.json";
+import { calendarSchema } from "../src/shared/schema";
+import { resolveDay } from "../src/core/calendar";
+import { rule } from "./fixtures";
+it("bundles verified 2026 breaks and make-up workdays", () => {
+  const c = calendarSchema.parse(calendar);
+  expect(
+    resolveDay("2026-10-01", { ...rule, official: true }, c, {}).workday,
+  ).toBe(false);
+  expect(
+    resolveDay("2026-10-10", { ...rule, official: true }, c, {}).workday,
+  ).toBe(true);
+  expect(
+    resolveDay("2026-02-23", { ...rule, official: true }, c, {}).workday,
+  ).toBe(false);
+  expect(Object.keys(c["2026"].days)).toHaveLength(39);
+});
