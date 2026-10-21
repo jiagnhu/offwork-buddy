@@ -1,0 +1,27 @@
+appId: cn.offwork.buddy
+productName: 下班搭子
+directories:
+  output: release
+  buildResources: resources
+files:
+  - dist/**/*
+  - package.json
+asar: true
+electronDist: node_modules/electron/dist
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  icon: resources/icon.ico
+  artifactName: OffworkBuddy-Setup-${version}.${ext}
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: 下班搭子
+  installerIcon: resources/icon.ico
+  uninstallerIcon: resources/icon.ico
+  deleteAppDataOnUninstall: false
+  runAfterFinish: false

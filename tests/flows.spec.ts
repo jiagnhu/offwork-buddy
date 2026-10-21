@@ -6,7 +6,8 @@ import { rule } from "./fixtures";
 test("calendar edits, dialog cancel, bad import and responsive layouts", async () => {
   const data = await mkdtemp(path.join(tmpdir(), "buddy-flows-"));
   const app = await electron.launch({
-    args: ["."],
+    executablePath: process.env.BUDDY_EXECUTABLE,
+    args: process.env.BUDDY_EXECUTABLE ? [] : ["."],
     env: {
       ...Object.fromEntries(
         Object.entries(process.env).filter(
