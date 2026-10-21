@@ -1,0 +1,12 @@
+import type {CalendarData,DateKey,DayInfo,RuleVersion} from '../shared/model';
+import {dayNumber,weekday,monthDates} from './date';
+export function resolveDay(date:DateKey,rule:RuleVersion,calendar:CalendarData,overrides:Record<DateKey,boolean>):DayInfo{
+ const year=calendar[date.slice(0,4)];const calendarMissing=rule.official&&!year;
+ if(Object.hasOwn(overrides,date))return {workday:overrides[date],source:'manual',calendarMissing};
+ if(rule.official&&year&&Object.hasOwn(year.days,date))return {workday:year.days[date],source:'official',calendarMissing};
+ const day=weekday(date);let workday=day!==0&&day!==6;
+ if(rule.schedule==='single')workday=day!==rule.restDay;
+ if(rule.schedule==='alternating'&&day===6)workday=Math.floor((dayNumber(date)-dayNumber(rule.bigWeekMonday))/7)%2===0;
+ return {workday,source:'schedule',calendarMissing};
+}
+export function countWorkdays(month:string,rule:RuleVersion,calendar:CalendarData,overrides:Record<DateKey,boolean>):number{return monthDates(month).filter(d=>resolveDay(d,rule,calendar,overrides).workday).length}
