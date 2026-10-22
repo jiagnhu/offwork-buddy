@@ -1,3 +1,4 @@
+import { live2dModels, type Live2dKind } from "../../../shared/characters";
 import { ensureCore } from "./core";
 import { HaruModel } from "./model";
 import { frameLoop } from "./lifecycle";
@@ -8,6 +9,7 @@ import type { HaruRuntime } from "./types";
 export async function createHaruRuntime(
   canvas: HTMLCanvasElement,
   options: {
+    kind?: Live2dKind;
     signal: AbortSignal;
     reducedMotion: boolean;
     onError: (e: Error) => void;
@@ -54,7 +56,12 @@ export async function createHaruRuntime(
   };
   canvas.addEventListener("webglcontextlost", lost);
   try {
-    const textureFiles = await model.load(controller.signal);
+    const kind = options.kind ?? "haru";
+    const textureFiles = await model.load(
+      controller.signal,
+      kind,
+      live2dModels[kind].file,
+    );
     controller.signal.throwIfAborted();
     model.createRenderer(canvas.width, canvas.height);
     const renderer = model.getRenderer();
@@ -64,9 +71,12 @@ export async function createHaruRuntime(
     shader.setShaderPath("buddy-live2d://assets/haru/shaders/");
     await shader.prepare(controller.signal);
     for (let i = 0; i < textureFiles.length; i++) {
-      const r = await fetch("buddy-live2d://assets/haru/" + textureFiles[i], {
-        signal: controller.signal,
-      });
+      const r = await fetch(
+        `buddy-live2d://assets/${kind}/` + textureFiles[i],
+        {
+          signal: controller.signal,
+        },
+      );
       if (!r.ok || !r.headers.get("content-type")?.startsWith("image/png"))
         throw new Error(`纹理加载失败：${textureFiles[i]}`);
       const bitmap = await createImageBitmap(await r.blob(), {
@@ -124,6 +134,8 @@ export async function createHaruRuntime(
           1.18 / Math.max(aspect, 1),
           1.18 * Math.min(aspect, 1),
         );
+        // Rice is authored in a side-facing stage position; center her in the desktop viewport.
+        if (kind === "rice") projection.translateX(-0.55);
         projection.multiplyByMatrix(model.getModelMatrix());
         renderer.setMvpMatrix(projection);
         renderer.setRenderState(null!, [0, 0, canvas.width, canvas.height]);

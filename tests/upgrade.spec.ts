@@ -8,7 +8,7 @@ test('v2 upgrade preserves growth and preferences while enabling Haru',async()=>
   try {
     expect(JSON.parse(await readFile(path.join(s.data,'state.pre-v3.json'),'utf8')).schemaVersion).toBe(2);
     let state=(await s.page.evaluate(()=>window.buddy.getSnapshot())).state;
-    expect(state.schemaVersion).toBe(3);expect(state.preferences.character).toBe('assistant');expect(state.growth.points).toBe(30);
+    expect(state.schemaVersion).toBe(3);expect(state.preferences.character).toBe('haru');expect(state.growth.points).toBe(30);
     await s.page.evaluate(()=>window.buddy.setPreferences({character:'haru'}));
     const {page}=await s.restart();state=(await page.evaluate(()=>window.buddy.getSnapshot())).state;
     expect(state.preferences.character).toBe('haru');expect(state.preferences.accessory).toBe('pillow');expect(state.preferences.movementMode).toBe('bottom');expect(state.growth.points).toBe(30);

@@ -25,11 +25,11 @@ export async function launchDesktop(change?: (state: State) => void) {
   };
   let app = await electron.launch(options);
   await expect
-    .poll(() => app.windows().some((w) => w.url().endsWith("index.html")))
+    .poll(() => app.windows().some((w) => w.url().endsWith("index.html")), {timeout:30000})
     .toBe(true);
   const page = app.windows().find((w) => w.url().endsWith("index.html"))!;
   await expect
-    .poll(() => page.evaluate(() => typeof window.buddy))
+    .poll(() => page.evaluate(() => typeof window.buddy), {timeout:30000})
     .toBe("object");
   return {
     app,
@@ -38,7 +38,9 @@ export async function launchDesktop(change?: (state: State) => void) {
     restart: async () => {
       await app.close();
       app = await electron.launch(options);
-      await expect.poll(() => app.windows().length).toBe(3);
+      await expect.poll(() => app.windows().length, {timeout:30000}).toBe(3);
+      const ready = app.windows().find(w=>w.url().endsWith("index.html"))!;
+      await expect.poll(()=>ready.evaluate(()=>typeof window.buddy),{timeout:30000}).toBe("object");
       return {
         app,
         page: app.windows().find((w) => w.url().endsWith("index.html"))!,

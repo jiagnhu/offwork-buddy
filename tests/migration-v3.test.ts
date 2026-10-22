@@ -40,6 +40,7 @@ test("v2 migration preserves money, plans, growth, accessories and roaming", () 
     schemaVersion: 3,
     preferences: {
       ...old.preferences,
+      character: "haru",
       haruName: "丝袜妹",
       reminders: { ...old.preferences.reminders, restMinutes: 0 },
     },

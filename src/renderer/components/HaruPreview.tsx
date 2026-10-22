@@ -1,16 +1,33 @@
 import { useEffect, useRef, useState } from "react";
 import HaruCharacter from "../characters/live2d/HaruCharacter";
-import { haruActions } from "../characters/live2d/actions";
+import { live2dModels, type Live2dKind } from "../../shared/characters";
 import type { HaruAction } from "../characters/live2d/types";
 export default function HaruPreview({
+  kind = "haru",
   displayName = "丝袜妹",
   reducedMotion,
   onClose,
 }: {
+  kind?: Live2dKind;
   displayName?: string;
   reducedMotion: boolean;
   onClose: () => void;
 }) {
+  const info = live2dModels[kind];
+  const haruActions = {
+    idle: Array.from({ length: info.idle }, (_, index): HaruAction => ({
+      kind: "idle",
+      index,
+    })),
+    tap: Array.from({ length: info.tap }, (_, index): HaruAction => ({
+      kind: "tap",
+      index,
+    })),
+    expressions: info.expressions.map((id, i) => ({
+      label: "表情 " + (i + 1),
+      action: { kind: "expression", id } as HaruAction,
+    })),
+  };
   const dialog = useRef<HTMLDialogElement>(null);
   const [request, setRequest] = useState<{ id: string; action: HaruAction }>(),
     [busy, setBusy] = useState(false),
@@ -23,7 +40,7 @@ export default function HaruPreview({
   async function select() {
     setBusy(true);
     try {
-      await window.buddy.setPreferences({ character: "haru" });
+      await window.buddy.setPreferences({ character: kind });
       onClose();
     } catch (e) {
       setError((e as Error).message);
@@ -50,6 +67,7 @@ export default function HaruPreview({
       <div className="haru-preview-layout">
         <div className="haru-preview-stage">
           <HaruCharacter
+            kind={kind}
             displayName={displayName}
             reducedMotion={reducedMotion}
             actionRequest={request}
@@ -73,7 +91,7 @@ export default function HaruPreview({
               </button>
             ))}
           </div>
-          <h3>表情试穿</h3>
+          <h3>{info.expressions.length ? "表情试穿" : "表情随动作呈现"}</h3>
           <div className="haru-action-grid">
             {haruActions.expressions.map((e) => (
               <button key={e.label} onClick={() => play(e.action)}>
@@ -84,18 +102,18 @@ export default function HaruPreview({
           <p className="hint">
             {reducedMotion
               ? "已开启减少动画：仅展示静态表情。"
-              : "这些是模型原有的动作与表情。当前模型暂无行走动作。"}
+              : "这些是模型原有的动作与表情。桌面采用原地播放，Miara 保留原作场景动画。"}
           </p>
           <details>
             <summary>模型来源与使用说明</summary>
-            <p>Haru © Live2D Inc. · Cubism SDK 5-r.5</p>
+            <p>{info.name} © Live2D Inc. · Cubism SDK 5-r.5</p>
             <p>
               本应用使用 Live2D Inc.
               拥有著作权的示例数据，并依照其规定的使用条件使用。本应用内容由作者自行制作。
             </p>
             <p>
-              资源来自 Live2D 官方 SDK，适用 Core、Open Software、Free Material
-              及示例模型使用条款。完整声明随安装包保存在
+              资源来自 Live2D 官方 SDK 或官方示例下载，适用 Core、Open
+              Software、Free Material 及示例模型使用条款。完整声明随安装包保存在
               resources/live2d/licenses 中。
             </p>
             <p>

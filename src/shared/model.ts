@@ -1,5 +1,5 @@
 export type DateKey = string;
-export type CharacterKind = "pet" | "assistant" | "haru";
+export type CharacterKind = "pet" | "assistant" | "haru" | "mao" | "hiyori" | "miara" | "rice";
 export interface RuleVersion {
   id: string;
   effectiveFrom: DateKey;

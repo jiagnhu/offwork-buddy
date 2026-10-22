@@ -27,7 +27,7 @@ export default function Companion({ snapshot }: { snapshot: Snapshot }) {
   const scale = useDesktopScale(p.scale, size.baseHeight);
   return (
     <div
-      className={`companion-root ${p.character === "haru" ? "companion-haru" : ""}`}
+      className="companion-root companion-haru"
       style={{
         width: size.baseWidth,
         height: size.baseHeight,

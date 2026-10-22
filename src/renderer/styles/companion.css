@@ -92,6 +92,8 @@
   cursor: move;
 }
 .companion-toolbar > .drag-handle {
+  -webkit-app-region: no-drag;
+  touch-action: none;
   padding: 0 8px;
   display: flex;
   color: var(--muted);
@@ -514,6 +516,7 @@ html.companion-window #root {
 
 /* Preserve toolbar geometry so revealing it never moves the character. */
 .companion-root .companion-toolbar { opacity: 0; pointer-events: none; transition: opacity 140ms ease; }
+.companion-root .companion-toolbar[data-dragging="true"],
 .companion-root:hover .companion-toolbar,
 .companion-root:has(:focus-visible) .companion-toolbar { opacity: 1; pointer-events: auto; }
 html[data-motion="reduced"] .companion-toolbar { transition: none; }

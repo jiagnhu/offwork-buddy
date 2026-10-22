@@ -59,12 +59,10 @@ export default function Growth({ snapshot }: { snapshot: Snapshot }) {
         </div>
       </section>
       <section className="growth-rewards">
-        {p.character === "haru" && (
-          <p className="muted">
-            星星和抱枕适用于年糕、小沐；已选配饰会保留，{p.haruName ?? "丝袜妹"}{" "}
-            暂不佩戴这些配饰。
-          </p>
-        )}
+        <p className="muted">
+          当前 Live2D
+          角色暂不支持星星、抱枕配饰，已获得的成长点和解锁记录会保留。
+        </p>
         {(
           [
             {
@@ -91,10 +89,10 @@ export default function Growth({ snapshot }: { snapshot: Snapshot }) {
             <button
               className="secondary"
               aria-label={`佩戴${item.name}`}
-              disabled={!available[item.id] || busy || p.accessory === item.id}
+              disabled
               onClick={() => void wear(item.id)}
             >
-              {p.accessory === item.id ? "正在佩戴" : `佩戴${item.name}`}
+              当前角色暂不支持
             </button>
           </article>
         ))}

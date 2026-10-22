@@ -20,7 +20,7 @@ const capabilities = {
   },
 } as const;
 export function characterCapabilities(kind: CharacterKind) {
-  return capabilities[kind];
+  return capabilities[kind as keyof typeof capabilities] ?? capabilities.haru;
 }
 export function effectiveMovementMode(prefs: Preferences) {
   return characterCapabilities(prefs.character).canRoam

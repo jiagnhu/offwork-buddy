@@ -1,8 +1,10 @@
+import type { Live2dKind } from "../../../shared/characters";
 import { useEffect, useRef, useState } from "react";
 import { useWindowVisible } from "../../hooks/useWindowVisible";
 import { mountResource } from "./lifecycle";
 import type { HaruAction, HaruRuntime } from "./types";
 export default function HaruCharacter({
+  kind = "haru",
   displayName = "丝袜妹",
   displayScale = 1,
   active = true,
@@ -10,6 +12,7 @@ export default function HaruCharacter({
   actionRequest,
   onInteract,
 }: {
+  kind?: Live2dKind;
   displayName?: string;
   displayScale?: number;
   active?: boolean;
@@ -51,10 +54,11 @@ export default function HaruCharacter({
     const stop = mountResource(
       async (signal) => {
         if (typeof Live2DCubismCore === "undefined")
-          throw new Error("角色引擎未能加载，请重启软件或切回原角色");
+          throw new Error("角色引擎未能加载，请重启软件或检查安装文件");
         const { createHaruRuntime } = await import("./runtime");
         signal.throwIfAborted();
         return createHaruRuntime(element, {
+          kind,
           signal,
           reducedMotion: motion.current,
           onError: (e) => {
@@ -83,7 +87,7 @@ export default function HaruCharacter({
       runtime.current = null;
       stop();
     };
-  }, [enabled, retry]);
+  }, [enabled, retry, kind]);
   useEffect(
     () => runtime.current?.setReducedMotion(reducedMotion),
     [reducedMotion],
@@ -108,7 +112,7 @@ export default function HaruCharacter({
     <div className="haru-character" data-loaded={loaded && enabled && !error}>
       {enabled && !error && (
         <canvas
-          key={retry}
+          key={`${kind}-${retry}`}
           ref={canvas}
           aria-label={`${displayName} Live2D 角色`}
           onClick={onInteract}
@@ -138,12 +142,10 @@ export default function HaruCharacter({
           </button>
           <button
             onClick={() =>
-              void window.buddy
-                .setPreferences({ character: "assistant" })
-                .catch((e) => setError(e.message))
+              void window.buddy.openPanel().catch((e) => setError(e.message))
             }
           >
-            切回原角色
+            打开设置
           </button>
         </div>
       )}

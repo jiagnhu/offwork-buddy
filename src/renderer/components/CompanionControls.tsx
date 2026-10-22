@@ -1,3 +1,5 @@
+import { useRef, useState } from "react";
+import { characterOrder, normalizeCharacter } from "../../shared/characters";
 import {
   GripHorizontal,
   Shuffle,
@@ -20,11 +22,67 @@ export default function CompanionControls({
   onError: (error: string) => void;
 }) {
   const p = snapshot.state.preferences;
+  const dragging = useRef(false);
+  const lastPointer = useRef({ x: 0, y: 0 });
+  const [isDragging, setDragging] = useState(false);
   const run = (promise: Promise<unknown>) =>
     void promise.catch((e) => onError(e.message));
   return (
-    <div className="companion-toolbar">
-      <span className="drag-handle" title="拖动伙伴">
+    <div className="companion-toolbar" data-dragging={isDragging}>
+      <span
+        className="drag-handle"
+        title="拖动伙伴"
+        onPointerDown={(e) => {
+          if (e.button !== 0) return;
+          e.preventDefault();
+          e.currentTarget.setPointerCapture(e.pointerId);
+          dragging.current = true;
+          lastPointer.current = { x: e.screenX, y: e.screenY };
+          setDragging(true);
+          run(
+            window.buddy.dragCompanion({
+              phase: "start",
+              x: e.screenX,
+              y: e.screenY,
+            }),
+          );
+        }}
+        onPointerMove={(e) => {
+          lastPointer.current = { x: e.screenX, y: e.screenY };
+          if (dragging.current)
+            run(
+              window.buddy.dragCompanion({
+                phase: "move",
+                x: e.screenX,
+                y: e.screenY,
+              }),
+            );
+        }}
+        onPointerUp={(e) => {
+          if (!dragging.current) return;
+          dragging.current = false;
+          setDragging(false);
+          run(
+            window.buddy.dragCompanion({
+              phase: "end",
+              x: e.screenX,
+              y: e.screenY,
+            }),
+          );
+          e.currentTarget.releasePointerCapture(e.pointerId);
+        }}
+        onLostPointerCapture={() => {
+          if (dragging.current)
+            run(
+              window.buddy.dragCompanion({
+                phase: "end",
+                ...lastPointer.current,
+              }),
+            );
+          dragging.current = false;
+          setDragging(false);
+        }}
+      >
         <GripHorizontal size={17} />
       </span>
       <button
@@ -32,7 +90,12 @@ export default function CompanionControls({
         onClick={() =>
           run(
             window.buddy.setPreferences({
-              character: p.character === "pet" ? "assistant" : p.character==='assistant'?'haru':'pet',
+              character:
+                characterOrder[
+                  (characterOrder.indexOf(normalizeCharacter(p.character)) +
+                    1) %
+                    characterOrder.length
+                ],
             }),
           )
         }
@@ -48,9 +111,9 @@ export default function CompanionControls({
         {p.alwaysOnTop ? <Pin size={14} /> : <PinOff size={14} />}
       </button>
       <button
-        disabled={p.character==='haru'}
-        title={p.character==='haru'?'当前模型暂无行走动作':undefined}
-        aria-label={p.character==='haru'?'当前模型暂无行走动作':p.movementMode === "bottom" ? "暂停散步" : "继续散步"}
+        disabled
+        title="当前角色以原地动画陪伴"
+        aria-label="当前角色以原地动画陪伴"
         onClick={() =>
           run(
             window.buddy.setPreferences({

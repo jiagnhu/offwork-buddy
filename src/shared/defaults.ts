@@ -34,7 +34,7 @@ export function initialState(now = new Date()): State {
       reminders: { lunch: true, offwork: true, leadMinutes: 5, restMinutes: 0 },
       accessory: "none",
       theme: "light",
-      character: "pet",
+      character: "haru",
       reducedMotion: false,
       scale: 1,
       alwaysOnTop: true,

@@ -26,7 +26,7 @@ export function CompanionNameSetting({
       }}
     >
       <label className="field-title">
-        看板娘名称
+        丝袜妹的昵称
         <input
           aria-label="看板娘名称"
           value={name}

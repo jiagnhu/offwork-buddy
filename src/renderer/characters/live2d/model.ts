@@ -9,8 +9,12 @@ import {
 import { CubismMotion } from "../../../../vendor/cubism-framework/lib/motion/cubismmotion";
 import { ACubismMotion } from "../../../../vendor/cubism-framework/lib/motion/acubismmotion";
 import type { HaruAction } from "./types";
-const base = "buddy-live2d://assets/haru/";
-export async function bytes(file: string, signal: AbortSignal) {
+
+export async function fetchBytes(
+  file: string,
+  signal: AbortSignal,
+  base: string,
+) {
   const r = await fetch(base + file, { signal });
   if (!r.ok) throw new Error(`角色资源加载失败：${file} (${r.status})`);
   return r.arrayBuffer();
@@ -26,17 +30,24 @@ export class HaruModel extends CubismUserModel {
     { Id: string; Value: number; Blend: string }[]
   >();
   staticExpression = "";
-  async load(signal: AbortSignal) {
-    const raw = await bytes("Haru.model3.json", signal);
+  async load(
+    signal: AbortSignal,
+    kind = "haru",
+    filename = "Haru.model3.json",
+  ) {
+    const bytes = (file: string, signal: AbortSignal) =>
+      fetchBytes(file, signal, `buddy-live2d://assets/${kind}/`);
+    const raw = await bytes(filename, signal);
     const settings = new CubismModelSettingJson(raw, raw.byteLength);
     try {
       this.loadModel(await bytes(settings.getModelFileName(), signal), true);
       signal.throwIfAborted();
-      if (!this._model) throw new Error("Haru 模型无效");
+      if (!this._model) throw new Error("角色模型无效");
       for (const [filename, fn] of [
         [settings.getPhysicsFileName(), this.loadPhysics],
         [settings.getPoseFileName(), this.loadPose],
       ] as const) {
+        if (!filename) continue;
         const b = await bytes(filename, signal);
         fn.call(this, b, b.byteLength);
       }
@@ -66,6 +77,7 @@ export class HaruModel extends CubismUserModel {
             i,
           );
           if (!motion) throw new Error("动作加载失败");
+          if (group === "TapBody") motion.setLoop(false);
           motion.setEffectIds(
             settings.getEyeBlinkParameterCount()
               ? Array.from(
@@ -98,7 +110,7 @@ export class HaruModel extends CubismUserModel {
   play(action: HaruAction, reduced: boolean) {
     if (action.kind === "expression") {
       const expression = this.expressions.get(action.id);
-      if (!expression) throw new Error("未知表情");
+      if (!expression) return;
       this.staticExpression = action.id;
       if (!reduced) this._expressionManager.startMotion(expression, false);
     } else {
@@ -118,7 +130,7 @@ export class HaruModel extends CubismUserModel {
   update(delta: number, reduced: boolean) {
     this._model.loadParameters();
     if (!reduced) {
-      if (this._motionManager.isFinished())
+      if (this._motionManager.isFinished() && this.motions.idle[0])
         this._motionManager.startMotionPriority(this.motions.idle[0], false, 1);
       const animated = this._motionManager.updateMotion(this._model, delta);
       this._model.saveParameters();

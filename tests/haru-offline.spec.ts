@@ -51,7 +51,7 @@ test("offline resources remain silent; twenty switches release every old context
     });
     for (let i = 0; i < 20; i++) {
       await s.page.evaluate(() =>
-        window.buddy.setPreferences({ character: "haru" }),
+        window.buddy.showCompanion(),
       );
       await expect(page.locator(".haru-character")).toHaveAttribute(
         "data-loaded",
@@ -59,7 +59,7 @@ test("offline resources remain silent; twenty switches release every old context
         { timeout: 15000 },
       );
       await s.page.evaluate(() =>
-        window.buddy.setPreferences({ character: "pet" }),
+        window.buddy.hideCompanion(),
       );
       await expect(page.locator("canvas")).toHaveCount(0);
       await expect
@@ -76,6 +76,7 @@ test("offline resources remain silent; twenty switches release every old context
         await page.evaluate(() => (window as any).__haruProbe.pending.size),
       ).toBe(0);
     }
+    await s.page.evaluate(() => window.buddy.showCompanion());
     await s.page.evaluate(() =>
       window.buddy.setPreferences({ character: "haru", reducedMotion: true }),
     );

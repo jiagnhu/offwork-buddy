@@ -20,15 +20,16 @@ test("companion switches characters, collapses, scales and respects reduced moti
     await expect.poll(() => app.windows().length).toBe(3);
     const page = app.windows().find((w) => w.url().includes("companion"))!;
     await expect(
-      page.getByRole("button", { name: "和年糕互动" }),
+      page.getByLabel("丝袜妹 Live2D 角色"),
     ).toBeVisible();
     await page.locator(".companion-stage").hover();
     await page.getByRole("button", { name: "切换伙伴" }).click();
     await expect(
-      page.getByRole("button", { name: "和小沐互动" }),
+      page.getByLabel("虹色 Mao Live2D 角色"),
     ).toBeVisible();
-    await page.getByRole("button", { name: "和小沐互动" }).click();
+    await page.getByLabel("虹色 Mao Live2D 角色").click();
     await expect(page.locator(".speech-bubble")).toBeVisible();
+    await page.locator(".companion-stage").hover();
     await page.getByRole("button", { name: "收起信息卡" }).click();
     await expect
       .poll(() =>
@@ -52,11 +53,6 @@ test("companion switches characters, collapses, scales and respects reduced moti
       "reduced",
     );
     expect(
-      await page
-        .locator(".character-sway")
-        .evaluate((el) => getComputedStyle(el).animationName),
-    ).toBe("none");
-    expect(
       await page.evaluate(
         () =>
           document.body.getBoundingClientRect().bottom >=
@@ -69,10 +65,10 @@ test("companion switches characters, collapses, scales and respects reduced moti
       omitBackground: true,
     });
     await page.evaluate(() =>
-      window.buddy.setPreferences({ character: "pet" }),
+      window.buddy.setPreferences({ character: "haru" }),
     );
     await expect(
-      page.getByRole("button", { name: "和年糕互动" }),
+      page.getByLabel("丝袜妹 Live2D 角色"),
     ).toBeVisible();
     await page.screenshot({
       path: "test-results/companion-pet.png",

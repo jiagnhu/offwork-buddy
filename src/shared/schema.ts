@@ -71,7 +71,11 @@ const preferencesV2Schema = legacyPreferencesSchema.extend({
   accessory: z.enum(["none", "star", "pillow"]),
 });
 export const preferencesSchema = preferencesV2Schema.extend({
-  character: z.enum(["pet", "assistant", "haru"]),
+  character: z
+    .enum(["pet", "assistant", "haru", "mao", "hiyori", "miara", "rice"])
+    .transform((kind) =>
+      kind === "pet" || kind === "assistant" ? ("haru" as const) : kind,
+    ),
   haruName: z
     .string()
     .trim()

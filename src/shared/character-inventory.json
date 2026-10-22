@@ -1,0 +1,55 @@
+{
+  "haru": {
+    "name": "丝袜妹",
+    "file": "Haru.model3.json",
+    "idle": 2,
+    "tap": 4,
+    "expressions": [
+      "F01",
+      "F02",
+      "F03",
+      "F04",
+      "F05",
+      "F06",
+      "F07",
+      "F08"
+    ]
+  },
+  "mao": {
+    "name": "虹色 Mao",
+    "file": "Mao.model3.json",
+    "idle": 2,
+    "tap": 6,
+    "expressions": [
+      "exp_01",
+      "exp_02",
+      "exp_03",
+      "exp_04",
+      "exp_05",
+      "exp_06",
+      "exp_07",
+      "exp_08"
+    ]
+  },
+  "hiyori": {
+    "name": "桃濑日和",
+    "file": "Hiyori.model3.json",
+    "idle": 9,
+    "tap": 1,
+    "expressions": []
+  },
+  "miara": {
+    "name": "Miara",
+    "file": "miara_pro_t03.model3.json",
+    "idle": 1,
+    "tap": 2,
+    "expressions": []
+  },
+  "rice": {
+    "name": "Rice",
+    "file": "Rice.model3.json",
+    "idle": 1,
+    "tap": 3,
+    "expressions": []
+  }
+}

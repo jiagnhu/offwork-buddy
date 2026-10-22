@@ -2,7 +2,7 @@ import { app, BrowserWindow, Menu, Tray, screen, nativeImage } from "electron";
 import path from "node:path";
 import type { Preferences } from "../shared/model";
 import { clampBounds } from "./bounds";
-import { characterCapabilities } from '../shared/character-capabilities';
+import { characterCapabilities } from "../shared/character-capabilities";
 export let panel: BrowserWindow,
   companion: BrowserWindow,
   desktopCard: BrowserWindow;
@@ -18,6 +18,39 @@ export function onCardClosed(fn: () => void) {
 }
 export function onRecall(fn: () => void) {
   recalled = fn;
+}
+let dragOrigin: { x: number; y: number; left: number; top: number } | null =
+  null;
+let saveDraggedPosition = (_position: { x: number; y: number }) => {};
+export function dragCompanion(input: {
+  phase: "start" | "move" | "end";
+  x: number;
+  y: number;
+}) {
+  if (!companion || companion.isDestroyed() || !companion.isVisible()) {
+    dragOrigin = null;
+    return;
+  }
+  if (input.phase === "start") {
+    const b = companion.getBounds();
+    automaticPosition = null;
+    dragOrigin = { x: input.x, y: input.y, left: b.x, top: b.y };
+  } else if (dragOrigin) {
+    const bounds = clampBounds(
+      {
+        ...companion.getBounds(),
+        x: Math.round(dragOrigin.left + input.x - dragOrigin.x),
+        y: Math.round(dragOrigin.top + input.y - dragOrigin.y),
+      },
+      screen.getAllDisplays().map((d) => d.workArea),
+    );
+    companion.setPosition(bounds.x, bounds.y);
+    if (input.phase === "end") {
+      dragOrigin = null;
+      // Programmatic movement need not emit the native `moved` event on Windows.
+      saveDraggedPosition({ x: bounds.x, y: bounds.y });
+    }
+  }
 }
 export function moveCharacter(x: number, y: number) {
   automaticPosition = { x, y };
@@ -66,6 +99,7 @@ export function createWindows(
   ) => void,
   onToggleTop: () => void,
 ) {
+  saveDraggedPosition = (position) => onPosition(position, "character");
   const webPreferences = {
     preload: path.join(__dirname, "preload.cjs"),
     contextIsolation: true,
@@ -94,7 +128,11 @@ export function createWindows(
     fullscreenable: false,
     webPreferences,
   };
-  companion = new BrowserWindow({ ...desktopOptions, width: characterCapabilities(prefs.character).baseWidth, height: characterCapabilities(prefs.character).baseHeight });
+  companion = new BrowserWindow({
+    ...desktopOptions,
+    width: characterCapabilities(prefs.character).baseWidth,
+    height: characterCapabilities(prefs.character).baseHeight,
+  });
   desktopCard = new BrowserWindow({
     ...desktopOptions,
     width: 360,
@@ -103,10 +141,17 @@ export function createWindows(
   });
   Menu.setApplicationMenu(null);
   for (const win of [panel, companion, desktopCard]) {
-    const sendVisibility=()=>{
-      if(!win.isDestroyed())win.webContents.send('buddy:window-visibility',win.isVisible()&&!win.isMinimized());
+    const sendVisibility = () => {
+      if (!win.isDestroyed())
+        win.webContents.send(
+          "buddy:window-visibility",
+          win.isVisible() && !win.isMinimized(),
+        );
     };
-    win.on('show',sendVisibility);win.on('hide',sendVisibility);win.on('minimize',sendVisibility);win.on('restore',sendVisibility);
+    win.on("show", sendVisibility);
+    win.on("hide", sendVisibility);
+    win.on("minimize", sendVisibility);
+    win.on("restore", sendVisibility);
     win.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
     win.webContents.on("will-navigate", (e) => e.preventDefault());
   }

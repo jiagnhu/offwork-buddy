@@ -20,6 +20,7 @@ import { z } from "zod";
 import { loadState, saveState } from "./store";
 import { importBackup, validateBackup } from "./backup";
 import {
+  dragCompanion,
   createWindows,
   applyPreferences,
   openPanel,
@@ -373,6 +374,16 @@ else {
           openPanel();
         },
         hideCompanion: () => hideCompanion(),
+        dragCompanion: (input: unknown) =>
+          dragCompanion(
+            z
+              .object({
+                phase: z.enum(["start", "move", "end"]),
+                x: z.number().finite().min(-100000).max(100000),
+                y: z.number().finite().min(-100000).max(100000),
+              })
+              .parse(input),
+          ),
         recallCompanion: () => recallCompanion(),
         setCardHidden: (hidden: unknown) =>
           serial(() =>

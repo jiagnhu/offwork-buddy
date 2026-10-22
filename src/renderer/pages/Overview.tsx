@@ -1,3 +1,4 @@
+import { characterName } from "../../shared/characters";
 import Character from "../characters/Character";
 import {
   ArrowUpRight,
@@ -88,11 +89,7 @@ export default function Overview({
           </div>
           <div className="buddy-copy">
             <h2>
-              {state.preferences.character === "pet"
-                ? "年糕"
-                : state.preferences.character === "haru"
-                  ? (state.preferences.haruName ?? "丝袜妹")
-                  : "小沐"}
+              {characterName(state.preferences.character, state.preferences.haruName)}
               陪你，慢慢来。
             </h2>
             <p>认真生活，也要记得休息。</p>

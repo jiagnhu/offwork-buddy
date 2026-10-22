@@ -63,15 +63,8 @@ for (const missingCore of [false, true])
           .preferences.character,
       ).toBe("haru");
       if (missingCore) {
-        await desktop.getByRole("button", { name: "切回原角色" }).click();
-        await expect
-          .poll(
-            async () =>
-              (await card.evaluate(() => window.buddy.getSnapshot())).state
-                .preferences.character,
-          )
-          .toBe("assistant");
-        await expect(desktop.getByRole("alert")).toHaveCount(0);
+        await desktop.getByRole('alert').getByRole('button',{name:'打开设置',exact:true}).click();
+        expect((await card.evaluate(()=>window.buddy.getSnapshot())).state.preferences.character).toBe('haru');
       }
       await writeFile(texture, original);
       if (missingCore) {

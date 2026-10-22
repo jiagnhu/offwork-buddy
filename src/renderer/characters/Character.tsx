@@ -1,5 +1,5 @@
-import Pet from "./Pet";
-import Assistant from "./Assistant";
+import { normalizeCharacter, characterName } from "../../shared/characters";
+
 import type { CharacterProps } from "./types";
 import type { CharacterKind, CompanionEvent } from "../../shared/model";
 import HaruCharacter from "./live2d/HaruCharacter";
@@ -13,26 +13,28 @@ export default function Character(
     event?: CompanionEvent | null;
   },
 ) {
-  if (props.kind === "haru")
-    return (
-      <HaruCharacter
-        displayScale={props.displayScale}
-        displayName={props.displayName}
-        active={props.active}
-        reducedMotion={props.reducedMotion}
-        onInteract={props.onInteract}
-        actionRequest={
-          props.event
-            ? {
-                id: props.event.id,
-                action: actionForCompanionEvent(
-                  props.event,
-                  props.reducedMotion,
-                ),
-              }
-            : undefined
-        }
-      />
-    );
-  return props.kind === "pet" ? <Pet {...props} /> : <Assistant {...props} />;
+  const kind = normalizeCharacter(props.kind);
+  return (
+    <HaruCharacter
+      key={kind}
+      kind={kind}
+      displayScale={props.displayScale}
+      displayName={characterName(kind, props.displayName)}
+      active={props.active}
+      reducedMotion={props.reducedMotion}
+      onInteract={props.onInteract}
+      actionRequest={
+        props.event
+          ? {
+              id: props.event.id,
+              action: actionForCompanionEvent(
+                props.event,
+                props.reducedMotion,
+                kind,
+              ),
+            }
+          : undefined
+      }
+    />
+  );
 }

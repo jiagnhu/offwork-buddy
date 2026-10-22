@@ -8,11 +8,12 @@ const invoke = <T>(method: string, ...args: unknown[]): Promise<T> =>
       return r.value;
     });
 const bridge: BuddyBridge = {
-  getWindowVisibility:()=>invoke('getWindowVisibility'),
-  onWindowVisibility:(listener)=>{
-    const fn=(_:unknown,value:boolean)=>listener(value);
-    ipcRenderer.on('buddy:window-visibility',fn);
-    return ()=>ipcRenderer.removeListener('buddy:window-visibility',fn);
+  dragCompanion: (input) => invoke("dragCompanion", input),
+  getWindowVisibility: () => invoke("getWindowVisibility"),
+  onWindowVisibility: (listener) => {
+    const fn = (_: unknown, value: boolean) => listener(value);
+    ipcRenderer.on("buddy:window-visibility", fn);
+    return () => ipcRenderer.removeListener("buddy:window-visibility", fn);
   },
   getSnapshot: () => invoke("getSnapshot"),
   saveSettings: (i) => invoke("saveSettings", i),

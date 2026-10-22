@@ -10,7 +10,7 @@ test('failed character save leaves preview open and keeps the existing character
     await mkdir(join(s.data,'state.tmp'));
     await s.page.getByRole('button',{name:'使用 丝袜妹',exact:true}).click();
     await expect(s.page.getByRole('dialog').getByRole('alert')).toBeVisible();
-    expect((await s.page.evaluate(()=>window.buddy.getSnapshot())).state.preferences.character).toBe('pet');
+    expect((await s.page.evaluate(()=>window.buddy.getSnapshot())).state.preferences.character).toBe('haru');
     await rm(join(s.data,'state.tmp'),{recursive:true});
   }finally{await s.cleanup();}
 });
@@ -44,7 +44,7 @@ test("preview tries all motions without rewards, explicit selection persists", a
     const before = await s.page.evaluate(
       async () => (await window.buddy.getSnapshot()).state,
     );
-    expect(before.preferences.character).toBe("pet");
+    expect(before.preferences.character).toBe("haru");
     expect(before.growth.points).toBe(0);
     await dialog
       .getByRole("button", { name: "使用 丝袜妹", exact: true })
@@ -60,7 +60,7 @@ test("preview tries all motions without rewards, explicit selection persists", a
     );
     await desktop.locator("canvas").hover();
     await expect(
-      desktop.getByRole("button", { name: "当前模型暂无行走动作" }),
+      desktop.getByRole("button", { name: "当前角色以原地动画陪伴" }),
     ).toBeDisabled();
     await desktop.locator("canvas").click();
     await expect

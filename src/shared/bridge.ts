@@ -11,8 +11,13 @@ export interface SettingsInput {
   startDate: string;
 }
 export interface BuddyBridge {
+  dragCompanion(input: {
+    phase: "start" | "move" | "end";
+    x: number;
+    y: number;
+  }): Promise<void>;
   getWindowVisibility(): Promise<boolean>;
-  onWindowVisibility(listener:(visible:boolean)=>void):()=>void;
+  onWindowVisibility(listener: (visible: boolean) => void): () => void;
   getSnapshot(): Promise<Snapshot>;
   saveSettings(input: SettingsInput): Promise<Snapshot>;
   setPreferences(input: Partial<Preferences>): Promise<Snapshot>;

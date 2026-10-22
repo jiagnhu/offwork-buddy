@@ -1,3 +1,8 @@
+import {
+  characterOrder,
+  characterName,
+  type Live2dKind,
+} from "../../shared/characters";
 import { useState, useEffect } from "react";
 import {
   ArrowUpRight,
@@ -245,7 +250,7 @@ export function WorkForm({
   );
 }
 export default function Settings({ snapshot }: { snapshot: Snapshot }) {
-  const [preview, setPreview] = useState(false);
+  const [preview, setPreview] = useState<Live2dKind | null>(null);
   const p = snapshot.state.preferences;
   const [message, setMessage] = useState(""),
     [error, setError] = useState("");
@@ -329,7 +334,8 @@ export default function Settings({ snapshot }: { snapshot: Snapshot }) {
             自主活动
             <select
               aria-label="自主活动"
-              value={p.movementMode}
+              disabled
+              value="stationary"
               onChange={(e) =>
                 act(() =>
                   window.buddy.setPreferences({
@@ -343,7 +349,7 @@ export default function Settings({ snapshot }: { snapshot: Snapshot }) {
             </select>
           </label>
           <p className="hint">
-            鼠标靠近时停下；拖动后停留一分钟。减少动画会暂停散步。
+            当前角色以原地动画陪伴；Miara 可在预览中播放原作行走场景。
           </p>
           <p className="muted">外观更改会立即生效</p>
           <label className="field-title">界面主题</label>
@@ -363,41 +369,27 @@ export default function Settings({ snapshot }: { snapshot: Snapshot }) {
           </div>
           <label className="field-title">你的桌面伙伴</label>
           <div className="character-options">
-            <button
-              className={p.character === "haru" ? "selected" : ""}
-              aria-label={`预览 ${p.haruName ?? "丝袜妹"}`}
-              onClick={() => setPreview(true)}
-            >
-              <Sparkles />
-              {p.haruName ?? "丝袜妹"} · Live2D<span>预览</span>
-            </button>
-            <button
-              className={p.character === "pet" ? "selected" : ""}
-              onClick={() =>
-                act(() => window.buddy.setPreferences({ character: "pet" }))
-              }
-            >
-              <Cat />
-              萌宠 · 年糕
-            </button>
-            <button
-              className={p.character === "assistant" ? "selected" : ""}
-              onClick={() =>
-                act(() =>
-                  window.buddy.setPreferences({ character: "assistant" }),
-                )
-              }
-            >
-              <Sparkles />
-              看板娘 · 小沐
-            </button>
+            {characterOrder.map((kind) => (
+              <button
+                key={kind}
+                className={p.character === kind ? "selected" : ""}
+                aria-label={`预览 ${characterName(kind, p.haruName)}`}
+                onClick={() => setPreview(kind)}
+              >
+                <Sparkles />
+                {characterName(kind, p.haruName)}
+                <span>预览</span>
+              </button>
+            ))}
           </div>
           <CompanionNameSetting preferences={p} />
           {preview && (
             <HaruPreview
-              displayName={p.haruName}
+              key={preview}
+              kind={preview}
+              displayName={characterName(preview, p.haruName)}
               reducedMotion={p.reducedMotion}
-              onClose={() => setPreview(false)}
+              onClose={() => setPreview(null)}
             />
           )}
           {(

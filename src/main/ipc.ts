@@ -21,6 +21,11 @@ export function registerIpc(
         )
           throw new Error("不允许的窗口请求");
         const win = BrowserWindow.fromWebContents(event.sender);
+        if (
+          name === "dragCompanion" &&
+          !event.senderFrame.url.endsWith("#companion")
+        )
+          throw new Error("仅桌面角色可发起拖动");
         return {
           ok: true,
           value:
