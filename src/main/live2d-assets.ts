@@ -7,7 +7,7 @@ export function resolveLive2dAsset(
   lock: AssetLock,
 ): { relativePath: string; mime: string } | null {
   // Match raw input before URL parsing can normalize traversal or escapes.
-  const match = /^buddy-live2d:\/\/assets\/((?:haru|mao|hiyori|miara|rice)\/[A-Za-z0-9_./-]+)$/.exec(url);
+  const match = /^buddy-live2d:\/\/assets\/((?:haru|mao|hiyori|miara|rice|arisa|tororo|hijiki)\/[A-Za-z0-9_@./-]+)$/.exec(url);
   if (!match || match[1].split("/").some((p) => !p || p === "." || p === ".."))
     return null;
   const file = lock.files.find((f) => f.path === match[1]);

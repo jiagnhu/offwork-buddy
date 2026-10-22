@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { launchDesktop } from "./desktop-helper";
 import { characterOrder, live2dModels } from "../src/shared/characters";
-test("all five characters preview, animate, select and load offline", async () => {
+test("all characters preview, animate, select and load offline", async () => {
   test.setTimeout(240000);
   const s = await launchDesktop();
   try {
@@ -85,7 +85,7 @@ test("all five characters preview, animate, select and load offline", async () =
           (await restarted.page.evaluate(() => window.buddy.getSnapshot()))
             .state.preferences.character,
       )
-      .toBe("rice");
+      .toBe(characterOrder.at(-1));
   } finally {
     await s.cleanup();
   }

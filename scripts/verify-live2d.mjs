@@ -12,7 +12,7 @@ export async function verifyAssets(root, lock) {
     )
       throw new Error(`Audio forbidden: ${entry.path}`);
     if (
-      !/^[a-zA-Z0-9_./-]+$/.test(entry.path) ||
+      !/^[a-zA-Z0-9_@./-]+$/.test(entry.path) ||
       entry.path.startsWith("/") ||
       entry.path.split("/").some((p) => !p || p === "." || p === "..") ||
       files.has(entry.path)

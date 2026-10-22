@@ -4,6 +4,81 @@
   "modelCommit": "ed1e0b714826d92469b9e51cacc3346f4e393f03",
   "files": [
     {
+      "path": "arisa/arisa_t11.4096/texture_00.png",
+      "sha256": "7ff1ac18442fcce2900a2138d136b775f1889ed1ffdede5f50309c8fe7738129",
+      "mime": "image/png"
+    },
+    {
+      "path": "arisa/arisa_t11.cdi3.json",
+      "sha256": "73a63e264250b4ae5b8c017f67d4d17413223ab6648149b935d518e25ffbc5f7",
+      "mime": "application/json"
+    },
+    {
+      "path": "arisa/arisa_t11.moc3",
+      "sha256": "c1683227e3bf0348110bcf05b17cbfeac15707cc8515d22ac9ad74713f01c04f",
+      "mime": "application/octet-stream"
+    },
+    {
+      "path": "arisa/arisa_t11.model3.json",
+      "sha256": "61ff406feab36180244559bc994e23a2391c16d9409c7f199f05980745d88e28",
+      "mime": "application/json"
+    },
+    {
+      "path": "arisa/arisa_t11.physics3.json",
+      "sha256": "c14061827771aba22b6527195f1c8b8f12909d396823e7e477abf021413158ce",
+      "mime": "application/json"
+    },
+    {
+      "path": "arisa/expressions/Angry.exp3.json",
+      "sha256": "f220b06b0a0bf7eb58c35ac75401fb4571d32877ed33e3d141c3b747fc253e27",
+      "mime": "application/json"
+    },
+    {
+      "path": "arisa/expressions/Normal.exp3.json",
+      "sha256": "7ba491089ab60382e41fee3616ce556889f3c6981da4e74211cc23af8749c07b",
+      "mime": "application/json"
+    },
+    {
+      "path": "arisa/expressions/pose1.exp3.json",
+      "sha256": "9fde417775e01c88b9faefda49c1d60b0510c5f9d3a1f689345ad85a07347719",
+      "mime": "application/json"
+    },
+    {
+      "path": "arisa/expressions/pose2.exp3.json",
+      "sha256": "1336a996abe9655268baa618ead24d075dc85a0fe67b8e10d79a92ca948f5bed",
+      "mime": "application/json"
+    },
+    {
+      "path": "arisa/expressions/pose3.exp3.json",
+      "sha256": "787c8e718ef66d8306ce29e15d83eefe24e07a7c21b6407c41adc2a39936f0f0",
+      "mime": "application/json"
+    },
+    {
+      "path": "arisa/expressions/Sad.exp3.json",
+      "sha256": "7a837b510e5a13e179ba5005c667cf64ba8f58b0326790642a8081b38aa48b7e",
+      "mime": "application/json"
+    },
+    {
+      "path": "arisa/expressions/Smile.exp3.json",
+      "sha256": "a442de24d0e8ad87459509df018738c45ce98b4358b64d3131786681892fe02d",
+      "mime": "application/json"
+    },
+    {
+      "path": "arisa/expressions/Surprised.exp3.json",
+      "sha256": "e0397b7de3e2c869471c056a89ece148f8b50cac509bc1d8cd10acd18f049bfe",
+      "mime": "application/json"
+    },
+    {
+      "path": "arisa/mtn/Idle.motion3.json",
+      "sha256": "f5269df1fd327128a95156f01667afb48f79dda61ac63734c3fd61e4dffed84c",
+      "mime": "application/json"
+    },
+    {
+      "path": "arisa/mtn/Tap@body.motion3.json",
+      "sha256": "2fbdd643392ff7917371119caf434d0764d4044c20e112d92481f797fd9f1b99",
+      "mime": "application/json"
+    },
+    {
       "path": "core/LICENSE.md",
       "sha256": "b81e37048010ef1d336106151201a0323c3309cae44aecdedf57831fe88fa991",
       "mime": "text/plain"
@@ -199,6 +274,81 @@
       "mime": "text/plain"
     },
     {
+      "path": "hijiki/hijiki.2048/texture_00.png",
+      "sha256": "555257fd1758de8986e57c88507211f715edca616736a517cef6d0f74d21a395",
+      "mime": "image/png"
+    },
+    {
+      "path": "hijiki/hijiki.cdi3.json",
+      "sha256": "d30749ba4d520a5e139239ffe2c7f1db892b5201835ac97c983466a00ae232fb",
+      "mime": "application/json"
+    },
+    {
+      "path": "hijiki/hijiki.moc3",
+      "sha256": "2b028f9769db5d5d1abad0034ecefb1aa8cc0bb16ae699d92392fedacc476af4",
+      "mime": "application/octet-stream"
+    },
+    {
+      "path": "hijiki/hijiki.model3.json",
+      "sha256": "521bd67076ee6a7ff731503893fe1473f72b826f33bc746e3e844678470474ba",
+      "mime": "application/json"
+    },
+    {
+      "path": "hijiki/hijiki.physics3.json",
+      "sha256": "2cb1b16872eb310d5bb0a92e3cdc52b8735b9794c4205b00510d89d6c637f5b3",
+      "mime": "application/json"
+    },
+    {
+      "path": "hijiki/hijiki.pose3.json",
+      "sha256": "e016dc5f12e24d68b00afa679cad00fb11e8c433efa356ce317f71df57c65279",
+      "mime": "application/json"
+    },
+    {
+      "path": "hijiki/motion/00_idle.motion3.json",
+      "sha256": "02b36a394353859a41156ae8175945ffa50b43b9dda19523bc743460650ffde6",
+      "mime": "application/json"
+    },
+    {
+      "path": "hijiki/motion/01.motion3.json",
+      "sha256": "0ab827e837693b0c1c7304e37ef1e186d4d06105bc70776588a610fbb7794995",
+      "mime": "application/json"
+    },
+    {
+      "path": "hijiki/motion/02.motion3.json",
+      "sha256": "383ce51eec938380da6c69d01fb7ecd5eb929cfbd4f6b3641e3603c0076ce887",
+      "mime": "application/json"
+    },
+    {
+      "path": "hijiki/motion/03.motion3.json",
+      "sha256": "86d0640652c9bea4b2952c0e93012da160f3c68b278e485b204841c0e4134f3d",
+      "mime": "application/json"
+    },
+    {
+      "path": "hijiki/motion/04.motion3.json",
+      "sha256": "0c6889e8f85d6436389961c0cb3806933306248fa29d8db3d31a112d299e76b8",
+      "mime": "application/json"
+    },
+    {
+      "path": "hijiki/motion/05.motion3.json",
+      "sha256": "e82328ca4d12479abe64ddb16d7959ca583769c56cfdc9f6f956e560eb90475d",
+      "mime": "application/json"
+    },
+    {
+      "path": "hijiki/motion/06.motion3.json",
+      "sha256": "87a80cd7441834e7bacb4f7c3bf90cbbefd69e4eba62974c4f75b1fb52de583c",
+      "mime": "application/json"
+    },
+    {
+      "path": "hijiki/motion/07.motion3.json",
+      "sha256": "809735f93bf265202901cdd4c9f9eed19e9a5c3a14595fa2190b3502ecf69de9",
+      "mime": "application/json"
+    },
+    {
+      "path": "hijiki/motion/08.motion3.json",
+      "sha256": "e676b4262cb971f5c2b614f61fc209c7dbd41d159d836e2afbde64e94fa97ba2",
+      "mime": "application/json"
+    },
+    {
       "path": "hiyori/Hiyori.2048/texture_00.png",
       "sha256": "560aea0d910dc04950d669640b2ef17c0d817969e9909f477f166bb5cbd8ffbe",
       "mime": "image/png"
@@ -305,7 +455,12 @@
     },
     {
       "path": "licenses/THIRD_PARTY_NOTICES.md",
-      "sha256": "569dd7283bc59190f2a35593cc8e439b495a76e48bed5ac81c051f0bed0762cc",
+      "sha256": "f396020942c44951738a965599da32ec200927249181ec3ecb36d87310be9ffd",
+      "mime": "text/plain"
+    },
+    {
+      "path": "licenses/Tororo-Hijiki-ReadMe.txt",
+      "sha256": "bf38e8aa58c0e01833e9a6c2be904e4383187488a6a0d047b1eb2eacec38ec56",
       "mime": "text/plain"
     },
     {
@@ -507,6 +662,81 @@
       "path": "rice/Rice.physics3.json",
       "sha256": "72f3c854bf00b551bd379785975571c88239b2da9e6db42a9935bcf4a9f2fa3d",
       "mime": "application/json"
+    },
+    {
+      "path": "tororo/motion/00_idle.motion3.json",
+      "sha256": "02b36a394353859a41156ae8175945ffa50b43b9dda19523bc743460650ffde6",
+      "mime": "application/json"
+    },
+    {
+      "path": "tororo/motion/01.motion3.json",
+      "sha256": "0ab827e837693b0c1c7304e37ef1e186d4d06105bc70776588a610fbb7794995",
+      "mime": "application/json"
+    },
+    {
+      "path": "tororo/motion/02.motion3.json",
+      "sha256": "383ce51eec938380da6c69d01fb7ecd5eb929cfbd4f6b3641e3603c0076ce887",
+      "mime": "application/json"
+    },
+    {
+      "path": "tororo/motion/03.motion3.json",
+      "sha256": "86d0640652c9bea4b2952c0e93012da160f3c68b278e485b204841c0e4134f3d",
+      "mime": "application/json"
+    },
+    {
+      "path": "tororo/motion/04.motion3.json",
+      "sha256": "0c6889e8f85d6436389961c0cb3806933306248fa29d8db3d31a112d299e76b8",
+      "mime": "application/json"
+    },
+    {
+      "path": "tororo/motion/05.motion3.json",
+      "sha256": "e82328ca4d12479abe64ddb16d7959ca583769c56cfdc9f6f956e560eb90475d",
+      "mime": "application/json"
+    },
+    {
+      "path": "tororo/motion/06.motion3.json",
+      "sha256": "87a80cd7441834e7bacb4f7c3bf90cbbefd69e4eba62974c4f75b1fb52de583c",
+      "mime": "application/json"
+    },
+    {
+      "path": "tororo/motion/07.motion3.json",
+      "sha256": "809735f93bf265202901cdd4c9f9eed19e9a5c3a14595fa2190b3502ecf69de9",
+      "mime": "application/json"
+    },
+    {
+      "path": "tororo/motion/08.motion3.json",
+      "sha256": "e676b4262cb971f5c2b614f61fc209c7dbd41d159d836e2afbde64e94fa97ba2",
+      "mime": "application/json"
+    },
+    {
+      "path": "tororo/tororo.2048/texture_00.png",
+      "sha256": "5757babf94c478b0c8dd33b3cd2765cd04c22ba4a21a1cd1ecff57620b5feb66",
+      "mime": "image/png"
+    },
+    {
+      "path": "tororo/tororo.cdi3.json",
+      "sha256": "d30749ba4d520a5e139239ffe2c7f1db892b5201835ac97c983466a00ae232fb",
+      "mime": "application/json"
+    },
+    {
+      "path": "tororo/tororo.moc3",
+      "sha256": "2b028f9769db5d5d1abad0034ecefb1aa8cc0bb16ae699d92392fedacc476af4",
+      "mime": "application/octet-stream"
+    },
+    {
+      "path": "tororo/tororo.model3.json",
+      "sha256": "86158fce36e75f749c3d9097b68f8f49d2a69ea9b35b19e9cd74d3cf05f3f1c9",
+      "mime": "application/json"
+    },
+    {
+      "path": "tororo/tororo.physics3.json",
+      "sha256": "2cb1b16872eb310d5bb0a92e3cdc52b8735b9794c4205b00510d89d6c637f5b3",
+      "mime": "application/json"
+    },
+    {
+      "path": "tororo/tororo.pose3.json",
+      "sha256": "e016dc5f12e24d68b00afa679cad00fb11e8c433efa356ce317f71df57c65279",
+      "mime": "application/json"
     }
   ],
   "sources": [
@@ -518,12 +748,23 @@
       "url": "https://cubism.live2d.com/sample-data/bin/miara/miara_en.zip",
       "license": "Live2D Free Material License and Sample Data Terms; see licenses/Miara-ReadMe.txt",
       "sha256": "021f44d062d7cc1cbe6ac13e25ef7e1b981db187b8b5c4af521f2cba3613d9a4"
+    },
+    {
+      "url": "https://cubism.live2d.com/sample-data/bin/tororo_hijiki/tororo_hijiki_ja.zip",
+      "sha256": "401cf1596180d7f4752ebac653f01b8c05ff88b56bb84706389c0c105aff1dd8",
+      "license": "See licenses/THIRD_PARTY_NOTICES.md. Arisa: personal noncommercial local use only, no redistribution."
+    },
+    {
+      "url": "https://storage.googleapis.com/nizima-docs/apps/nizima-live/archives/nizimaLive2.7.2.zip",
+      "sha256": "f9432551053e54d539047538d02738076a932d4d57c27df09b9fb594b8c8671b",
+      "license": "See licenses/THIRD_PARTY_NOTICES.md. Arisa: personal noncommercial local use only, no redistribution."
     }
   ],
   "modifications": [
     "Framework adapter patch: cancellable shader prepare and per-context release; official shaders unchanged.",
     "Haru.model3.json: removed all four Sound properties; audio omitted from app.",
     "All files extracted from pinned official SDK archive SHA256 67064a7fb1812cf502f5c4a03bfe12cc638c75a621bb4acf06bb28763df06ba0.",
-    "Mao, Hiyori and Rice from pinned SDK; Miara Tap and Flic motion groups merged into TapBody. Audio omitted."
+    "Mao, Hiyori and Rice from pinned SDK; Miara Tap and Flic motion groups merged into TapBody. Audio omitted.",
+    "Tororo and Hijiki non-idle motion groups mapped to TapBody; original motion data unchanged."
   ]
 }

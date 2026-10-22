@@ -75,8 +75,10 @@ export class HaruModel extends CubismUserModel {
       ]);
       for (const group of ["Idle", "TapBody"]) {
         const target = group === "Idle" ? this.motions.idle : this.motions.tap;
-        for (let i = 0; i < settings.getMotionCount(group); i++) {
-          const b = await bytes(settings.getMotionFileName(group, i), signal);
+        // Arisa's official manifest uses an unnamed tap group; preserve its files.
+        const sourceGroup = kind === "arisa" && group === "TapBody" ? "" : group;
+        for (let i = 0; i < settings.getMotionCount(sourceGroup); i++) {
+          const b = await bytes(settings.getMotionFileName(sourceGroup, i), signal);
           const motion = this.loadMotion(
             b,
             b.byteLength,
@@ -84,7 +86,7 @@ export class HaruModel extends CubismUserModel {
             undefined,
             undefined,
             settings,
-            group,
+            sourceGroup,
             i,
           );
           if (!motion) throw new Error("动作加载失败");

@@ -13,6 +13,21 @@ import HaruPreview from "../components/HaruPreview";
 import { CompanionNameSetting } from "../components/CompanionSettings";
 
 const profiles = {
+  arisa: {
+    portrait: new URL("../assets/characters/arisa.png", import.meta.url).href,
+    description: "清新日常，灵动陪伴",
+    tone: "rose",
+  },
+  tororo: {
+    portrait: new URL("../assets/characters/tororo.png", import.meta.url).href,
+    description: "软萌白猫，悠闲相伴",
+    tone: "honey",
+  },
+  hijiki: {
+    portrait: new URL("../assets/characters/hijiki.png", import.meta.url).href,
+    description: "乖巧黑猫，自在陪伴",
+    tone: "blue",
+  },
   haru: {
     portrait: new URL("../assets/characters/haru.png", import.meta.url).href,
     description: "温柔回应，细腻表情",
@@ -79,7 +94,7 @@ export default function CharacterSpace({ snapshot }: { snapshot: Snapshot }) {
         <div className="section-title">
           <div>
             <h2>今天，想和谁一起？</h2>
-            <p className="muted">先看看她的动作，再邀请她来到桌面。</p>
+            <p className="muted">先看看角色的动作，再邀请到桌面。</p>
           </div>
         </div>
         <div className="character-library-grid">
@@ -125,6 +140,9 @@ export default function CharacterSpace({ snapshot }: { snapshot: Snapshot }) {
         </div>
         <p className="character-space-note">
           点击回应 · 完成计划时庆祝 · 休息时轻轻提醒
+        </p>
+        <p className="character-space-note">
+          使用 nizima LIVE 示例模型 · 柊亚里沙 © Live2D Inc. / 插画：かにビーム · 个人非商业使用
         </p>
       </section>
       {preview && (

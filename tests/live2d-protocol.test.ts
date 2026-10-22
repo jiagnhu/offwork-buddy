@@ -1,6 +1,18 @@
 import { test, expect } from 'vitest';
 import { resolveLive2dAsset } from '../src/main/live2d-assets';
 const lock={sdkVersion:'test',frameworkCommit:'test',modelCommit:'test',sources:[],modifications:[],files:[{path:'haru/Haru.model3.json',mime:'application/json',sha256:''}]};
+
+test.each(['arisa', 'tororo', 'hijiki'])('serves locked %s assets but rejects unlisted files', kind => {
+  const path = `${kind}/model.model3.json`;
+  const expanded = {...lock, files:[...lock.files, {path, mime:'application/json', sha256:''}]};
+  expect(resolveLive2dAsset(`buddy-live2d://assets/${path}`, expanded)?.relativePath).toBe(path);
+  expect(resolveLive2dAsset(`buddy-live2d://assets/${kind}/missing.png`, expanded)).toBeNull();
+});
+
+test('serves the original Arisa motion filename containing @', () => {
+  const path = 'arisa/mtn/Tap@body.motion3.json';
+  expect(resolveLive2dAsset(`buddy-live2d://assets/${path}`, {...lock,files:[{path,mime:'application/json',sha256:''}]})).toEqual({relativePath:path,mime:'application/json'});
+});
 test('resolves only exact whitelisted model paths',()=>{
   expect(resolveLive2dAsset('buddy-live2d://assets/haru/Haru.model3.json',lock)).toEqual({relativePath:'haru/Haru.model3.json',mime:'application/json'});
 });

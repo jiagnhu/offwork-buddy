@@ -60,6 +60,7 @@ try {
     };
   });
   for (const [kind, info] of Object.entries(inventory)) {
+    if (process.env.BUDDY_PORTRAIT_KINDS && !process.env.BUDDY_PORTRAIT_KINDS.split(',').includes(kind)) continue;
     await page
       .getByRole("button", { name: `预览 ${info.name}`, exact: true })
       .click();

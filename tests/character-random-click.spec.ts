@@ -2,10 +2,13 @@ import { test, expect } from "@playwright/test";
 import { launchDesktop } from "./desktop-helper";
 import { characterOrder, live2dModels } from "../src/shared/characters";
 
-test("all five characters respond to canvas clicks using only original actions", async () => {
+test("all characters respond to canvas clicks using only original actions", async () => {
   test.setTimeout(150000);
   const s = await launchDesktop(state=>{state.preferences.reducedMotion=true;});
   try {
+    // This test exercises previews; keep the native always-on-top window from
+    // receiving real desktop pointer events while Playwright drives the panel.
+    await s.page.evaluate(() => window.buddy.hideCompanion());
     const errors: string[] = [];
     s.page.on("pageerror", (e) => errors.push(e.message));
     await s.page.evaluate(() => {
@@ -50,7 +53,7 @@ test("all five characters respond to canvas clicks using only original actions",
         await s.page.waitForTimeout(400);
         await expect(dialog.getByRole("alert")).toHaveCount(0);
       }
-      if (kind === "haru" || kind === "mao") {
+      if (kind === "haru" || kind === "mao" || kind === "arisa") {
         await s.page.evaluate(() =>
           window.buddy.setPreferences({ reducedMotion: true }),
         );

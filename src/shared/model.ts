@@ -1,6 +1,6 @@
 export type DateKey = string;
 export type CharacterKind =
-  "pet" | "assistant" | "haru" | "mao" | "hiyori" | "miara" | "rice";
+  "pet" | "assistant" | "haru" | "mao" | "hiyori" | "miara" | "rice" | "arisa" | "tororo" | "hijiki";
 export interface RuleVersion {
   id: string;
   effectiveFrom: DateKey;
@@ -50,7 +50,7 @@ export interface LedgerEntry {
 }
 export interface Preferences {
   haruName?: string;
-  characterNames?: Partial<Record<"mao" | "hiyori" | "miara" | "rice", string>>;
+  characterNames?: Partial<Record<"mao" | "hiyori" | "miara" | "rice" | "arisa" | "tororo" | "hijiki", string>>;
   movementMode: "bottom" | "stationary";
   cardHidden: boolean;
   cardPosition?: { x: number; y: number };

@@ -77,7 +77,7 @@ const characterNickname = z
   .max(20, "名称最多20个字");
 export const preferencesSchema = preferencesV2Schema.extend({
   character: z
-    .enum(["pet", "assistant", "haru", "mao", "hiyori", "miara", "rice"])
+    .enum(["pet", "assistant", "haru", "mao", "hiyori", "miara", "rice", "arisa", "tororo", "hijiki"])
     .transform((kind) =>
       kind === "pet" || kind === "assistant" ? ("haru" as const) : kind,
     ),
@@ -88,6 +88,9 @@ export const preferencesSchema = preferencesV2Schema.extend({
       hiyori: characterNickname.optional(),
       miara: characterNickname.optional(),
       rice: characterNickname.optional(),
+      arisa: characterNickname.optional(),
+      tororo: characterNickname.optional(),
+      hijiki: characterNickname.optional(),
     })
     .strict()
     .optional(),
