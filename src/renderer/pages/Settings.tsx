@@ -264,6 +264,9 @@ export default function Settings({ snapshot }: { snapshot: Snapshot }) {
         <WorkForm snapshot={snapshot} />
       </section>
       <div className="settings-side">
+        <section className="card"><h2>无声提醒</h2><p className="muted">只用气泡和动作提醒，不播放任何声音。</p>
+        {(['lunch','offwork'] as const).map(key=><label className="toggle-row" key={key}>{key==='lunch'?'午休提醒':'下班提醒'}<input type="checkbox" role="switch" checked={p.reminders[key]} onChange={e=>act(()=>window.buddy.setPreferences({reminders:{...p.reminders,[key]:e.target.checked}}))}/></label>)}
+        <label className="field-title">提前提醒<select aria-label="提前提醒" value={p.reminders.leadMinutes} onChange={e=>act(()=>window.buddy.setPreferences({reminders:{...p.reminders,leadMinutes:Number(e.target.value) as 0|5|10}}))}><option value={0}>仅到点提醒</option><option value={5}>提前 5 分钟</option><option value={10}>提前 10 分钟</option></select></label></section>
         <section className="card">
           <h2>让搭子更像你</h2>
           <p className="muted">外观更改会立即生效</p>

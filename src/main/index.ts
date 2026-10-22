@@ -1,4 +1,5 @@
 import {applyPlanAction} from '../core/plans';
+import {startReminderController} from './reminder-controller';
 import {rewardInteraction,unlocks} from '../core/growth';
 import {configureEvents,emitCompanionEvent,stopEvents} from './companion-events';
 import { app, BrowserWindow, dialog, powerMonitor } from "electron";
@@ -294,6 +295,9 @@ else {
         else broadcast();
       };
       const interval = setInterval(tick, 1000);
+      const reminders=startReminderController({getState:()=>state,commit,isVisible:isDesktopVisible,emit:text=>emitCompanionEvent('reminder',text),now:()=>new Date(),exclusive:serial,onError:e=>{notice=e instanceof Error?e.message:'提醒记录保存失败';broadcast()}});
+      powerMonitor.on('resume',()=>void reminders.resume());
+      app.on('before-quit',()=>reminders.stop());
       powerMonitor.on("resume", tick);
       app.on("before-quit", () => clearInterval(interval));
     })
