@@ -65,7 +65,7 @@ export default function Ledger({ snapshot }: { snapshot: Snapshot }) {
                     }[e.rule.mode]
                   }
                 </td>
-                <td className="money-cell">¥ {money(e.amountCents)}</td>
+                <td className="money-cell"><button className="money-link" onClick={()=>window.buddy.openPanel({page:'earnings',date:e.date})}>¥ {money(e.amountCents)}</button></td>
               </tr>
             ))}
           </tbody>

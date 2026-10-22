@@ -17,7 +17,10 @@ const bridge: BuddyBridge = {
   exportBackup: () => invoke("exportBackup"),
   importBackup: () => invoke("importBackup"),
   importCalendar: () => invoke("importCalendar"),
-  openPanel: () => invoke("openPanel"),
+  getEarningsDetail: (d) => invoke('getEarningsDetail',d),
+  openPanel: (target) => invoke("openPanel",target),
+  takeNavigation:()=>invoke('takeNavigation'),
+  onNavigate:(listener)=>{const fn=(_:unknown,target:any)=>listener(target);ipcRenderer.on('buddy:navigate',fn);return ()=>ipcRenderer.removeListener('buddy:navigate',fn)},
   hideCompanion: () => invoke("hideCompanion"),
   showCompanion: () => invoke("showCompanion"),
   onSnapshot: (listener) => {

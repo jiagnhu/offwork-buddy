@@ -10,6 +10,7 @@ import {
   openPanel,
   showCompanion,
   companion,
+  panel,
 } from "./windows";
 import { registerIpc } from "./ipc";
 import type { State, Snapshot } from "../shared/model";
@@ -30,6 +31,9 @@ import {
 } from "../core/ledger";
 import { calculateDay, emptyProgress } from "../core/earnings";
 import { parseJsonStrict } from "../shared/json";
+import { earningsDetail } from '../core/earnings-detail';
+import type {NavigateTarget} from '../shared/bridge';
+let pendingNavigation:NavigateTarget|null=null;
 if (process.env.BUDDY_DATA_DIR)
   app.setPath("userData", path.resolve(process.env.BUDDY_DATA_DIR));
 app.setName("下班搭子");
@@ -257,7 +261,12 @@ else {
             await commit({ ...state, calendar: { ...state.calendar, ...c } });
             return true;
           }),
-        openPanel: () => openPanel(),
+        getEarningsDetail:(date:unknown)=>earningsDetail(state,dateSchema.parse(date),new Date()),
+        takeNavigation:()=>{const target=pendingNavigation;pendingNavigation=null;return target},
+        openPanel: (input:unknown) => {
+          if(input!==undefined){const target=z.union([z.object({page:z.literal('calendar'),date:dateSchema}),z.object({page:z.literal('earnings'),date:dateSchema}),z.object({page:z.literal('growth')})]).parse(input);pendingNavigation=target;panel.webContents.send('buddy:navigate',target);}
+          openPanel();
+        },
         hideCompanion: () => companion.hide(),
         showCompanion: () => showCompanion(),
       });

@@ -1,4 +1,6 @@
 import Companion from "./pages/Companion";
+import EarningsDetail from './components/EarningsDetail';
+import type {NavigateTarget} from '../shared/bridge';
 import { useEffect, useState } from "react";
 import {
   LayoutDashboard,
@@ -28,6 +30,13 @@ export default function App() {
   const { snapshot, error } = useSnapshot();
   const [page, setPage] = useState("overview");
   const [actionError, setActionError] = useState("");
+  const [detailDate,setDetailDate]=useState<string|null>(null),[calendarDate,setCalendarDate]=useState<string|undefined>();
+  useEffect(()=>{
+    if(location.hash) return;
+    const navigate=(target:NavigateTarget)=>{if(target.page==='earnings')setDetailDate(target.date);else {setPage(target.page);if(target.page==='calendar')setCalendarDate(target.date)}};
+    const off=window.buddy.onNavigate(target=>{navigate(target);void window.buddy.takeNavigation()});
+    void window.buddy.takeNavigation().then(t=>{if(t)navigate(t)});return off;
+  },[]);
   useEffect(() => {
     if (snapshot) {
       document.documentElement.dataset.theme = snapshot.state.preferences.theme;
@@ -156,13 +165,14 @@ export default function App() {
         {page === "overview" ? (
           <Overview snapshot={snapshot} navigate={setPage} />
         ) : page === "calendar" ? (
-          <Calendar snapshot={snapshot} />
+          <Calendar snapshot={snapshot} initialDate={calendarDate} />
         ) : page === "ledger" ? (
           <Ledger snapshot={snapshot} />
         ) : (
           <Settings snapshot={snapshot} />
         )}
       </main>
+      {detailDate&&<EarningsDetail date={detailDate} snapshot={snapshot} onClose={()=>setDetailDate(null)} onLedger={()=>{setDetailDate(null);setPage('ledger')}}/>}
     </div>
   );
 }

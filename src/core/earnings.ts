@@ -16,20 +16,16 @@ export const emptyProgress: DayProgress = {
   fraction: 0,
   calendarMissing: false,
 };
-export function calculateDay(
+export function calculateDayDetail(
   date: DateKey,
   now: Date,
   rule: RuleVersion,
   calendar: CalendarData,
   overrides: Record<DateKey, boolean>,
-): DayProgress {
+) {
   const info = resolveDay(date, rule, calendar, overrides);
   if (!info.workday)
-    return {
-      ...emptyProgress,
-      status: "rest",
-      calendarMissing: info.calendarMissing,
-    };
+    return {progress:{...emptyProgress,status:"rest" as const,calendarMissing:info.calendarMissing},denominator:null,totalSeconds:0,elapsedSeconds:0,dailyBudgetDecimal:"0",dayInfo:info};
   const start = rule.start * 60,
     end = rule.end * 60;
   const bs = rule.breakStart === null ? end : rule.breakStart * 60,
@@ -42,8 +38,10 @@ export function calculateDay(
     Math.max(0, Math.min(seconds, be) - bs);
   const fraction = total > 0 ? Math.max(0, Math.min(1, elapsed / total)) : 0;
   let budget = new Decimal(rule.amount);
+  let denominator: number|null = null;
   if (rule.mode === "monthly") {
     const count = countScheduledDays(date.slice(0, 7), rule);
+    denominator=count;
     budget = count ? budget.div(count) : new Decimal(0);
   }
   if (rule.mode === "hourly") budget = budget.mul(total).div(3600);
@@ -55,7 +53,7 @@ export function calculateDay(
         : seconds >= bs && seconds < be
           ? "break"
           : "working";
-  return {
+  const progress: DayProgress = {
     status,
     countdownTarget:
       seconds < bs && rule.breakStart !== null
@@ -83,4 +81,6 @@ export function calculateDay(
     fraction,
     calendarMissing: info.calendarMissing,
   };
+ return {progress,denominator,totalSeconds:total,elapsedSeconds:Math.round(fraction*total),dailyBudgetDecimal:budget.toString(),dayInfo:info};
 }
+export function calculateDay(...args: Parameters<typeof calculateDayDetail>): DayProgress { return calculateDayDetail(...args).progress; }

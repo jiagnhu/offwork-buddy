@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import {
   ChevronLeft,
   ChevronRight,
@@ -11,13 +11,14 @@ import { monthDates, weekday } from "../../core/date";
 import { resolveDay } from "../../core/calendar";
 import { ruleForDate } from "../../core/ledger";
 import { defaultRule } from "../../shared/defaults";
-export default function Calendar({ snapshot }: { snapshot: Snapshot }) {
+export default function Calendar({ snapshot,initialDate }: { snapshot: Snapshot;initialDate?:string }) {
   const [month, setMonth] = useState(snapshot.today.slice(0, 7)),
     [selected, setSelected] = useState<string | null>(null),
     [draft, setDraft] = useState(""),
     [busy, setBusy] = useState(false),
     [error, setError] = useState("");
   const state = snapshot.state;
+  useEffect(()=>{if(initialDate){setMonth(initialDate.slice(0,7));setSelected(initialDate)}},[initialDate]);
   const dates = monthDates(month);
   const rule = ruleForDate(state, selected ?? dates[0]) ??
     state.rules.at(-1) ?? {

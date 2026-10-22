@@ -20,6 +20,7 @@ export function settleThrough(state: State, now: Date): State {
     if (!rule) continue;
     const day = resolveDay(d, rule, state.calendar, state.overrides);
     result.ledger[d] = {
+      algorithm:'normal-schedule-v1',
       date: d,
       ruleId: rule.id,
       workday: day.workday,

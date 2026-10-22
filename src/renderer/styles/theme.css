@@ -113,6 +113,8 @@ h2 {
 h3 {
   font-size: 16px;
 }
+.money-link { background:none; border:0; padding:0; color:inherit; font:inherit; text-align:inherit; cursor:pointer; }
+.money-link:hover { text-decoration:underline; text-underline-offset:5px; }
 .muted,
 .hint {
   color: var(--muted);
