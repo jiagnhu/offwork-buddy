@@ -11,6 +11,12 @@ export function openPanel() {
   panel.show();
   panel.focus();
 }
+export function showCompanion() {
+  applyPreferences(currentPreferences);
+  if (companion.isMinimized()) companion.restore();
+  companion.show();
+  if (currentPreferences.alwaysOnTop) companion.moveTop();
+}
 export function createWindows(
   prefs: Preferences,
   onPosition: (p: { x: number; y: number }) => void,
@@ -90,7 +96,7 @@ export function createWindows(
       {
         label: "显示 / 隐藏桌面伙伴",
         click: () =>
-          companion.isVisible() ? companion.hide() : companion.show(),
+          companion.isVisible() ? companion.hide() : showCompanion(),
       },
       { label: "切换置顶", click: onToggleTop },
       { type: "separator" },
@@ -108,20 +114,27 @@ export function createWindows(
   applyPreferences(prefs);
 }
 export function applyPreferences(prefs: Preferences) {
+  const previous = currentPreferences;
   currentPreferences = prefs;
   if (!companion || companion.isDestroyed()) return;
-  companion.setAlwaysOnTop(prefs.alwaysOnTop, "floating");
+  if (companion.isAlwaysOnTop() !== prefs.alwaysOnTop)
+    companion.setAlwaysOnTop(prefs.alwaysOnTop, "floating");
   const bounds = companion.getBounds();
-  companion.setBounds(
-    clampBounds(
-      {
-        ...bounds,
-        width: Math.round(360 * prefs.scale),
-        height: Math.round((prefs.collapsed ? 290 : 500) * prefs.scale),
-      },
-      screen.getAllDisplays().map((d) => d.workArea),
-    ),
+  const target = clampBounds(
+    {
+      ...bounds,
+      width: Math.round(360 * prefs.scale),
+      height: Math.round((prefs.collapsed ? 290 : 500) * prefs.scale),
+    },
+    screen.getAllDisplays().map((d) => d.workArea),
   );
-  if (app.isPackaged)
+  if (
+    bounds.x !== target.x ||
+    bounds.y !== target.y ||
+    bounds.width !== target.width ||
+    bounds.height !== target.height
+  )
+    companion.setBounds(target);
+  if (app.isPackaged && (!previous || previous.autoStart !== prefs.autoStart))
     app.setLoginItemSettings({ openAtLogin: prefs.autoStart });
 }

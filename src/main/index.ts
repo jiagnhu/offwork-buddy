@@ -8,6 +8,7 @@ import {
   createWindows,
   applyPreferences,
   openPanel,
+  showCompanion,
   companion,
 } from "./windows";
 import { registerIpc } from "./ipc";
@@ -257,7 +258,7 @@ else {
           }),
         openPanel: () => openPanel(),
         hideCompanion: () => companion.hide(),
-        showCompanion: () => companion.show(),
+        showCompanion: () => showCompanion(),
       });
       const tick = () => {
         if (dateKey(new Date()) !== lastDate)
