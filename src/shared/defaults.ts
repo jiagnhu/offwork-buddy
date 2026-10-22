@@ -18,7 +18,8 @@ export function defaultRule(now = new Date()): RuleInput {
 export function initialState(now = new Date()): State {
   return {
     schemaVersion: 2,
-    growth:{points:0,days:{}},reminderHistory:{},
+    growth: { points: 0, days: {} },
+    reminderHistory: {},
     configured: false,
     startDate: dateKey(now),
     rules: [],
@@ -27,7 +28,10 @@ export function initialState(now = new Date()): State {
     plans: {},
     ledger: {},
     preferences: {
-      movementMode:'bottom',cardHidden:false,reminders:{lunch:true,offwork:true,leadMinutes:5},accessory:'none',
+      movementMode: "bottom",
+      cardHidden: false,
+      reminders: { lunch: true, offwork: true, leadMinutes: 5 },
+      accessory: "none",
       theme: "light",
       character: "pet",
       reducedMotion: false,

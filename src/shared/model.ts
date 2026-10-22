@@ -66,10 +66,26 @@ export interface DailyPlan {
   text: string;
   completed: boolean;
 }
-export interface CompanionEvent {id:string;kind:'interaction'|'plan-complete'|'reminder';text:string;createdAt:number;durationMs:number}
+export interface CompanionEvent {
+  id: string;
+  kind: "interaction" | "plan-complete" | "reminder";
+  text: string;
+  createdAt: number;
+  durationMs: number;
+}
 export interface State {
   schemaVersion: 2;
-  growth: { points: number; days: Record<DateKey, { interacted: boolean; rewardedPlanIds: string[]; planRewardCount: number }> };
+  growth: {
+    points: number;
+    days: Record<
+      DateKey,
+      {
+        interacted: boolean;
+        rewardedPlanIds: string[];
+        planRewardCount: number;
+      }
+    >;
+  };
   reminderHistory: Record<string, number>;
   configured: boolean;
   startDate: DateKey;
@@ -80,13 +96,27 @@ export interface State {
   ledger: Record<DateKey, LedgerEntry>;
   preferences: Preferences;
 }
-export type LegacyState = Omit<State, "schemaVersion" | "growth" | "reminderHistory" | "preferences"> & {
+export type LegacyState = Omit<
+  State,
+  "schemaVersion" | "growth" | "reminderHistory" | "preferences"
+> & {
   schemaVersion: 1;
-  preferences: Omit<Preferences, "movementMode" | "cardHidden" | "cardPosition" | "displayId" | "reminders" | "accessory">;
+  preferences: Omit<
+    Preferences,
+    | "movementMode"
+    | "cardHidden"
+    | "cardPosition"
+    | "displayId"
+    | "reminders"
+    | "accessory"
+  >;
 };
 export interface Snapshot {
-  behavior:{phase:'idle'|'walking'|'resting'|'reacting'|'dragging'|'paused';direction:'left'|'right'};
-  desktop: {visible:boolean;paused:boolean};
+  behavior: {
+    phase: "idle" | "walking" | "resting" | "reacting" | "dragging" | "paused";
+    direction: "left" | "right";
+  };
+  desktop: { visible: boolean; paused: boolean };
   state: State;
   progress: DayProgress;
   settledCents: number;

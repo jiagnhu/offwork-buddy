@@ -29,12 +29,19 @@ test("companion switches characters, collapses, scales and respects reduced moti
     await page.getByRole("button", { name: "和小沐互动" }).click();
     await expect(page.locator(".speech-bubble")).toBeVisible();
     await page.getByRole("button", { name: "收起信息卡" }).click();
-    expect(await app.evaluate(({BrowserWindow})=>BrowserWindow.getAllWindows().find(w=>w.webContents.getURL().endsWith('#desktop-card'))!.isVisible())).toBe(false);
+    expect(
+      await app.evaluate(({ BrowserWindow }) =>
+        BrowserWindow.getAllWindows()
+          .find((w) => w.webContents.getURL().endsWith("#desktop-card"))!
+          .isVisible(),
+      ),
+    ).toBe(false);
     await page.evaluate(() =>
       window.buddy.setPreferences({
         scale: 1.25,
         reducedMotion: true,
-        collapsed: false,cardHidden:false,
+        collapsed: false,
+        cardHidden: false,
       }),
     );
     await expect(page.locator("html")).toHaveAttribute(

@@ -1,10 +1,18 @@
-import Accessories from './Accessories';
+import Accessories from "./Accessories";
 import type { CharacterProps } from "./types";
-export default function Pet({ status, onInteract, pose='idle', direction='right', accessory='none' }: CharacterProps) {
+export default function Pet({
+  status,
+  onInteract,
+  pose = "idle",
+  direction = "right",
+  accessory = "none",
+}: CharacterProps) {
   return (
     <button
       className="character-button pet-character"
-      data-pose={pose} data-direction={direction} data-accessory={accessory}
+      data-pose={pose}
+      data-direction={direction}
+      data-accessory={accessory}
       aria-label="和年糕互动"
       onClick={onInteract}
     >
@@ -135,6 +143,7 @@ export default function Pet({ status, onInteract, pose='idle', direction='right'
           <path d="M163 204L176 203" stroke="#D9F3E7" strokeWidth="3" />
           <circle cx="135" cy="189" r="6" fill="#E7C67A" />
           <path d="M132 189H138" stroke="#A68F53" strokeWidth="1.5" />
+          <Accessories accessory={accessory} pose={pose} />
         </g>
         {status === "finished" && (
           <g className="floating-sparkle" fill="#D7C077">
@@ -142,7 +151,6 @@ export default function Pet({ status, onInteract, pose='idle', direction='right'
             <path d="M41 93L43 100L50 103L43 106L41 113L38 106L32 103L38 100Z" />
           </g>
         )}
-        <Accessories accessory={accessory} pose={pose} />
       </svg>
     </button>
   );

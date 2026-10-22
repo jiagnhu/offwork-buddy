@@ -110,7 +110,18 @@ export default function Overview({
           <span className="muted">今日预计收入</span>
           <strong className="stat-value">
             {" "}
-            <button className="money-link" aria-label="查看今日工资明细" onClick={()=>window.buddy.openPanel({page:'earnings',date:snapshot.today})}><small>¥</small> {money(progress.earnedCents)}</button>
+            <button
+              className="money-link"
+              aria-label="查看今日工资明细"
+              onClick={() =>
+                window.buddy.openPanel({
+                  page: "earnings",
+                  date: snapshot.today,
+                })
+              }
+            >
+              <small>¥</small> {money(progress.earnedCents)}
+            </button>
           </strong>
           <p>
             <i className="live-dot" />
@@ -125,7 +136,18 @@ export default function Overview({
           </span>
           <span className="muted">累计预计收入</span>
           <strong className="stat-value">
-            <button className="money-link" aria-label="查看累计收入明细" onClick={()=>window.buddy.openPanel({page:'earnings',date:snapshot.today})}><small>¥</small> {money(snapshot.totalCents)}</button>
+            <button
+              className="money-link"
+              aria-label="查看累计收入明细"
+              onClick={() =>
+                window.buddy.openPanel({
+                  page: "earnings",
+                  date: snapshot.today,
+                })
+              }
+            >
+              <small>¥</small> {money(snapshot.totalCents)}
+            </button>
           </strong>
           <p>
             包含今日进度 · 从 {state.startDate.slice(5).replace("-", "/")} 开始

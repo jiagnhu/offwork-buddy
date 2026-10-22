@@ -54,14 +54,19 @@ test("daily plans can be completed, reopened and survive restart", async () => {
     await check.click();
     await expect(check).toBeChecked();
     await page.screenshot({ path: "test-results/daily-plans.png" });
-    const companion = app.windows().find((w) => w.url().endsWith("#desktop-card"))!;
+    const companion = app
+      .windows()
+      .find((w) => w.url().endsWith("#desktop-card"))!;
     await expect(companion.locator(".floating-card")).not.toContainText(
       "累计预计",
     );
     await expect(companion.locator(".floating-card")).not.toContainText(
       "OFFWORK BUDDY",
     );
-    await companion.screenshot({ path: "test-results/companion-1.1.png", omitBackground: true });
+    await companion.screenshot({
+      path: "test-results/companion-1.1.png",
+      omitBackground: true,
+    });
     await app.close();
     app = await launch();
     await expect.poll(() => app.windows().length).toBe(3);
@@ -83,4 +88,3 @@ test("daily plans can be completed, reopened and survive restart", async () => {
     await rm(data, { recursive: true, force: true });
   }
 });
-

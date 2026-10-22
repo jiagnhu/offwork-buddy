@@ -13,11 +13,21 @@ export async function loadState(directory: string): Promise<LoadResult> {
   const primary = path.join(directory, "state.json");
   // Upgrade backup errors must not be mistaken for corrupt-primary recovery.
   let original: string | undefined;
-  try { original = await readFile(primary, 'utf8'); } catch(e) { if((e as NodeJS.ErrnoException).code!=='ENOENT') throw e; }
-  if(original) {
-    let raw: unknown; try { raw=parseJsonStrict(original); parseState(raw); } catch { raw=undefined; /* recovered below */ }
-    if((raw as {schemaVersion?:number}|undefined)?.schemaVersion===1) {
-      await preserveLegacy(directory,original);
+  try {
+    original = await readFile(primary, "utf8");
+  } catch (e) {
+    if ((e as NodeJS.ErrnoException).code !== "ENOENT") throw e;
+  }
+  if (original) {
+    let raw: unknown;
+    try {
+      raw = parseJsonStrict(original);
+      parseState(raw);
+    } catch {
+      raw = undefined; /* recovered below */
+    }
+    if ((raw as { schemaVersion?: number } | undefined)?.schemaVersion === 1) {
+      await preserveLegacy(directory, original);
     }
   }
   try {
@@ -45,7 +55,11 @@ export async function loadState(directory: string): Promise<LoadResult> {
     }
     try {
       const state = parseState(parseJsonStrict(backupText));
-      if ((parseJsonStrict(backupText) as {schemaVersion:number}).schemaVersion===1) await preserveLegacy(directory,backupText);
+      if (
+        (parseJsonStrict(backupText) as { schemaVersion: number })
+          .schemaVersion === 1
+      )
+        await preserveLegacy(directory, backupText);
       if (!missingPrimary)
         await copyFile(
           primary,
@@ -70,10 +84,14 @@ export async function loadState(directory: string): Promise<LoadResult> {
     }
   }
 }
-async function preserveLegacy(directory:string,text:string) {
-  const file=path.join(directory,'state.pre-v2.json');
-  try { await writeFile(file,text,{flag:'wx'}); }
-  catch(e) { if((e as NodeJS.ErrnoException).code!=='EEXIST') throw e; await readFile(file,'utf8'); }
+async function preserveLegacy(directory: string, text: string) {
+  const file = path.join(directory, "state.pre-v2.json");
+  try {
+    await writeFile(file, text, { flag: "wx" });
+  } catch (e) {
+    if ((e as NodeJS.ErrnoException).code !== "EEXIST") throw e;
+    await readFile(file, "utf8");
+  }
 }
 export async function saveState(
   directory: string,

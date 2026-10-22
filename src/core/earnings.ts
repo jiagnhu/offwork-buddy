@@ -25,7 +25,18 @@ export function calculateDayDetail(
 ) {
   const info = resolveDay(date, rule, calendar, overrides);
   if (!info.workday)
-    return {progress:{...emptyProgress,status:"rest" as const,calendarMissing:info.calendarMissing},denominator:null,totalSeconds:0,elapsedSeconds:0,dailyBudgetDecimal:"0",dayInfo:info};
+    return {
+      progress: {
+        ...emptyProgress,
+        status: "rest" as const,
+        calendarMissing: info.calendarMissing,
+      },
+      denominator: null,
+      totalSeconds: 0,
+      elapsedSeconds: 0,
+      dailyBudgetDecimal: "0",
+      dayInfo: info,
+    };
   const start = rule.start * 60,
     end = rule.end * 60;
   const bs = rule.breakStart === null ? end : rule.breakStart * 60,
@@ -38,10 +49,10 @@ export function calculateDayDetail(
     Math.max(0, Math.min(seconds, be) - bs);
   const fraction = total > 0 ? Math.max(0, Math.min(1, elapsed / total)) : 0;
   let budget = new Decimal(rule.amount);
-  let denominator: number|null = null;
+  let denominator: number | null = null;
   if (rule.mode === "monthly") {
     const count = countScheduledDays(date.slice(0, 7), rule);
-    denominator=count;
+    denominator = count;
     budget = count ? budget.div(count) : new Decimal(0);
   }
   if (rule.mode === "hourly") budget = budget.mul(total).div(3600);
@@ -81,6 +92,17 @@ export function calculateDayDetail(
     fraction,
     calendarMissing: info.calendarMissing,
   };
- return {progress,denominator,totalSeconds:total,elapsedSeconds:Math.round(fraction*total),dailyBudgetDecimal:budget.toString(),dayInfo:info};
+  return {
+    progress,
+    denominator,
+    totalSeconds: total,
+    elapsedSeconds: Math.round(fraction * total),
+    dailyBudgetDecimal: budget.toString(),
+    dayInfo: info,
+  };
 }
-export function calculateDay(...args: Parameters<typeof calculateDayDetail>): DayProgress { return calculateDayDetail(...args).progress; }
+export function calculateDay(
+  ...args: Parameters<typeof calculateDayDetail>
+): DayProgress {
+  return calculateDayDetail(...args).progress;
+}

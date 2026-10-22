@@ -1,8 +1,13 @@
-import {startCompanionController} from './companion-controller';
-import {applyPlanAction} from '../core/plans';
-import {startReminderController} from './reminder-controller';
-import {rewardInteraction,unlocks} from '../core/growth';
-import {configureEvents,emitCompanionEvent,stopEvents,reactionUntil} from './companion-events';
+import { startCompanionController } from "./companion-controller";
+import { applyPlanAction } from "../core/plans";
+import { startReminderController } from "./reminder-controller";
+import { rewardInteraction, unlocks } from "../core/growth";
+import {
+  configureEvents,
+  emitCompanionEvent,
+  stopEvents,
+  reactionUntil,
+} from "./companion-events";
 import { app, BrowserWindow, dialog, powerMonitor, screen } from "electron";
 import { readFile, writeFile, stat } from "node:fs/promises";
 import path from "node:path";
@@ -14,9 +19,16 @@ import {
   applyPreferences,
   openPanel,
   showCompanion,
-  hideCompanion, recallCompanion, isDesktopVisible, onDesktopVisibility,
+  hideCompanion,
+  recallCompanion,
+  isDesktopVisible,
+  onDesktopVisibility,
   companion,
-  panel, desktopCard, moveCharacter, onRecall,
+  panel,
+  desktopCard,
+  moveCharacter,
+  onRecall,
+  onCardClosed,
 } from "./windows";
 import { registerIpc } from "./ipc";
 import type { State, Snapshot } from "../shared/model";
@@ -37,14 +49,14 @@ import {
 } from "../core/ledger";
 import { calculateDay, emptyProgress } from "../core/earnings";
 import { parseJsonStrict } from "../shared/json";
-import { earningsDetail } from '../core/earnings-detail';
-import type {NavigateTarget} from '../shared/bridge';
-let pendingNavigation:NavigateTarget|null=null;
+import { earningsDetail } from "../core/earnings-detail";
+import type { NavigateTarget } from "../shared/bridge";
+let pendingNavigation: NavigateTarget | null = null;
 if (process.env.BUDDY_DATA_DIR)
   app.setPath("userData", path.resolve(process.env.BUDDY_DATA_DIR));
 app.setName("下班搭子");
 let state: State;
-let behavior:Snapshot["behavior"]={phase:"idle",direction:"right"};
+let behavior: Snapshot["behavior"] = { phase: "idle", direction: "right" };
 let notice: string | null = null;
 let lastDate = "";
 let queue = Promise.resolve();
@@ -74,7 +86,12 @@ function snapshot(): Snapshot {
   return {
     state,
     behavior,
-    desktop:{visible:isDesktopVisible(),paused:state.preferences.movementMode==="stationary"||state.preferences.reducedMotion},
+    desktop: {
+      visible: isDesktopVisible(),
+      paused:
+        state.preferences.movementMode === "stationary" ||
+        state.preferences.reducedMotion,
+    },
     progress,
     settledCents,
     totalCents: settledCents + (state.ledger[today] ? 0 : progress.earnedCents),
@@ -89,8 +106,12 @@ function broadcast() {
   return s;
 }
 async function commit(next: State) {
-  const unlocked=unlocks(next.growth.points);
-  if(next.preferences.accessory!=="none"&&!unlocked[next.preferences.accessory]) throw new Error("这个配饰尚未解锁");
+  const unlocked = unlocks(next.growth.points);
+  if (
+    next.preferences.accessory !== "none" &&
+    !unlocked[next.preferences.accessory]
+  )
+    throw new Error("这个配饰尚未解锁");
   try {
     await saveState(directory, next);
   } catch (error) {
@@ -145,11 +166,14 @@ else {
       lastDate = dateKey(new Date());
       createWindows(
         state.preferences,
-        (p,kind) => {
+        (p, kind) => {
           void serial(() =>
             commit({
               ...state,
-              preferences: { ...state.preferences, [kind==="card"?"cardPosition":"position"]: p },
+              preferences: {
+                ...state.preferences,
+                [kind === "card" ? "cardPosition" : "position"]: p,
+              },
             }),
           ).catch((e) => {
             notice = e.message;
@@ -168,9 +192,33 @@ else {
           ).catch(() => openPanel());
         },
       );
-      onDesktopVisibility(()=>{if(!isDesktopVisible())stopEvents();broadcast()});
-      configureEvents(e=>{for(const w of BrowserWindow.getAllWindows())w.webContents.send('buddy:companion-event',e)},()=>companion.isVisible());
-      app.on('before-quit',stopEvents);
+      onCardClosed(() => {
+        void serial(() =>
+          commit({
+            ...state,
+            preferences: {
+              ...state.preferences,
+              cardHidden: true,
+              collapsed: false,
+            },
+          }),
+        ).catch((e) => {
+          notice = e.message;
+          broadcast();
+        });
+      });
+      onDesktopVisibility(() => {
+        if (!isDesktopVisible()) stopEvents();
+        broadcast();
+      });
+      configureEvents(
+        (e) => {
+          for (const w of BrowserWindow.getAllWindows())
+            w.webContents.send("buddy:companion-event", e);
+        },
+        () => companion.isVisible(),
+      );
+      app.on("before-quit", stopEvents);
       registerIpc({
         getSnapshot: () => snapshot(),
         saveSettings: (input: unknown) =>
@@ -214,15 +262,34 @@ else {
             else next.overrides[d] = v;
             return commit(next);
           }),
-        updatePlan: (date:unknown,input:unknown)=>serial(async()=>{
-          const d=dateSchema.parse(date), action=planActionSchema.parse(input);
-          const previous=state.plans[d]?.find(p=>p.id===action.id)?.completed;
-          const next=applyPlanAction(state,d,action,new Date());
-          const result=await commit(next);
-          if(action.type==='complete'&&action.completed&&!previous&&d===dateKey(new Date()))emitCompanionEvent('plan-complete','又完成了一件事，做得很好！');
-          return result;
-        }),
-        interact:()=>serial(async()=>{const next=rewardInteraction(state,new Date());const result=next.growth.points!==state.growth.points?await commit(next):snapshot();emitCompanionEvent('interaction','我在这里陪着你，慢慢来就好。');return result}),
+        updatePlan: (date: unknown, input: unknown) =>
+          serial(async () => {
+            const d = dateSchema.parse(date),
+              action = planActionSchema.parse(input);
+            const previous = state.plans[d]?.find(
+              (p) => p.id === action.id,
+            )?.completed;
+            const next = applyPlanAction(state, d, action, new Date());
+            const result = await commit(next);
+            if (
+              action.type === "complete" &&
+              action.completed &&
+              !previous &&
+              d === dateKey(new Date())
+            )
+              emitCompanionEvent("plan-complete", "又完成了一件事，做得很好！");
+            return result;
+          }),
+        interact: () =>
+          serial(async () => {
+            const next = rewardInteraction(state, new Date());
+            const result =
+              next.growth.points !== state.growth.points
+                ? await commit(next)
+                : snapshot();
+            emitCompanionEvent("interaction", "我在这里陪着你，慢慢来就好。");
+            return result;
+          }),
         recalculate: (from: unknown, to: unknown) =>
           serial(async () => {
             const f = dateSchema.parse(from),
@@ -275,30 +342,93 @@ else {
             await commit({ ...state, calendar: { ...state.calendar, ...c } });
             return true;
           }),
-        getEarningsDetail:(date:unknown)=>earningsDetail(state,dateSchema.parse(date),new Date()),
-        takeNavigation:()=>{const target=pendingNavigation;pendingNavigation=null;return target},
-        openPanel: (input:unknown) => {
-          if(input!==undefined){const target=z.union([z.object({page:z.literal('calendar'),date:dateSchema}),z.object({page:z.literal('earnings'),date:dateSchema}),z.object({page:z.literal('growth')})]).parse(input);pendingNavigation=target;panel.webContents.send('buddy:navigate',target);}
+        getEarningsDetail: (date: unknown) =>
+          earningsDetail(state, dateSchema.parse(date), new Date()),
+        takeNavigation: () => {
+          const target = pendingNavigation;
+          pendingNavigation = null;
+          return target;
+        },
+        openPanel: (input: unknown) => {
+          if (input !== undefined) {
+            const target = z
+              .union([
+                z.object({ page: z.literal("calendar"), date: dateSchema }),
+                z.object({ page: z.literal("earnings"), date: dateSchema }),
+                z.object({ page: z.literal("growth") }),
+              ])
+              .parse(input);
+            pendingNavigation = target;
+            panel.webContents.send("buddy:navigate", target);
+          }
           openPanel();
         },
         hideCompanion: () => hideCompanion(),
-        recallCompanion:()=>recallCompanion(),
-        setCardHidden:(hidden:unknown)=>serial(()=>commit({...state,preferences:{...state.preferences,cardHidden:z.boolean().parse(hidden),collapsed:false}})),
+        recallCompanion: () => recallCompanion(),
+        setCardHidden: (hidden: unknown) =>
+          serial(() =>
+            commit({
+              ...state,
+              preferences: {
+                ...state.preferences,
+                cardHidden: z.boolean().parse(hidden),
+                collapsed: false,
+              },
+            }),
+          ),
         showCompanion: () => showCompanion(),
       });
-      let suspended=false;
-      let activeDisplay=screen.getDisplayMatching(companion.getBounds()).id;
-      const mover=startCompanionController({window:companion,move:moveCharacter,publish:b=>{behavior={phase:b.phase,direction:b.direction};broadcast()},getInput:()=>{
-        const displays=screen.getAllDisplays();const display=displays.find(d=>d.id===activeDisplay)??screen.getPrimaryDisplay();
-        const bounds=companion.getBounds();
-        return {now:Date.now(),random:Math.random(),workArea:display.workArea,windowSize:{width:bounds.width,height:bounds.height},cardBounds:desktopCard.isVisible()?desktopCard.getBounds():null,pointer:screen.getCursorScreenPoint(),visible:isDesktopVisible(),suspended,reducedMotion:state.preferences.reducedMotion,mode:state.preferences.movementMode,dragging:false,reactionUntil:reactionUntil()};
-      }});
-      companion.on('moved',()=>{activeDisplay=screen.getDisplayMatching(companion.getBounds()).id});
-      onRecall(()=>{activeDisplay=screen.getDisplayMatching(companion.getBounds()).id;mover.recall()});
-      powerMonitor.on('suspend',()=>{suspended=true;mover.pause()});
-      powerMonitor.on('resume',()=>{suspended=false;mover.resume()});
-      screen.on('display-removed',()=>mover.resume());screen.on('display-metrics-changed',()=>mover.resume());
-      app.on('before-quit',()=>mover.stop());
+      let suspended = false;
+      let activeDisplay = screen.getDisplayMatching(companion.getBounds()).id;
+      const mover = startCompanionController({
+        window: companion,
+        move: moveCharacter,
+        publish: (b) => {
+          behavior = { phase: b.phase, direction: b.direction };
+          broadcast();
+        },
+        getInput: () => {
+          const displays = screen.getAllDisplays();
+          const display =
+            displays.find((d) => d.id === activeDisplay) ??
+            screen.getPrimaryDisplay();
+          const bounds = companion.getBounds();
+          return {
+            now: Date.now(),
+            random: Math.random(),
+            workArea: display.workArea,
+            windowSize: { width: bounds.width, height: bounds.height },
+            cardBounds: desktopCard.isVisible()
+              ? desktopCard.getBounds()
+              : null,
+            pointer: screen.getCursorScreenPoint(),
+            visible: isDesktopVisible(),
+            suspended,
+            reducedMotion: state.preferences.reducedMotion,
+            mode: state.preferences.movementMode,
+            dragging: false,
+            reactionUntil: reactionUntil(),
+          };
+        },
+      });
+      companion.on("moved", () => {
+        activeDisplay = screen.getDisplayMatching(companion.getBounds()).id;
+      });
+      onRecall(() => {
+        activeDisplay = screen.getDisplayMatching(companion.getBounds()).id;
+        mover.recall();
+      });
+      powerMonitor.on("suspend", () => {
+        suspended = true;
+        mover.pause();
+      });
+      powerMonitor.on("resume", () => {
+        suspended = false;
+        mover.resume();
+      });
+      screen.on("display-removed", () => mover.resume());
+      screen.on("display-metrics-changed", () => mover.resume());
+      app.on("before-quit", () => mover.stop());
       const tick = () => {
         if (dateKey(new Date()) !== lastDate)
           void serial(async () => {
@@ -311,11 +441,47 @@ else {
         else broadcast();
       };
       const interval = setInterval(tick, 1000);
-      const reminders=startReminderController({getState:()=>state,commit,isVisible:isDesktopVisible,emit:text=>emitCompanionEvent('reminder',text),now:()=>new Date(),exclusive:serial,onError:e=>{notice=e instanceof Error?e.message:'提醒记录保存失败';broadcast()}});
-      powerMonitor.on('resume',()=>void reminders.resume());
-      app.on('before-quit',()=>reminders.stop());
+      const reminders = startReminderController({
+        getState: () => state,
+        commit,
+        isVisible: isDesktopVisible,
+        emit: (text) => emitCompanionEvent("reminder", text),
+        now: () => new Date(),
+        exclusive: serial,
+        onError: (e) => {
+          notice = e instanceof Error ? e.message : "提醒记录保存失败";
+          broadcast();
+        },
+      });
+      powerMonitor.on("resume", () => void reminders.resume());
+      app.on("before-quit", () => reminders.stop());
       powerMonitor.on("resume", tick);
       app.on("before-quit", () => clearInterval(interval));
+      let exitFlushed = false;
+      app.on("before-quit", (event) => {
+        if (exitFlushed) return;
+        event.preventDefault();
+        stopEvents();
+        void serial(async () => {
+          try {
+            const c = companion.getBounds(),
+              card = desktopCard.getBounds();
+            await saveState(directory, {
+              ...state,
+              preferences: {
+                ...state.preferences,
+                position: { x: c.x, y: c.y },
+                cardPosition: { x: card.x, y: card.y },
+              },
+            });
+          } catch (e) {
+            console.error("Failed to save final desktop position", e);
+          } finally {
+            exitFlushed = true;
+            app.quit();
+          }
+        });
+      });
     })
     .catch((error) => {
       dialog.showErrorBox("下班搭子无法启动", String(error));

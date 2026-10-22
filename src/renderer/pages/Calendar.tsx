@@ -1,5 +1,5 @@
-import type {PlanAction} from '../../core/plans';
-import { useState,useEffect } from "react";
+import type { PlanAction } from "../../core/plans";
+import { useState, useEffect } from "react";
 import {
   ChevronLeft,
   ChevronRight,
@@ -12,14 +12,25 @@ import { monthDates, weekday } from "../../core/date";
 import { resolveDay } from "../../core/calendar";
 import { ruleForDate } from "../../core/ledger";
 import { defaultRule } from "../../shared/defaults";
-export default function Calendar({ snapshot,initialDate }: { snapshot: Snapshot;initialDate?:string }) {
+export default function Calendar({
+  snapshot,
+  initialDate,
+}: {
+  snapshot: Snapshot;
+  initialDate?: string;
+}) {
   const [month, setMonth] = useState(snapshot.today.slice(0, 7)),
     [selected, setSelected] = useState<string | null>(null),
     [draft, setDraft] = useState(""),
     [busy, setBusy] = useState(false),
     [error, setError] = useState("");
   const state = snapshot.state;
-  useEffect(()=>{if(initialDate){setMonth(initialDate.slice(0,7));setSelected(initialDate)}},[initialDate]);
+  useEffect(() => {
+    if (initialDate) {
+      setMonth(initialDate.slice(0, 7));
+      setSelected(initialDate);
+    }
+  }, [initialDate]);
   const dates = monthDates(month);
   const rule = ruleForDate(state, selected ?? dates[0]) ??
     state.rules.at(-1) ?? {
@@ -213,7 +224,11 @@ export default function Calendar({ snapshot,initialDate }: { snapshot: Snapshot;
                 e.preventDefault();
                 if (!draft.trim()) return;
                 if (
-                  await savePlans({type:'add',id:crypto.randomUUID(),text:draft.trim()})
+                  await savePlans({
+                    type: "add",
+                    id: crypto.randomUUID(),
+                    text: draft.trim(),
+                  })
                 )
                   setDraft("");
               }}
@@ -245,7 +260,11 @@ export default function Calendar({ snapshot,initialDate }: { snapshot: Snapshot;
                       checked={plan.completed}
                       disabled={busy}
                       onChange={(e) =>
-                        void savePlans({type:'complete',id:plan.id,completed:e.target.checked})
+                        void savePlans({
+                          type: "complete",
+                          id: plan.id,
+                          completed: e.target.checked,
+                        })
                       }
                     />
                     <span className="plan-text">{plan.text}</span>
@@ -255,7 +274,7 @@ export default function Calendar({ snapshot,initialDate }: { snapshot: Snapshot;
                     disabled={busy}
                     aria-label={`删除计划：${plan.text}`}
                     onClick={() =>
-                      void savePlans({type:'delete',id:plan.id})
+                      void savePlans({ type: "delete", id: plan.id })
                     }
                   >
                     <X size={16} />

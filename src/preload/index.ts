@@ -13,20 +13,28 @@ const bridge: BuddyBridge = {
   setPreferences: (i) => invoke("setPreferences", i),
   setDayOverride: (d, v) => invoke("setDayOverride", d, v),
   updatePlan: (d, p) => invoke("updatePlan", d, p),
-  interact:()=>invoke('interact'),
-  onCompanionEvent:(listener)=>{const fn=(_:unknown,e:any)=>listener(e);ipcRenderer.on('buddy:companion-event',fn);return()=>ipcRenderer.removeListener('buddy:companion-event',fn)},
+  interact: () => invoke("interact"),
+  onCompanionEvent: (listener) => {
+    const fn = (_: unknown, e: any) => listener(e);
+    ipcRenderer.on("buddy:companion-event", fn);
+    return () => ipcRenderer.removeListener("buddy:companion-event", fn);
+  },
   recalculate: (f, t) => invoke("recalculate", f, t),
   exportBackup: () => invoke("exportBackup"),
   importBackup: () => invoke("importBackup"),
   importCalendar: () => invoke("importCalendar"),
-  getEarningsDetail: (d) => invoke('getEarningsDetail',d),
-  openPanel: (target) => invoke("openPanel",target),
-  takeNavigation:()=>invoke('takeNavigation'),
-  onNavigate:(listener)=>{const fn=(_:unknown,target:any)=>listener(target);ipcRenderer.on('buddy:navigate',fn);return ()=>ipcRenderer.removeListener('buddy:navigate',fn)},
+  getEarningsDetail: (d) => invoke("getEarningsDetail", d),
+  openPanel: (target) => invoke("openPanel", target),
+  takeNavigation: () => invoke("takeNavigation"),
+  onNavigate: (listener) => {
+    const fn = (_: unknown, target: any) => listener(target);
+    ipcRenderer.on("buddy:navigate", fn);
+    return () => ipcRenderer.removeListener("buddy:navigate", fn);
+  },
   hideCompanion: () => invoke("hideCompanion"),
   showCompanion: () => invoke("showCompanion"),
-  setCardHidden:(hidden)=>invoke('setCardHidden',hidden),
-  recallCompanion:()=>invoke('recallCompanion'),
+  setCardHidden: (hidden) => invoke("setCardHidden", hidden),
+  recallCompanion: () => invoke("recallCompanion"),
   onSnapshot: (listener) => {
     const fn = (_: unknown, value: any) => listener(value);
     ipcRenderer.on("buddy:snapshot", fn);

@@ -1,8 +1,8 @@
-import Growth from './pages/Growth';
-import DesktopCard from './pages/DesktopCard';
+import Growth from "./pages/Growth";
+import DesktopCard from "./pages/DesktopCard";
 import Companion from "./pages/Companion";
-import EarningsDetail from './components/EarningsDetail';
-import type {NavigateTarget} from '../shared/bridge';
+import EarningsDetail from "./components/EarningsDetail";
+import type { NavigateTarget } from "../shared/bridge";
 import { useEffect, useState } from "react";
 import {
   LayoutDashboard,
@@ -32,14 +32,31 @@ const navigation = [
 export default function App() {
   const { snapshot, error } = useSnapshot();
   const [page, setPage] = useState("overview");
+  const [calendarNavigation, setCalendarNavigation] = useState(0);
   const [actionError, setActionError] = useState("");
-  const [detailDate,setDetailDate]=useState<string|null>(null),[calendarDate,setCalendarDate]=useState<string|undefined>();
-  useEffect(()=>{
-    if(location.hash) return;
-    const navigate=(target:NavigateTarget)=>{if(target.page==='earnings')setDetailDate(target.date);else {setPage(target.page);if(target.page==='calendar')setCalendarDate(target.date)}};
-    const off=window.buddy.onNavigate(target=>{navigate(target);void window.buddy.takeNavigation()});
-    void window.buddy.takeNavigation().then(t=>{if(t)navigate(t)});return off;
-  },[]);
+  const [detailDate, setDetailDate] = useState<string | null>(null),
+    [calendarDate, setCalendarDate] = useState<string | undefined>();
+  useEffect(() => {
+    if (location.hash) return;
+    const navigate = (target: NavigateTarget) => {
+      if (target.page === "earnings") setDetailDate(target.date);
+      else {
+        setPage(target.page);
+        if (target.page === "calendar") {
+          setCalendarDate(target.date);
+          setCalendarNavigation((n) => n + 1);
+        }
+      }
+    };
+    const off = window.buddy.onNavigate((target) => {
+      navigate(target);
+      void window.buddy.takeNavigation();
+    });
+    void window.buddy.takeNavigation().then((t) => {
+      if (t) navigate(t);
+    });
+    return off;
+  }, []);
   useEffect(() => {
     if (snapshot) {
       document.documentElement.dataset.theme = snapshot.state.preferences.theme;
@@ -59,7 +76,8 @@ export default function App() {
         <p>{error || "搭子正在赶来…"}</p>
       </div>
     );
-  if (location.hash === "#desktop-card") return <DesktopCard snapshot={snapshot}/>;
+  if (location.hash === "#desktop-card")
+    return <DesktopCard snapshot={snapshot} />;
   if (location.hash === "#companion") return <Companion snapshot={snapshot} />;
   if (!snapshot.state.configured) return <Onboarding snapshot={snapshot} />;
   const title =
@@ -69,7 +87,9 @@ export default function App() {
         ? "工作有节奏，生活有盼头。"
         : page === "ledger"
           ? "每一份努力，都算数。"
-          : page === "growth" ? "小小的陪伴，慢慢的成长。" : "你的节奏，你来定义。";
+          : page === "growth"
+            ? "小小的陪伴，慢慢的成长。"
+            : "你的节奏，你来定义。";
   return (
     <div className="app-shell">
       <aside className="sidebar">
@@ -106,7 +126,7 @@ export default function App() {
         <div className="sidebar-bottom">
           <ShieldCheck size={15} />
           <span>本地存储 · 安心陪伴</span>
-          <small>v1.1.2</small>
+          <small>v1.2.0</small>
         </div>
       </aside>
       <main className="main-content">
@@ -169,14 +189,30 @@ export default function App() {
         {page === "overview" ? (
           <Overview snapshot={snapshot} navigate={setPage} />
         ) : page === "calendar" ? (
-          <Calendar snapshot={snapshot} initialDate={calendarDate} />
+          <Calendar
+            key={calendarNavigation}
+            snapshot={snapshot}
+            initialDate={calendarDate}
+          />
         ) : page === "ledger" ? (
           <Ledger snapshot={snapshot} />
-        ) : page === "growth" ? (<Growth snapshot={snapshot}/>) : (
+        ) : page === "growth" ? (
+          <Growth snapshot={snapshot} />
+        ) : (
           <Settings snapshot={snapshot} />
         )}
       </main>
-      {detailDate&&<EarningsDetail date={detailDate} snapshot={snapshot} onClose={()=>setDetailDate(null)} onLedger={()=>{setDetailDate(null);setPage('ledger')}}/>}
+      {detailDate && (
+        <EarningsDetail
+          date={detailDate}
+          snapshot={snapshot}
+          onClose={() => setDetailDate(null)}
+          onLedger={() => {
+            setDetailDate(null);
+            setPage("ledger");
+          }}
+        />
+      )}
     </div>
   );
 }
