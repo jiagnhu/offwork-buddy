@@ -59,7 +59,7 @@ export default function CharacterSpace({ snapshot }: { snapshot: Snapshot }) {
             displayName={name}
             active={!preview}
             reducedMotion={p.reducedMotion}
-            onInteract={() => setPreview(current)}
+            onInteract={() => {}}
           />
         </div>
         <h2>{name}</h2>

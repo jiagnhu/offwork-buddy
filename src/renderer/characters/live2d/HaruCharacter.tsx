@@ -115,7 +115,14 @@ export default function HaruCharacter({
           key={`${kind}-${retry}`}
           ref={canvas}
           aria-label={`${displayName} Live2D 角色`}
-          onClick={onInteract}
+          onClick={() => {
+            try {
+              runtime.current?.play({ kind: "random" });
+            } catch (e) {
+              setError(String(e));
+            }
+            onInteract();
+          }}
           onPointerMove={(e) => {
             const r = e.currentTarget.getBoundingClientRect();
             runtime.current?.setPointer(

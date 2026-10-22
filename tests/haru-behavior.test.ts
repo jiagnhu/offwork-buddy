@@ -2,7 +2,7 @@ import { test, expect } from "vitest";
 import { effectiveMovementMode } from "../src/shared/character-capabilities";
 import { fixture } from "./fixtures";
 import { actionForCompanionEvent } from "../src/renderer/characters/live2d/actions";
-test("reduced animation preserves the event cue for a static pose", () => {
+test("plan completion requests an original interaction", () => {
   const event = {
     id: "once",
     kind: "plan-complete" as const,
@@ -11,8 +11,8 @@ test("reduced animation preserves the event cue for a static pose", () => {
     durationMs: 4000,
   };
   expect(actionForCompanionEvent(event, true)).toEqual({
-    kind: "cue",
-    cue: "happy",
+    kind: "random",
+    group: "tap",
   });
 });
 test("Haru remains stationary without losing the saved roaming preference", () => {

@@ -24,7 +24,7 @@ export default function Character(
       reducedMotion={props.reducedMotion}
       onInteract={props.onInteract}
       actionRequest={
-        props.event
+        props.event && props.event.kind !== "interaction"
           ? {
               id: props.event.id,
               action: actionForCompanionEvent(
