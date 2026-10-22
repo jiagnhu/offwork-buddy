@@ -1,8 +1,10 @@
+import Accessories from './Accessories';
 import type { CharacterProps } from "./types";
-export default function Assistant({ onInteract }: CharacterProps) {
+export default function Assistant({ onInteract, pose='idle', direction='right', accessory='none' }: CharacterProps) {
   return (
     <button
       className="character-button assistant-character"
+      data-pose={pose} data-direction={direction} data-accessory={accessory}
       aria-label="和小沐互动"
       onClick={onInteract}
     >
@@ -77,7 +79,7 @@ export default function Assistant({ onInteract }: CharacterProps) {
               opacity=".6"
             />
           </g>
-          <path
+          <g className="buddy-legs"><path
             d="M116 242L119 277L131 279L135 245M148 245L151 279L164 277L166 242"
             fill="#F7DECF"
             stroke="#CFAF9F"
@@ -91,7 +93,7 @@ export default function Assistant({ onInteract }: CharacterProps) {
             d="M118 274C112 275 108 281 112 285L133 285L132 276M151 276L150 285L173 285C177 280 169 275 163 274"
             fill="#4D515F"
           />
-          <path
+          </g><g className="buddy-arms"><path
             d="M107 171Q92 178 86 204L97 212L113 191M174 172Q191 178 196 201L184 209L170 190"
             fill="#F8F4FC"
             stroke="#C8BFDA"
@@ -103,7 +105,7 @@ export default function Assistant({ onInteract }: CharacterProps) {
             stroke="#CFB3A4"
             strokeWidth="1.5"
           />
-          <path
+          </g><path
             d="M112 168L130 159H151L170 168L166 207L182 247Q140 264 98 247L114 206Z"
             fill="url(#dress)"
             stroke="#344951"
@@ -221,6 +223,7 @@ export default function Assistant({ onInteract }: CharacterProps) {
           <path d="M238 48L241 57L250 60L241 63L238 72L235 63L226 60L235 57Z" />
           <circle cx="46" cy="136" r="3" />
         </g>
+        <Accessories accessory={accessory} pose={pose} />
       </svg>
     </button>
   );

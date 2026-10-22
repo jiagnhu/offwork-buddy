@@ -44,3 +44,4 @@ it("rejects mismatched ledger key", () => {
   (s.ledger as any)["2026-01-05"] = { date: "2026-01-06" };
   expect(() => validateBackup(s)).toThrow();
 });
+it("rejects a locked accessory before importing a backup",()=>{const s=fixture();s.preferences.accessory="star";s.growth.points=9;expect(()=>validateBackup(s)).toThrow();s.growth.points=10;expect(validateBackup(s).preferences.accessory).toBe("star")});

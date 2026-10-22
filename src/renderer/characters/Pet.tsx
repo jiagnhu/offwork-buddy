@@ -1,8 +1,10 @@
+import Accessories from './Accessories';
 import type { CharacterProps } from "./types";
-export default function Pet({ status, onInteract }: CharacterProps) {
+export default function Pet({ status, onInteract, pose='idle', direction='right', accessory='none' }: CharacterProps) {
   return (
     <button
       className="character-button pet-character"
+      data-pose={pose} data-direction={direction} data-accessory={accessory}
       aria-label="和年糕互动"
       onClick={onInteract}
     >
@@ -60,6 +62,7 @@ export default function Pet({ status, onInteract }: CharacterProps) {
           />
           <ellipse cx="139" cy="197" rx="30" ry="29" fill="#FFFDF8" />
           <path
+            className="buddy-legs"
             d="M94 203L88 222C88 234 116 235 121 226M161 225C167 235 191 231 191 221L183 203"
             fill="#F8F1E7"
             stroke="#D6C6B6"
@@ -139,6 +142,7 @@ export default function Pet({ status, onInteract }: CharacterProps) {
             <path d="M41 93L43 100L50 103L43 106L41 113L38 106L32 103L38 100Z" />
           </g>
         )}
+        <Accessories accessory={accessory} pose={pose} />
       </svg>
     </button>
   );

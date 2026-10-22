@@ -292,3 +292,32 @@ html.companion-window #root {
 .companion-toolbar { width:280px; }
 .companion-root .companion-stage { height:255px; }
 .speech-bubble { cursor:pointer; }
+.growth-page {display:grid;gap:22px}
+.growth-hero {display:grid;grid-template-columns:220px 1fr;align-items:center;gap:30px;background:linear-gradient(120deg,var(--lavender),var(--surface) 60%)}
+.growth-preview {height:245px}
+.growth-points strong {font-size:46px;font-weight:600;margin-right:8px;font-variant-numeric:tabular-nums}
+.growth-points {margin:14px 0}
+.growth-hero progress {width:100%;height:8px;accent-color:#8e7db2}
+.growth-hero small {line-height:1.9}
+.growth-rewards {display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.growth-rewards .card {padding:24px}
+.reward-symbol {font-size:32px;color:#a48abc;display:block}
+.growth-rewards p {font-size:13px;line-height:1.8}
+.growth-rewards button:disabled {cursor:default}
+.character-button[data-direction="left"] svg {transform:scaleX(-1)}
+.character-button[data-pose="walk"] .character-sway {animation:buddy-step .6s ease-in-out infinite}
+.character-button[data-pose="walk"] .buddy-legs {transform-origin:140px 240px;animation:buddy-feet .6s ease-in-out infinite}
+.character-button[data-pose="sit"] .character-sway,.character-button[data-pose="pillow"] .character-sway {animation:none;transform:translateY(28px) scaleY(.88)}
+.character-button[data-pose="sit"] .buddy-legs,.character-button[data-pose="pillow"] .buddy-legs {transform-origin:140px 245px;transform:scaleY(.5) scaleX(1.15)}
+.character-button[data-pose="stretch"] .character-sway {animation:buddy-stretch 1.4s ease-in-out 2}
+.character-button[data-pose="stretch"] .buddy-arms {transform-origin:140px 180px;transform:rotate(-15deg) scaleX(1.18)}
+.character-button[data-pose="sleep"] .character-sway {transform-origin:50% 90%;animation:buddy-doze 5s ease-in-out infinite}
+.character-button[data-pose="sleep"] .blink-eyes {animation:none;transform:scaleY(.13)}
+.character-button[data-pose="celebrate"] .character-sway {animation:buddy-cheer .65s ease-in-out 4}
+.character-button[data-pose="pillow"] .buddy-arms {transform-origin:140px 180px;transform:scaleX(.8)}
+@keyframes buddy-step {0%,100% {transform:rotate(-2deg) translateY(0)} 50% {transform:rotate(2deg) translateY(-4px)}}
+@keyframes buddy-feet {0%,100% {transform:skewX(-8deg)} 50% {transform:skewX(8deg)}}
+@keyframes buddy-stretch {0%,100% {transform:scale(1)} 50% {transform:scale(.96,1.06) rotate(-3deg)}}
+@keyframes buddy-doze {0%,100% {transform:rotate(5deg) scaleY(.93)} 50% {transform:rotate(5deg) scaleY(.95)}}
+@keyframes buddy-cheer {0%,100% {transform:translateY(0) rotate(-3deg)} 50% {transform:translateY(-14px) rotate(3deg)}}
+:root[data-motion="reduced"] .character-button * {animation:none!important;transition:none!important}

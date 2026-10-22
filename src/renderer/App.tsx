@@ -1,3 +1,4 @@
+import Growth from './pages/Growth';
 import DesktopCard from './pages/DesktopCard';
 import Companion from "./pages/Companion";
 import EarningsDetail from './components/EarningsDetail';
@@ -25,6 +26,7 @@ const navigation = [
   { id: "overview", label: "今日概览", icon: LayoutDashboard },
   { id: "calendar", label: "工作日历", icon: CalendarDays },
   { id: "ledger", label: "收入记录", icon: Wallet },
+  { id: "growth", label: "伙伴成长", icon: Sparkles },
   { id: "settings", label: "偏好设置", icon: SettingsIcon },
 ];
 export default function App() {
@@ -67,7 +69,7 @@ export default function App() {
         ? "工作有节奏，生活有盼头。"
         : page === "ledger"
           ? "每一份努力，都算数。"
-          : "你的节奏，你来定义。";
+          : page === "growth" ? "小小的陪伴，慢慢的成长。" : "你的节奏，你来定义。";
   return (
     <div className="app-shell">
       <aside className="sidebar">
@@ -170,7 +172,7 @@ export default function App() {
           <Calendar snapshot={snapshot} initialDate={calendarDate} />
         ) : page === "ledger" ? (
           <Ledger snapshot={snapshot} />
-        ) : (
+        ) : page === "growth" ? (<Growth snapshot={snapshot}/>) : (
           <Settings snapshot={snapshot} />
         )}
       </main>

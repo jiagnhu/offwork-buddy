@@ -1,3 +1,4 @@
+import {unlocks} from '../core/growth';
 import { z } from "zod";
 import { validDate, weekday } from "../core/date";
 import type { State } from "./model";
@@ -129,6 +130,7 @@ const legacySchema=stateBase.omit({growth:true,reminderHistory:true}).extend({sc
 export const stateSchema=stateBase.superRefine((s, ctx) => {
     const issue = (message: string) =>
       ctx.addIssue({ code: "custom", message });
+    if(s.preferences.accessory!=='none'&&!unlocks(s.growth.points)[s.preferences.accessory])issue('这个配饰尚未解锁');
     if (s.configured && !s.rules.some((r) => r.effectiveFrom <= s.startDate))
       issue("累计起始日期缺少工资规则");
     if (
