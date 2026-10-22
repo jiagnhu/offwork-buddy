@@ -511,3 +511,9 @@ html.companion-window #root {
 .haru-preview-options details { font-size: 11px; line-height: 1.6; margin: 16px 0; }
 .haru-preview-options .primary { width: 100%; margin-top: 12px; }
 
+
+/* Preserve toolbar geometry so revealing it never moves the character. */
+.companion-root .companion-toolbar { opacity: 0; pointer-events: none; transition: opacity 140ms ease; }
+.companion-root:hover .companion-toolbar,
+.companion-root:has(:focus-visible) .companion-toolbar { opacity: 1; pointer-events: auto; }
+html[data-motion="reduced"] .companion-toolbar { transition: none; }

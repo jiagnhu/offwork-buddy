@@ -1,6 +1,7 @@
 import { ensureCore } from "./core";
 import { HaruModel } from "./model";
 import { frameLoop } from "./lifecycle";
+import { rasterSize } from "./quality";
 import { CubismMatrix44 } from "../../../../vendor/cubism-framework/lib/math/cubismmatrix44";
 import { CubismShaderManager_WebGL } from "../../../../vendor/cubism-framework/lib/rendering/cubismshader_webgl";
 import type { HaruRuntime } from "./types";
@@ -20,6 +21,10 @@ export async function createHaruRuntime(
     antialias: true,
   });
   if (!gl) throw new Error("无法创建 WebGL 画布");
+  const gpuLimit = Math.min(
+    gl.getParameter(gl.MAX_TEXTURE_SIZE),
+    gl.getParameter(gl.MAX_RENDERBUFFER_SIZE),
+  );
   const model = new HaruModel(),
     textures: WebGLTexture[] = [];
   const controller = new AbortController();
@@ -53,6 +58,7 @@ export async function createHaruRuntime(
     controller.signal.throwIfAborted();
     model.createRenderer(canvas.width, canvas.height);
     const renderer = model.getRenderer();
+    renderer.setClippingMaskBufferSize(Math.min(1024, gpuLimit));
     renderer.startUp(gl);
     const shader = CubismShaderManager_WebGL.getInstance().getShader(gl);
     shader.setShaderPath("buddy-live2d://assets/haru/shaders/");
@@ -81,7 +87,14 @@ export async function createHaruRuntime(
           gl.UNSIGNED_BYTE,
           bitmap,
         );
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        const powerOfTwo = (n: number) => n > 0 && (n & (n - 1)) === 0;
+        const mipmaps = powerOfTwo(bitmap.width) && powerOfTwo(bitmap.height);
+        if (mipmaps) gl.generateMipmap(gl.TEXTURE_2D);
+        gl.texParameteri(
+          gl.TEXTURE_2D,
+          gl.TEXTURE_MIN_FILTER,
+          mipmaps ? gl.LINEAR_MIPMAP_LINEAR : gl.LINEAR,
+        );
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
@@ -148,8 +161,11 @@ export async function createHaruRuntime(
       },
       resize(w, h, dpr) {
         if (disposed) return;
-        canvas.width = Math.max(1, Math.round(w * Math.min(dpr, 2)));
-        canvas.height = Math.max(1, Math.round(h * Math.min(dpr, 2)));
+        const size = rasterSize(w, h, dpr, gpuLimit);
+        if (canvas.width === size.width && canvas.height === size.height)
+          return;
+        canvas.width = size.width;
+        canvas.height = size.height;
         model.setRenderTargetSize(canvas.width, canvas.height);
         loop!.invalidate();
       },

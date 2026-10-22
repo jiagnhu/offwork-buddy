@@ -58,6 +58,7 @@ test("preview tries all motions without rewards, explicit selection persists", a
       "true",
       {timeout: 30000},
     );
+    await desktop.locator("canvas").hover();
     await expect(
       desktop.getByRole("button", { name: "当前模型暂无行走动作" }),
     ).toBeDisabled();

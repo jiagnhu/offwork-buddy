@@ -4,12 +4,14 @@ import { mountResource } from "./lifecycle";
 import type { HaruAction, HaruRuntime } from "./types";
 export default function HaruCharacter({
   displayName = "丝袜妹",
+  displayScale = 1,
   active = true,
   reducedMotion,
   actionRequest,
   onInteract,
 }: {
   displayName?: string;
+  displayScale?: number;
   active?: boolean;
   reducedMotion: boolean;
   actionRequest?: { id: string; action: HaruAction };
@@ -30,6 +32,22 @@ export default function HaruCharacter({
     setLoaded(false);
     const element = canvas.current;
     let observer: ResizeObserver | undefined;
+    let resizeFrame = 0;
+    let resolution: MediaQueryList | undefined;
+    const resize = () => {
+      const r = element.getBoundingClientRect();
+      runtime.current?.resize(r.width, r.height, devicePixelRatio);
+    };
+    const scheduleResize = () => {
+      cancelAnimationFrame(resizeFrame);
+      resizeFrame = requestAnimationFrame(resize);
+    };
+    const watchResolution = () => {
+      resolution?.removeEventListener("change", watchResolution);
+      resolution = matchMedia(`(resolution: ${devicePixelRatio}dppx)`);
+      resolution.addEventListener("change", watchResolution);
+      resize();
+    };
     const stop = mountResource(
       async (signal) => {
         if (typeof Live2DCubismCore === "undefined")
@@ -49,17 +67,19 @@ export default function HaruCharacter({
         runtime.current = value;
         value.setReducedMotion(motion.current);
         setLoaded(true);
-        observer = new ResizeObserver(() => {
-          const r = element.getBoundingClientRect();
-          value.resize(r.width, r.height, devicePixelRatio);
-        });
+        observer = new ResizeObserver(resize);
         observer.observe(element);
+        window.addEventListener("resize", scheduleResize);
+        watchResolution();
       },
       (e) => setError(e.message),
     );
     return () => {
       setLoaded(false);
       observer?.disconnect();
+      cancelAnimationFrame(resizeFrame);
+      resolution?.removeEventListener("change", watchResolution);
+      window.removeEventListener("resize", scheduleResize);
       runtime.current = null;
       stop();
     };
@@ -68,6 +88,11 @@ export default function HaruCharacter({
     () => runtime.current?.setReducedMotion(reducedMotion),
     [reducedMotion],
   );
+  useEffect(() => {
+    const rect = canvas.current?.getBoundingClientRect();
+    if (rect)
+      runtime.current?.resize(rect.width, rect.height, devicePixelRatio);
+  }, [displayScale]);
   const lastAction = useRef("");
   useEffect(() => {
     if (!loaded || !actionRequest || lastAction.current === actionRequest.id)

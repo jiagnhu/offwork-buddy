@@ -126,7 +126,7 @@ export default function App() {
         <div className="sidebar-bottom">
           <ShieldCheck size={15} />
           <span>本地存储 · 安心陪伴</span>
-          <small>v1.3.1</small>
+          <small>v1.3.2</small>
         </div>
       </aside>
       <main className="main-content">

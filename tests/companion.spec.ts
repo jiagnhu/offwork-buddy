@@ -22,6 +22,7 @@ test("companion switches characters, collapses, scales and respects reduced moti
     await expect(
       page.getByRole("button", { name: "和年糕互动" }),
     ).toBeVisible();
+    await page.locator(".companion-stage").hover();
     await page.getByRole("button", { name: "切换伙伴" }).click();
     await expect(
       page.getByRole("button", { name: "和小沐互动" }),

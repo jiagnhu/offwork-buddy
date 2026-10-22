@@ -7,6 +7,7 @@ import { actionForCompanionEvent } from "./live2d/actions";
 export default function Character(
   props: CharacterProps & {
     displayName?: string;
+    displayScale?: number;
     kind: CharacterKind;
     active?: boolean;
     event?: CompanionEvent | null;
@@ -15,6 +16,7 @@ export default function Character(
   if (props.kind === "haru")
     return (
       <HaruCharacter
+        displayScale={props.displayScale}
         displayName={props.displayName}
         active={props.active}
         reducedMotion={props.reducedMotion}

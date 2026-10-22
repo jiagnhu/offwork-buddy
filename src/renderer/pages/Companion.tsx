@@ -46,6 +46,7 @@ export default function Companion({ snapshot }: { snapshot: Snapshot }) {
           </button>
         )}
         <Character
+          displayScale={scale}
           displayName={p.haruName}
           event={event}
           active={snapshot.desktop.visible}
