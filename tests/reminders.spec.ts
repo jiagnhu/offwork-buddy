@@ -3,6 +3,9 @@ import { launchDesktop } from "./desktop-helper";
 test("reminder bubbles preserve focus and hidden companions stay hidden", async () => {
   const { app, page, cleanup } = await launchDesktop();
   try {
+    const buddy = app.windows().find((w) => w.url().endsWith("#companion"))!;
+    // The event lifetime is checked in the renderer; keep both clocks aligned.
+    await buddy.clock.setFixedTime(new Date("2026-10-22T11:55:00+08:00"));
     await app.evaluate(() => {
       const Real = Date;
       (globalThis as any).clockValue = new Real(
@@ -33,7 +36,6 @@ test("reminder bubbles preserve focus and hidden companions stay hidden", async 
     await app.evaluate(() => {
       (globalThis as any).clockValue += 1000;
     });
-    const buddy = app.windows().find((w) => w.url().endsWith("#companion"))!;
     await expect(buddy.locator(".speech-bubble")).toContainText(
       "还有 5 分钟午休",
     );

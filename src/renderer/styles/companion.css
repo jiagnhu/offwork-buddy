@@ -486,3 +486,28 @@ html.companion-window #root {
   animation: none !important;
   transition: none !important;
 }
+
+.haru-character { position: relative; width: 100%; height: 100%; min-height: 220px; }
+.haru-character canvas { display: block; width: 100%; height: 100%; cursor: pointer; }
+.haru-loading, .haru-error { position: absolute; inset: 30% 12% auto; text-align: center; color: var(--ink); }
+.haru-error { background: var(--surface, #fff); border-radius: 18px; padding: 16px; font-size: 13px; }
+.haru-error button { margin: 4px; }
+
+
+.companion-root.companion-haru .companion-stage { height: 442px; margin-top: 8px; }
+.companion-haru .haru-character { height: 440px; }
+.haru-preview-dialog { width: min(820px, 92vw); max-height: 90vh; overflow-y: auto; padding: 26px; border: 1px solid var(--line); border-radius: 28px; background: var(--surface); color: var(--ink); box-shadow: 0 20px 90px #29203b35; }
+.haru-preview-dialog::backdrop { background: #20223266; backdrop-filter: blur(7px); }
+.haru-preview-heading { display: flex; align-items: start; justify-content: space-between; gap: 16px; }
+.haru-preview-heading h2 { margin: 0 0 8px; }
+.haru-preview-heading > button { background: transparent; font-size: 24px; }
+.haru-preview-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; }
+.haru-preview-stage { height: 470px; border-radius: 24px; background: radial-gradient(ellipse at center, #bba9e92a, transparent 70%); }
+.haru-preview-options { padding-top: 12px; font-size: 13px; }
+.haru-preview-options h3 { font-size: 14px; margin: 16px 0 10px; }
+.haru-action-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; }
+.haru-action-grid button { padding: 8px 3px; border-radius: 12px; background: var(--bg); color: var(--ink); border: 1px solid var(--line); }
+.haru-action-grid button:focus { outline: 2px solid #b9a4e5; }
+.haru-preview-options details { font-size: 11px; line-height: 1.6; margin: 16px 0; }
+.haru-preview-options .primary { width: 100%; margin-top: 12px; }
+

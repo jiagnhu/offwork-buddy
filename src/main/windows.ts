@@ -2,6 +2,7 @@ import { app, BrowserWindow, Menu, Tray, screen, nativeImage } from "electron";
 import path from "node:path";
 import type { Preferences } from "../shared/model";
 import { clampBounds } from "./bounds";
+import { characterCapabilities } from '../shared/character-capabilities';
 export let panel: BrowserWindow,
   companion: BrowserWindow,
   desktopCard: BrowserWindow;
@@ -93,7 +94,7 @@ export function createWindows(
     fullscreenable: false,
     webPreferences,
   };
-  companion = new BrowserWindow({ ...desktopOptions, width: 360, height: 310 });
+  companion = new BrowserWindow({ ...desktopOptions, width: characterCapabilities(prefs.character).baseWidth, height: characterCapabilities(prefs.character).baseHeight });
   desktopCard = new BrowserWindow({
     ...desktopOptions,
     width: 360,
@@ -102,6 +103,10 @@ export function createWindows(
   });
   Menu.setApplicationMenu(null);
   for (const win of [panel, companion, desktopCard]) {
+    const sendVisibility=()=>{
+      if(!win.isDestroyed())win.webContents.send('buddy:window-visibility',win.isVisible()&&!win.isMinimized());
+    };
+    win.on('show',sendVisibility);win.on('hide',sendVisibility);win.on('minimize',sendVisibility);win.on('restore',sendVisibility);
     win.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
     win.webContents.on("will-navigate", (e) => e.preventDefault());
   }
@@ -195,7 +200,7 @@ export function applyPreferences(prefs: Preferences) {
   currentPreferences = prefs;
   if (!companion || companion.isDestroyed()) return;
   for (const [win, height] of [
-    [companion, 310],
+    [companion, characterCapabilities(prefs.character).baseHeight],
     [desktopCard, 440],
   ] as const) {
     if (win.isAlwaysOnTop() !== prefs.alwaysOnTop)

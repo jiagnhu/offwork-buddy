@@ -32,7 +32,7 @@ export default function CompanionControls({
         onClick={() =>
           run(
             window.buddy.setPreferences({
-              character: p.character === "pet" ? "assistant" : "pet",
+              character: p.character === "pet" ? "assistant" : p.character==='assistant'?'haru':'pet',
             }),
           )
         }
@@ -48,7 +48,9 @@ export default function CompanionControls({
         {p.alwaysOnTop ? <Pin size={14} /> : <PinOff size={14} />}
       </button>
       <button
-        aria-label={p.movementMode === "bottom" ? "暂停散步" : "继续散步"}
+        disabled={p.character==='haru'}
+        title={p.character==='haru'?'当前模型暂无行走动作':undefined}
+        aria-label={p.character==='haru'?'当前模型暂无行走动作':p.movementMode === "bottom" ? "暂停散步" : "继续散步"}
         onClick={() =>
           run(
             window.buddy.setPreferences({

@@ -7,6 +7,6 @@ import { actionForCompanionEvent } from './live2d/actions';
 export default function Character(
   props: CharacterProps & { kind: CharacterKind; active?:boolean; event?:CompanionEvent|null },
 ) {
-  if(props.kind==='haru')return <HaruCharacter active={props.active} reducedMotion={props.reducedMotion} onInteract={props.onInteract} actionRequest={props.event?{id:props.event.id,action:actionForCompanionEvent(props.event)}:undefined}/>;
+  if(props.kind==='haru')return <HaruCharacter active={props.active} reducedMotion={props.reducedMotion} onInteract={props.onInteract} actionRequest={props.event?{id:props.event.id,action:actionForCompanionEvent(props.event,props.reducedMotion)}:undefined}/>;
   return props.kind === "pet" ? <Pet {...props} /> : <Assistant {...props} />;
 }

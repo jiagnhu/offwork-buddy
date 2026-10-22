@@ -13,6 +13,7 @@ import {
 import type { Snapshot, RuleInput } from "../../shared/model";
 import { defaultRule } from "../../shared/defaults";
 import { time, toMinutes } from "../components/format";
+import HaruPreview from '../components/HaruPreview';
 export function WorkForm({
   snapshot,
   onDone,
@@ -240,6 +241,7 @@ export function WorkForm({
   );
 }
 export default function Settings({ snapshot }: { snapshot: Snapshot }) {
+  const [preview,setPreview]=useState(false);
   const p = snapshot.state.preferences;
   const [message, setMessage] = useState(""),
     [error, setError] = useState("");
@@ -356,6 +358,7 @@ export default function Settings({ snapshot }: { snapshot: Snapshot }) {
           </div>
           <label className="field-title">你的桌面伙伴</label>
           <div className="character-options">
+            <button className={p.character==='haru'?'selected':''} aria-label="预览 Haru" onClick={()=>setPreview(true)}><Sparkles/>Haru · Live2D<span>预览</span></button>
             <button
               className={p.character === "pet" ? "selected" : ""}
               onClick={() =>
@@ -377,6 +380,7 @@ export default function Settings({ snapshot }: { snapshot: Snapshot }) {
               看板娘 · 小沐
             </button>
           </div>
+          {preview&&<HaruPreview reducedMotion={p.reducedMotion} onClose={()=>setPreview(false)}/>}
           {(
             [
               ["alwaysOnTop", "桌面伙伴始终置顶"],

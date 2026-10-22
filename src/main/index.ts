@@ -1,6 +1,7 @@
 import { startCompanionController } from "./companion-controller";
 import { registerLive2dScheme, installLive2dProtocol } from './live2d-assets';
 import live2dLock from '../../resources/live2d/asset-lock.json';
+import { effectiveMovementMode } from '../shared/character-capabilities';
 registerLive2dScheme();
 import { applyPlanAction } from "../core/plans";
 import { startReminderController } from "./reminder-controller";
@@ -92,7 +93,7 @@ function snapshot(): Snapshot {
     desktop: {
       visible: isDesktopVisible(),
       paused:
-        state.preferences.movementMode === "stationary" ||
+        effectiveMovementMode(state.preferences) === "stationary" ||
         state.preferences.reducedMotion,
     },
     progress,
@@ -409,7 +410,7 @@ else {
             visible: isDesktopVisible(),
             suspended,
             reducedMotion: state.preferences.reducedMotion,
-            mode: state.preferences.movementMode,
+            mode: effectiveMovementMode(state.preferences),
             dragging: false,
             reactionUntil: reactionUntil(),
           };

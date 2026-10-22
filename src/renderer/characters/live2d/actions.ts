@@ -14,6 +14,7 @@ export const haruActions = {
     action: { kind: "expression", id: `F0${i + 1}` } as HaruAction,
   })),
 };
-export function actionForCompanionEvent(_event: CompanionEvent): HaruAction {
+export function actionForCompanionEvent(_event: CompanionEvent, reducedMotion=false): HaruAction {
+  if(reducedMotion)return {kind:"expression",id:"F02"};
   return { kind: "tap", index: 0 };
 }

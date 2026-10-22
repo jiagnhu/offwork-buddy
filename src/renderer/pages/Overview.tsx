@@ -87,7 +87,7 @@ export default function Overview({
           </div>
           <div className="buddy-copy">
             <h2>
-              {state.preferences.character === "pet" ? "年糕" : "小沐"}
+              {state.preferences.character === "pet" ? "年糕" : state.preferences.character === "haru" ? "Haru" : "小沐"}
               陪你，慢慢来。
             </h2>
             <p>认真生活，也要记得休息。</p>
