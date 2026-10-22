@@ -63,10 +63,10 @@ test("calendar edits, dialog cancel, bad import and responsive layouts", async (
     await page.getByRole("button", { name: "工作日历", exact: true }).click();
     await page.locator(".day").filter({ hasText: /^10/ }).first().click();
     await page.getByRole("button", { name: "设为休息日" }).click();
-    expect(
+    await expect.poll(async () =>
       (await page.evaluate(() => window.buddy.getSnapshot())).state.overrides[
         "2026-10-10"
-      ],
+      ]
     ).toBe(false);
     await page.screenshot({ path: "test-results/calendar.png" });
     const before = await page.evaluate(

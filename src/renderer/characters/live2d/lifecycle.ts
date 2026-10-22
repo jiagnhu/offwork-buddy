@@ -27,13 +27,20 @@ export function frameLoop(draw: (delta: number) => void) {
   let raf = 0,
     reduced = true,
     disposed = false,
-    last = -Infinity;
+    last = -Infinity,
+    deadline = -Infinity;
   const tick = (now: number) => {
     if (disposed || reduced) return;
-    if (now - last >= 1000 / 30) {
+    if (now + 0.001 >= deadline) {
       const dt = Number.isFinite(last)
         ? Math.min((now - last) / 1000, 0.1)
         : 1 / 30;
+      const interval = 1000 / 30;
+      deadline = Number.isFinite(deadline)
+        ? deadline +
+          (Math.floor(Math.max(0, now - deadline + 0.001) / interval) + 1) *
+            interval
+        : now + interval;
       last = now;
       draw(dt);
     }
@@ -46,6 +53,7 @@ export function frameLoop(draw: (delta: number) => void) {
       cancelAnimationFrame(raf);
       raf = 0;
       last = -Infinity;
+      deadline = -Infinity;
       if (value) draw(0);
       else raf = requestAnimationFrame(tick);
     },

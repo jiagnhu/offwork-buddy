@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { useWindowVisible } from "../../hooks/useWindowVisible";
-import { createHaruRuntime } from "./runtime";
 import { mountResource } from "./lifecycle";
 import type { HaruAction, HaruRuntime } from "./types";
 export default function HaruCharacter({
@@ -30,15 +29,20 @@ export default function HaruCharacter({
     const element = canvas.current;
     let observer: ResizeObserver | undefined;
     const stop = mountResource(
-      (signal) =>
-        createHaruRuntime(element, {
+      async (signal) => {
+        if (typeof Live2DCubismCore === "undefined")
+          throw new Error("角色引擎未能加载，请重启软件或切回原角色");
+        const { createHaruRuntime } = await import("./runtime");
+        signal.throwIfAborted();
+        return createHaruRuntime(element, {
           signal,
           reducedMotion: motion.current,
           onError: (e) => {
             setError(e.message);
             setLoaded(false);
           },
-        }),
+        });
+      },
       (value) => {
         runtime.current = value;
         value.setReducedMotion(motion.current);

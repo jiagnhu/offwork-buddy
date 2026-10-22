@@ -66,3 +66,28 @@ test("render loop caps frames and reduced motion has no pending callbacks", () =
     vi.unstubAllGlobals();
   }
 });
+
+test("60Hz callbacks retain a steady 30fps cadence", () => {
+  const pending = new Map<number, FrameRequestCallback>();
+  let next = 0,
+    draws = 0;
+  vi.stubGlobal("requestAnimationFrame", (f: FrameRequestCallback) => {
+    pending.set(++next, f);
+    return next;
+  });
+  vi.stubGlobal("cancelAnimationFrame", (id: number) => pending.delete(id));
+  const loop = frameLoop(() => draws++);
+  try {
+    loop.setReduced(false);
+    for (let i = 0; i < 600; i++) {
+      const callbacks = [...pending.values()];
+      pending.clear();
+      callbacks.forEach((f) => f((i * 1000) / 60));
+    }
+    expect(draws).toBeGreaterThanOrEqual(295);
+    expect(draws).toBeLessThanOrEqual(301);
+  } finally {
+    loop.dispose();
+    vi.unstubAllGlobals();
+  }
+});
