@@ -18,4 +18,4 @@ Task 3: browser verified desktop, mobile, character switching, platform selectio
 Final: fixed frozen Windows UA false architecture inference — regression RED→GREEN.
 Final: fixed switching back to automatic mode — delayed ARM regression RED→GREEN; full suite 17/17.
 Final review: independent reviewer completed; two important findings fixed, no deferred minors.
-Task 4: first deployment succeeded at https://offwork-buddy-home.tyk-kyt.chatgpt.site; same-site final correction deployment in progress. No access changes requested or made.
+Task 4: final version 2 deployment succeeded at https://offwork-buddy-home.tyk-kyt.chatgpt.site (deployment appgdep_6ad9846657e08191a1fff14a96eeba3e). No access changes requested or made. Private hosted HTTP verification returned 403, so online installer retrieval was not independently verified; local browser reconstruction and exact file SHA were verified.
