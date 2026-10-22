@@ -1,4 +1,4 @@
-import { live2dModels, type Live2dKind } from "../../../shared/characters";
+import type { Live2dKind } from "../../../shared/characters";
 import type { CompanionEvent } from "../../../shared/model";
 import type { HaruAction } from "./types";
 export const haruActions = {
@@ -16,14 +16,17 @@ export const haruActions = {
   })),
 };
 export function actionForCompanionEvent(
-  _event: CompanionEvent,
-  reducedMotion = false,
-  kind: Live2dKind = "haru",
+  event: CompanionEvent,
+  _reducedMotion = false,
+  _kind: Live2dKind = "haru",
 ): HaruAction {
-  if (reducedMotion)
-    return {
-      kind: "expression",
-      id: kind === "haru" ? "F02" : (live2dModels[kind].expressions[0] ?? ""),
-    };
-  return { kind: "tap", index: 0 };
+  return {
+    kind: "cue",
+    cue:
+      event.kind === "plan-complete"
+        ? "happy"
+        : event.kind === "reminder"
+          ? "rest"
+          : "attention",
+  };
 }

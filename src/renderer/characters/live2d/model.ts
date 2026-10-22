@@ -9,6 +9,13 @@ import {
 import { CubismMotion } from "../../../../vendor/cubism-framework/lib/motion/cubismmotion";
 import { ACubismMotion } from "../../../../vendor/cubism-framework/lib/motion/acubismmotion";
 import type { HaruAction } from "./types";
+import type { Live2dKind } from "../../../shared/characters";
+import {
+  MotionDirector,
+  sampleGesture,
+  boundedOffset,
+  type GestureCue,
+} from "./gestures";
 
 export async function fetchBytes(
   file: string,
@@ -20,6 +27,12 @@ export async function fetchBytes(
   return r.arrayBuffer();
 }
 export class HaruModel extends CubismUserModel {
+  private kind: Live2dKind = "haru";
+  private director = new MotionDirector();
+  private parameters = new Map<string, number>();
+  private staticCue?: GestureCue;
+  private idleIndex = 0;
+  private celebrationIndex = 0;
   motions: { idle: CubismMotion[]; tap: CubismMotion[] } = {
     idle: [],
     tap: [],
@@ -32,7 +45,7 @@ export class HaruModel extends CubismUserModel {
   staticExpression = "";
   async load(
     signal: AbortSignal,
-    kind = "haru",
+    kind: Live2dKind = "haru",
     filename = "Haru.model3.json",
   ) {
     const bytes = (file: string, signal: AbortSignal) =>
@@ -43,6 +56,9 @@ export class HaruModel extends CubismUserModel {
       this.loadModel(await bytes(settings.getModelFileName(), signal), true);
       signal.throwIfAborted();
       if (!this._model) throw new Error("角色模型无效");
+      this.kind = kind;
+      for (let i = 0; i < this._model.getParameterCount(); i++)
+        this.parameters.set(this._model.getParameterId(i).getString(), i);
       for (const [filename, fn] of [
         [settings.getPhysicsFileName(), this.loadPhysics],
         [settings.getPoseFileName(), this.loadPose],
@@ -78,6 +94,8 @@ export class HaruModel extends CubismUserModel {
           );
           if (!motion) throw new Error("动作加载失败");
           if (group === "TapBody") motion.setLoop(false);
+          motion.setFadeInTime(0.6);
+          motion.setFadeOutTime(0.6);
           motion.setEffectIds(
             settings.getEyeBlinkParameterCount()
               ? Array.from(
@@ -108,10 +126,16 @@ export class HaruModel extends CubismUserModel {
     }
   }
   play(action: HaruAction, reduced: boolean) {
-    if (action.kind === "expression") {
+    this.director.setReduced(reduced);
+    if (action.kind === "cue") {
+      this.staticCue = action.cue;
+      this.staticExpression = "";
+      this.director.request(action.cue);
+    } else if (action.kind === "expression") {
       const expression = this.expressions.get(action.id);
       if (!expression) return;
       this.staticExpression = action.id;
+      this.staticCue = undefined;
       if (!reduced) this._expressionManager.startMotion(expression, false);
     } else {
       if (
@@ -119,19 +143,58 @@ export class HaruModel extends CubismUserModel {
         !this.motions[action.kind][action.index]
       )
         throw new Error("未知动作");
-      if (!reduced)
-        this._motionManager.startMotionPriority(
-          this.motions[action.kind][action.index],
-          false,
-          3,
+      if (!reduced) {
+        const motion = this.motions[action.kind][action.index];
+        this.director.requestNative(
+          action,
+          Math.max(motion.getDuration(), motion.getLoopDuration()) + 0.6,
         );
+      }
     }
   }
   update(delta: number, reduced: boolean) {
+    this.director.setReduced(reduced);
     this._model.loadParameters();
     if (!reduced) {
-      if (this._motionManager.isFinished() && this.motions.idle[0])
-        this._motionManager.startMotionPriority(this.motions.idle[0], false, 1);
+      const frame = this.director.advance(delta);
+      if (frame.native) {
+        if (frame.native.kind === "idle") this.idleIndex = frame.native.index;
+        this._motionManager.startMotionPriority(
+          this.motions[frame.native.kind][frame.native.index],
+          false,
+          3,
+        );
+      }
+      if (frame.started && frame.autonomous && this.motions.idle.length > 1) {
+        this.idleIndex =
+          (this.idleIndex +
+            1 +
+            Math.floor(Math.random() * (this.motions.idle.length - 1))) %
+          this.motions.idle.length;
+        this._motionManager.startMotionPriority(
+          this.motions.idle[this.idleIndex],
+          false,
+          1,
+        );
+      }
+      if (
+        frame.started === "happy" &&
+        ["mao", "miara", "rice"].includes(this.kind)
+      ) {
+        const pool =
+          this.kind === "mao" ? this.motions.tap.slice(3) : this.motions.tap;
+        const motion = pool[this.celebrationIndex++ % pool.length];
+        if (motion) {
+          this._motionManager.startMotionPriority(motion, false, 3);
+          this.director.hold(motion.getDuration() + 0.6);
+        }
+      }
+      if (this._motionManager.isFinished() && this.motions.idle[this.idleIndex])
+        this._motionManager.startMotionPriority(
+          this.motions.idle[this.idleIndex],
+          false,
+          1,
+        );
       const animated = this._motionManager.updateMotion(this._model, delta);
       this._model.saveParameters();
       if (!animated) this._eyeBlink.updateParameters(this._model, delta);
@@ -146,7 +209,9 @@ export class HaruModel extends CubismUserModel {
         ["ParamEyeBallX", x],
         ["ParamEyeBallY", y],
       ] as const)
-        this._model.addParameterValueById(ids.getId(name), value);
+        if (this.parameters.has(name))
+          this._model.addParameterValueById(ids.getId(name), value);
+      if (frame.cue) this.applyGesture(frame.cue, frame.progress);
       this._breath.updateParameters(this._model, delta);
       this._physics?.evaluate(this._model, delta);
       this._pose?.updateParameters(this._model, delta);
@@ -159,8 +224,26 @@ export class HaruModel extends CubismUserModel {
           this._model.multiplyParameterValueById(id, p.Value);
         else this._model.addParameterValueById(id, p.Value);
       }
+      if (this.staticCue) this.applyGesture(this.staticCue, 0.4);
     }
     this._model.update();
+  }
+  private applyGesture(cue: GestureCue, progress: number) {
+    for (const [id, offset] of Object.entries(
+      sampleGesture(this.kind, cue, progress),
+    )) {
+      const i = this.parameters.get(id);
+      if (i === undefined) continue;
+      this._model.setParameterValueByIndex(
+        i,
+        boundedOffset(
+          this._model.getParameterValueByIndex(i),
+          offset,
+          this._model.getParameterMinimumValue(i),
+          this._model.getParameterMaximumValue(i),
+        ),
+      );
+    }
   }
   override release() {
     super.release();

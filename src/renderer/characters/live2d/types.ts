@@ -1,5 +1,8 @@
+import type { GestureCue } from "./gestures";
 export type HaruAction =
-  { kind: "idle" | "tap"; index: number } | { kind: "expression"; id: string };
+  | { kind: "idle" | "tap"; index: number }
+  | { kind: "expression"; id: string }
+  | { kind: "cue"; cue: GestureCue };
 export interface HaruRuntime {
   play(action: HaruAction): void;
   setPointer(x: number, y: number): void;

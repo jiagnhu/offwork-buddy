@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import HaruCharacter from "../characters/live2d/HaruCharacter";
 import { live2dModels, type Live2dKind } from "../../shared/characters";
 import type { HaruAction } from "../characters/live2d/types";
+import { gestureLabels, type GestureCue } from "../characters/live2d/gestures";
 export default function HaruPreview({
   kind = "haru",
   displayName = "丝袜妹",
@@ -71,10 +72,21 @@ export default function HaruPreview({
             displayName={displayName}
             reducedMotion={reducedMotion}
             actionRequest={request}
-            onInteract={() => play(haruActions.tap[0])}
+            onInteract={() => play({ kind: "cue", cue: "attention" })}
           />
         </div>
         <div className="haru-preview-options">
+          <h3>专属动作</h3>
+          <div className="haru-action-grid">
+            {Object.entries(gestureLabels[kind]).map(([cue, label]) => (
+              <button
+                key={cue}
+                onClick={() => play({ kind: "cue", cue: cue as GestureCue })}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
           <h3>自然待机</h3>
           <div className="haru-action-grid">
             {haruActions.idle.map((a, i) => (
@@ -102,7 +114,7 @@ export default function HaruPreview({
           <p className="hint">
             {reducedMotion
               ? "已开启减少动画：仅展示静态表情。"
-              : "这些是模型原有的动作与表情。桌面采用原地播放，Miara 保留原作场景动画。"}
+              : "闲下来约 20–45 秒后，会自然变换小动作。点击、完成计划和休息提醒各有回应；连续操作会等待当前动作结束。全程无声。"}
           </p>
           <details>
             <summary>模型来源与使用说明</summary>
