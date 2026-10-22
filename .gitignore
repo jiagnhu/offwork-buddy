@@ -4,3 +4,4 @@ release/
 test-results/
 .superpowers/
 *.log
+.cache/
