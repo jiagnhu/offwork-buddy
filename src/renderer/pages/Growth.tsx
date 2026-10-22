@@ -24,6 +24,7 @@ export default function Growth({ snapshot }: { snapshot: Snapshot }) {
       <section className="card growth-hero">
         <div className="growth-preview">
           <Character
+            displayName={p.haruName}
             kind={p.character}
             status={snapshot.progress.status}
             reducedMotion={p.reducedMotion}
@@ -58,7 +59,12 @@ export default function Growth({ snapshot }: { snapshot: Snapshot }) {
         </div>
       </section>
       <section className="growth-rewards">
-        {p.character==='haru'&&<p className="muted">星星和抱枕适用于年糕、小沐；已选配饰会保留，Haru 暂不佩戴这些配饰。</p>}
+        {p.character === "haru" && (
+          <p className="muted">
+            星星和抱枕适用于年糕、小沐；已选配饰会保留，{p.haruName ?? "丝袜妹"}{" "}
+            暂不佩戴这些配饰。
+          </p>
+        )}
         {(
           [
             {

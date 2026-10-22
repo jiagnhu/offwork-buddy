@@ -3,9 +3,11 @@ import HaruCharacter from "../characters/live2d/HaruCharacter";
 import { haruActions } from "../characters/live2d/actions";
 import type { HaruAction } from "../characters/live2d/types";
 export default function HaruPreview({
+  displayName = "丝袜妹",
   reducedMotion,
   onClose,
 }: {
+  displayName?: string;
   reducedMotion: boolean;
   onClose: () => void;
 }) {
@@ -33,12 +35,12 @@ export default function HaruPreview({
     <dialog
       ref={dialog}
       className="haru-preview-dialog"
-      aria-label="Haru 角色预览"
+      aria-label={`${displayName} 角色预览`}
       onCancel={onClose}
     >
       <div className="haru-preview-heading">
         <div>
-          <h2>认识 Haru</h2>
+          <h2>认识 {displayName}</h2>
           <p className="muted">轻轻眨眼，安静陪你。原地陪伴 · 全程无声</p>
         </div>
         <button aria-label="关闭预览" onClick={onClose}>
@@ -48,6 +50,7 @@ export default function HaruPreview({
       <div className="haru-preview-layout">
         <div className="haru-preview-stage">
           <HaruCharacter
+            displayName={displayName}
             reducedMotion={reducedMotion}
             actionRequest={request}
             onInteract={() => play(haruActions.tap[0])}
@@ -109,7 +112,7 @@ export default function HaruPreview({
             disabled={busy}
             onClick={() => void select()}
           >
-            使用 Haru
+            使用 {displayName}
           </button>
         </div>
       </div>

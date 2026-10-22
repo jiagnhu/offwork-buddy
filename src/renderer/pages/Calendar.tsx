@@ -12,6 +12,8 @@ import { monthDates, weekday } from "../../core/date";
 import { resolveDay } from "../../core/calendar";
 import { ruleForDate } from "../../core/ledger";
 import { defaultRule } from "../../shared/defaults";
+import { calendarIncome } from "../../core/calendar-income";
+import { money } from "../components/format";
 export default function Calendar({
   snapshot,
   initialDate,
@@ -40,6 +42,7 @@ export default function Calendar({
     };
   const days = dates.map((date) => ({
     date,
+    income: calendarIncome(state, date, new Date()),
     ...resolveDay(
       date,
       ruleForDate(state, date) ?? rule,
@@ -126,6 +129,7 @@ export default function Calendar({
           {days.map((d) => (
             <button
               key={d.date}
+              aria-label={`${d.date} ${d.paidHoliday ?? (d.workday ? "工作日" : "休息日")}`}
               className={`day ${d.workday ? "work" : "rest"} ${d.date === snapshot.today ? "today" : ""} ${d.source === "manual" ? "manual" : ""}`}
               onClick={() => {
                 setSelected(d.date);
@@ -135,16 +139,36 @@ export default function Calendar({
             >
               <span>{Number(d.date.slice(-2))}</span>
               <small>
-                {d.source === "manual"
-                  ? "已调整"
-                  : d.source === "official"
-                    ? d.workday
-                      ? "调休上班"
-                      : "节假休息"
-                    : d.workday
-                      ? "工作日"
-                      : "休息日"}
+                {d.paidHoliday
+                  ? `${d.paidHoliday} · 带薪`
+                  : d.source === "manual"
+                    ? "已调整"
+                    : d.source === "official"
+                      ? d.workday
+                        ? "调休上班"
+                        : "节假休息"
+                      : d.workday
+                        ? "工作日"
+                        : "休息日"}
               </small>
+              <span
+                className="day-income"
+                title={
+                  d.income.kind === "settled"
+                    ? "已结算收入"
+                    : d.income.kind === "today"
+                      ? "今日目前收入"
+                      : "预计全天收入"
+                }
+              >
+                {d.income.kind === "before-start"
+                  ? state.configured
+                    ? "未入职"
+                    : "未设置"
+                  : d.income.kind === "unconfigured"
+                    ? "未设置"
+                    : `${d.income.kind === "estimated" ? "预计 " : ""}¥${money(d.income.amountCents)}`}
+              </span>
               {d.date === snapshot.today && <i>今天</i>}
               {!!state.plans[d.date]?.length && (
                 <span className="day-plans">
@@ -175,6 +199,7 @@ export default function Calendar({
           <br />
           {!rule.official ? "当前已关闭官方日历覆盖。" : ""}
           历史日历调整不会自动修改已结算收入。
+          今日显示当前收入，未来显示全天预计；带薪法定节假日按正常日薪计入，入职前不计薪。
         </p>
         <button
           className="secondary"

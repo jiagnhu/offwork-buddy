@@ -94,6 +94,11 @@ export async function createHaruRuntime(
     const projection = new CubismMatrix44();
     const draw = (dt: number) => {
       if (disposed) return;
+      // Context loss is observable before the browser dispatches its event.
+      if (gl.isContextLost()) {
+        lost(new Event("webglcontextlost"));
+        return;
+      }
       try {
         model.update(dt, reduced);
         gl.viewport(0, 0, canvas.width, canvas.height);
@@ -111,8 +116,13 @@ export async function createHaruRuntime(
         renderer.setRenderState(null!, [0, 0, canvas.width, canvas.height]);
         renderer.drawModel();
       } catch (e) {
+        const error = gl.isContextLost()
+          ? new Error("图形上下文已丢失，请重试")
+          : e instanceof Error
+            ? e
+            : new Error(String(e));
         dispose();
-        options.onError(e instanceof Error ? e : new Error(String(e)));
+        options.onError(error);
       }
     };
     loop = frameLoop(draw);
@@ -150,7 +160,10 @@ export async function createHaruRuntime(
     loop.setReduced(reduced);
     return runtime;
   } catch (e) {
+    const error =
+      contextError ??
+      (gl.isContextLost() ? new Error("图形上下文已丢失，请重试") : e);
     dispose();
-    throw contextError ?? e;
+    throw error;
   }
 }

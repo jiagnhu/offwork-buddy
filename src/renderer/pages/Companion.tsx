@@ -3,7 +3,7 @@ import type { Snapshot } from "../../shared/model";
 import Character from "../characters/Character";
 import CompanionControls from "../components/CompanionControls";
 import { useCompanionEvent, useDesktopScale } from "../hooks/useCompanionEvent";
-import { characterCapabilities } from '../../shared/character-capabilities';
+import { characterCapabilities } from "../../shared/character-capabilities";
 export default function Companion({ snapshot }: { snapshot: Snapshot }) {
   const p = snapshot.state.preferences,
     { event, dismiss } = useCompanionEvent(),
@@ -23,12 +23,16 @@ export default function Companion({ snapshot }: { snapshot: Snapshot }) {
           : snapshot.progress.status === "break"
             ? "sit"
             : "idle";
-  const size=characterCapabilities(p.character);
+  const size = characterCapabilities(p.character);
   const scale = useDesktopScale(p.scale, size.baseHeight);
   return (
     <div
-      className={`companion-root ${p.character==='haru'?'companion-haru':''}`}
-      style={{ width: size.baseWidth, height: size.baseHeight, transform: `scale(${scale})` }}
+      className={`companion-root ${p.character === "haru" ? "companion-haru" : ""}`}
+      style={{
+        width: size.baseWidth,
+        height: size.baseHeight,
+        transform: `scale(${scale})`,
+      }}
     >
       <CompanionControls snapshot={snapshot} onError={setError} />
       <div className="companion-stage">
@@ -42,6 +46,7 @@ export default function Companion({ snapshot }: { snapshot: Snapshot }) {
           </button>
         )}
         <Character
+          displayName={p.haruName}
           event={event}
           active={snapshot.desktop.visible}
           pose={pose}

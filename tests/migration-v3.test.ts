@@ -35,7 +35,15 @@ function v2() {
 test("v2 migration preserves money, plans, growth, accessories and roaming", () => {
   const old = v2(),
     result = parseState(old);
-  expect(result).toEqual({ ...old, schemaVersion: 3 });
+  expect(result).toEqual({
+    ...old,
+    schemaVersion: 3,
+    preferences: {
+      ...old.preferences,
+      haruName: "丝袜妹",
+      reminders: { ...old.preferences.reminders, restMinutes: 0 },
+    },
+  });
 });
 test("only v3 accepts Haru and rejects unknown versions", () => {
   const old = v2();
@@ -50,7 +58,14 @@ test("only v3 accepts Haru and rejects unknown versions", () => {
     schemaVersion: 3,
     preferences: { ...old.preferences, character: "haru" },
   };
-  expect(parseState(next)).toEqual(next);
+  expect(parseState(next)).toEqual({
+    ...next,
+    preferences: {
+      ...next.preferences,
+      haruName: "丝袜妹",
+      reminders: { ...next.preferences.reminders, restMinutes: 0 },
+    },
+  });
   expect(() => parseState({ ...next, schemaVersion: 99 })).toThrow();
 });
 test("v2 original bytes are preserved and backup failure stops upgrade", async () => {

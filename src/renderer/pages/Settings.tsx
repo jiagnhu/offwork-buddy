@@ -13,7 +13,11 @@ import {
 import type { Snapshot, RuleInput } from "../../shared/model";
 import { defaultRule } from "../../shared/defaults";
 import { time, toMinutes } from "../components/format";
-import HaruPreview from '../components/HaruPreview';
+import HaruPreview from "../components/HaruPreview";
+import {
+  CompanionNameSetting,
+  RestReminderSetting,
+} from "../components/CompanionSettings";
 export function WorkForm({
   snapshot,
   onDone,
@@ -215,7 +219,7 @@ export function WorkForm({
         {rule.mode === "monthly" && (
           <>
             月薪 ÷
-            当月正常周排班天数，节假日、补班及手动调班不改变日薪。仅从累计开始日期按出勤估算，带薪休假与加班费暂未单独计入。
+            当月正常周排班天数，节假日、补班及手动调班不改变日薪。从累计开始日期估算，含日历标注的法定节假日正常工资，不含其他假期与加班费。
             <br />
           </>
         )}
@@ -241,7 +245,7 @@ export function WorkForm({
   );
 }
 export default function Settings({ snapshot }: { snapshot: Snapshot }) {
-  const [preview,setPreview]=useState(false);
+  const [preview, setPreview] = useState(false);
   const p = snapshot.state.preferences;
   const [message, setMessage] = useState(""),
     [error, setError] = useState("");
@@ -317,6 +321,7 @@ export default function Settings({ snapshot }: { snapshot: Snapshot }) {
               <option value={10}>提前 10 分钟</option>
             </select>
           </label>
+          <RestReminderSetting preferences={p} />
         </section>
         <section className="card">
           <h2>让搭子更像你</h2>
@@ -358,7 +363,14 @@ export default function Settings({ snapshot }: { snapshot: Snapshot }) {
           </div>
           <label className="field-title">你的桌面伙伴</label>
           <div className="character-options">
-            <button className={p.character==='haru'?'selected':''} aria-label="预览 Haru" onClick={()=>setPreview(true)}><Sparkles/>Haru · Live2D<span>预览</span></button>
+            <button
+              className={p.character === "haru" ? "selected" : ""}
+              aria-label={`预览 ${p.haruName ?? "丝袜妹"}`}
+              onClick={() => setPreview(true)}
+            >
+              <Sparkles />
+              {p.haruName ?? "丝袜妹"} · Live2D<span>预览</span>
+            </button>
             <button
               className={p.character === "pet" ? "selected" : ""}
               onClick={() =>
@@ -380,7 +392,14 @@ export default function Settings({ snapshot }: { snapshot: Snapshot }) {
               看板娘 · 小沐
             </button>
           </div>
-          {preview&&<HaruPreview reducedMotion={p.reducedMotion} onClose={()=>setPreview(false)}/>}
+          <CompanionNameSetting preferences={p} />
+          {preview && (
+            <HaruPreview
+              displayName={p.haruName}
+              reducedMotion={p.reducedMotion}
+              onClose={() => setPreview(false)}
+            />
+          )}
           {(
             [
               ["alwaysOnTop", "桌面伙伴始终置顶"],

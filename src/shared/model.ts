@@ -16,12 +16,14 @@ export interface RuleVersion {
 }
 export type RuleInput = Omit<RuleVersion, "id" | "effectiveFrom">;
 export interface CalendarYear {
+  paidHolidays?: Record<DateKey, string>;
   source: string;
   updated: DateKey;
   days: Record<DateKey, boolean>;
 }
 export type CalendarData = Record<string, CalendarYear>;
 export interface DayInfo {
+  paidHoliday?: string;
   workday: boolean;
   source: "manual" | "official" | "schedule";
   calendarMissing: boolean;
@@ -46,11 +48,17 @@ export interface LedgerEntry {
   workdayCount: number;
 }
 export interface Preferences {
+  haruName?: string;
   movementMode: "bottom" | "stationary";
   cardHidden: boolean;
   cardPosition?: { x: number; y: number };
   displayId?: number;
-  reminders: { lunch: boolean; offwork: boolean; leadMinutes: 0 | 5 | 10 };
+  reminders: {
+    lunch: boolean;
+    offwork: boolean;
+    leadMinutes: 0 | 5 | 10;
+    restMinutes?: number;
+  };
   accessory: "none" | "star" | "pillow";
   theme: "light" | "dark";
   character: CharacterKind;

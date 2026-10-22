@@ -5,6 +5,28 @@ import type {
   RuleVersion,
 } from "../shared/model";
 import { dayNumber, weekday, monthDates } from "./date";
+export function mergeBundledCalendar(
+  bundled: CalendarData,
+  saved: CalendarData,
+): CalendarData {
+  const result = { ...bundled, ...saved };
+  for (const [year, data] of Object.entries(saved)) {
+    if (
+      data.paidHolidays === undefined &&
+      data.source === bundled[year]?.source
+    ) {
+      result[year] = {
+        ...data,
+        paidHolidays: Object.fromEntries(
+          Object.entries(bundled[year].paidHolidays ?? {}).filter(
+            ([date]) => data.days[date] === false,
+          ),
+        ),
+      };
+    }
+  }
+  return result;
+}
 export function resolveDay(
   date: DateKey,
   rule: RuleVersion,
@@ -16,7 +38,14 @@ export function resolveDay(
   if (Object.hasOwn(overrides, date))
     return { workday: overrides[date], source: "manual", calendarMissing };
   if (rule.official && year && Object.hasOwn(year.days, date))
-    return { workday: year.days[date], source: "official", calendarMissing };
+    return {
+      workday: year.days[date],
+      source: "official",
+      calendarMissing,
+      ...(!year.days[date] && year.paidHolidays?.[date]
+        ? { paidHoliday: year.paidHolidays[date] }
+        : {}),
+    };
   const day = weekday(date);
   let workday = day !== 0 && day !== 6;
   if (rule.schedule === "single") workday = day !== rule.restDay;

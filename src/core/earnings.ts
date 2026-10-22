@@ -24,7 +24,7 @@ export function calculateDayDetail(
   overrides: Record<DateKey, boolean>,
 ) {
   const info = resolveDay(date, rule, calendar, overrides);
-  if (!info.workday)
+  if (!info.workday && !info.paidHoliday)
     return {
       progress: {
         ...emptyProgress,
@@ -47,7 +47,13 @@ export function calculateDayDetail(
   const elapsed =
     Math.max(0, Math.min(seconds, end) - start) -
     Math.max(0, Math.min(seconds, be) - bs);
-  const fraction = total > 0 ? Math.max(0, Math.min(1, elapsed / total)) : 0;
+  const fraction = info.paidHoliday
+    ? date <= today
+      ? 1
+      : 0
+    : total > 0
+      ? Math.max(0, Math.min(1, elapsed / total))
+      : 0;
   let budget = new Decimal(rule.amount);
   let denominator: number | null = null;
   if (rule.mode === "monthly") {
@@ -65,21 +71,23 @@ export function calculateDayDetail(
           ? "break"
           : "working";
   const progress: DayProgress = {
-    status,
+    status: info.paidHoliday ? "rest" : status,
     countdownTarget:
       seconds < bs && rule.breakStart !== null
         ? "lunch"
         : status === "break"
           ? "resume"
           : "offwork",
-    countdownSeconds: Math.max(
-      0,
-      (seconds < bs && rule.breakStart !== null
-        ? bs
-        : status === "break"
-          ? be
-          : end) - seconds,
-    ),
+    countdownSeconds: info.paidHoliday
+      ? 0
+      : Math.max(
+          0,
+          (seconds < bs && rule.breakStart !== null
+            ? bs
+            : status === "break"
+              ? be
+              : end) - seconds,
+        ),
     budgetCents: budget
       .mul(100)
       .toDecimalPlaces(0, Decimal.ROUND_HALF_UP)
@@ -95,8 +103,8 @@ export function calculateDayDetail(
   return {
     progress,
     denominator,
-    totalSeconds: total,
-    elapsedSeconds: Math.round(fraction * total),
+    totalSeconds: info.paidHoliday ? 0 : total,
+    elapsedSeconds: info.paidHoliday ? 0 : Math.round(fraction * total),
     dailyBudgetDecimal: budget.toString(),
     dayInfo: info,
   };

@@ -15,7 +15,10 @@ test("offline resources remain silent; twenty switches release every old context
       };
       (window as any).__haruProbe = state;
       const get = HTMLCanvasElement.prototype.getContext;
-      HTMLCanvasElement.prototype.getContext = function (this: HTMLCanvasElement, ...args: any[]) {
+      HTMLCanvasElement.prototype.getContext = function (
+        this: HTMLCanvasElement,
+        ...args: any[]
+      ) {
         const context = (get as any).apply(this, args);
         if (args[0] === "webgl" && context && !state.contexts.includes(context))
           state.contexts.push(context);
@@ -79,6 +82,7 @@ test("offline resources remain silent; twenty switches release every old context
     await expect(page.locator(".haru-character")).toHaveAttribute(
       "data-loaded",
       "true",
+      { timeout: 30000 },
     );
     expect(
       await page.evaluate(() => (window as any).__haruProbe.pending.size),

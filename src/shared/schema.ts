@@ -72,13 +72,26 @@ const preferencesV2Schema = legacyPreferencesSchema.extend({
 });
 export const preferencesSchema = preferencesV2Schema.extend({
   character: z.enum(["pet", "assistant", "haru"]),
+  haruName: z
+    .string()
+    .trim()
+    .min(1, "请输入角色名称")
+    .max(20, "名称最多20个字")
+    .default("丝袜妹"),
+  reminders: preferencesV2Schema.shape.reminders.extend({
+    restMinutes: z
+      .union([z.literal(0), z.number().int().min(5).max(240)])
+      .default(0),
+  }),
 });
 const dayInfo = z.object({
+  paidHoliday: z.string().max(40).optional(),
   workday: z.boolean(),
   source: z.enum(["manual", "official", "schedule"]),
   calendarMissing: z.boolean(),
 });
 export const calendarYearSchema = z.object({
+  paidHolidays: z.record(dateSchema, z.string().min(1).max(40)).optional(),
   source: z.string().url(),
   updated: dateSchema,
   days: z.record(dateSchema, z.boolean()),
@@ -86,9 +99,22 @@ export const calendarYearSchema = z.object({
 export const calendarSchema = z
   .record(z.string().regex(/^20\d{2}$/), calendarYearSchema)
   .superRefine((c, ctx) => {
-    for (const [year, data] of Object.entries(c))
-      if (Object.keys(data.days).some((d) => !d.startsWith(year + "-")))
+    for (const [year, data] of Object.entries(c)) {
+      if (
+        [
+          ...Object.keys(data.days),
+          ...Object.keys(data.paidHolidays ?? {}),
+        ].some((d) => !d.startsWith(year + "-"))
+      )
         ctx.addIssue({ code: "custom", message: "日历日期与年份不一致" });
+      if (
+        Object.keys(data.paidHolidays ?? {}).some((d) => data.days[d] !== false)
+      )
+        ctx.addIssue({
+          code: "custom",
+          message: "带薪节假日必须同时标记为休息日",
+        });
+    }
   });
 const entry = z.object({
   algorithm: z.literal("normal-schedule-v1").optional(),

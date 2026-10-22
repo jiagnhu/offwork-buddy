@@ -1,7 +1,8 @@
+import { mergeBundledCalendar } from "../core/calendar";
 import { startCompanionController } from "./companion-controller";
-import { registerLive2dScheme, installLive2dProtocol } from './live2d-assets';
-import live2dLock from '../../resources/live2d/asset-lock.json';
-import { effectiveMovementMode } from '../shared/character-capabilities';
+import { registerLive2dScheme, installLive2dProtocol } from "./live2d-assets";
+import live2dLock from "../../resources/live2d/asset-lock.json";
+import { effectiveMovementMode } from "../shared/character-capabilities";
 registerLive2dScheme();
 import { applyPlanAction } from "../core/plans";
 import { startReminderController } from "./reminder-controller";
@@ -149,7 +150,10 @@ else {
   app
     .whenReady()
     .then(async () => {
-      installLive2dProtocol(path.join(__dirname, "../resources/live2d"), live2dLock);
+      installLive2dProtocol(
+        path.join(__dirname, "../resources/live2d"),
+        live2dLock,
+      );
       const loaded = await loadState(directory);
       state = loaded.state;
       notice = loaded.recoveryNotice ?? null;
@@ -162,7 +166,7 @@ else {
             ),
           ),
         );
-        state.calendar = { ...bundled, ...state.calendar };
+        state.calendar = mergeBundledCalendar(bundled, state.calendar);
       } catch {
         notice = "内置日历不可用，可在日历页导入年度数据。";
       }

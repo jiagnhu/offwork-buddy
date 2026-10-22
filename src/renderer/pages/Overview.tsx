@@ -79,6 +79,7 @@ export default function Overview({
           </div>
           <div className="overview-character" id="character-preview">
             <Character
+              displayName={state.preferences.haruName}
               kind={state.preferences.character}
               status={progress.status}
               reducedMotion={state.preferences.reducedMotion}
@@ -87,7 +88,11 @@ export default function Overview({
           </div>
           <div className="buddy-copy">
             <h2>
-              {state.preferences.character === "pet" ? "年糕" : state.preferences.character === "haru" ? "Haru" : "小沐"}
+              {state.preferences.character === "pet"
+                ? "年糕"
+                : state.preferences.character === "haru"
+                  ? (state.preferences.haruName ?? "丝袜妹")
+                  : "小沐"}
               陪你，慢慢来。
             </h2>
             <p>认真生活，也要记得休息。</p>

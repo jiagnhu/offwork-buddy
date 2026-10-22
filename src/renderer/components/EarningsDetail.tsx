@@ -103,9 +103,11 @@ export default function EarningsDetail({
                     / {(detail.detail.totalSeconds / 3600).toFixed(2)} 小时
                   </p>
                   <p className="muted">
-                    {detail.detail.dayInfo.workday
-                      ? "今日金额 = 未提前舍入的每日预算 × 已计工时比例。午休暂停累计。"
-                      : `今日休息，由${{ manual: "手动安排", official: "节假日日历", schedule: "每周排班" }[detail.detail.dayInfo.source]}确定。`}
+                    {detail.detail.dayInfo.paidHoliday
+                      ? `${detail.detail.dayInfo.paidHoliday}：带薪休息，按正常每日预算计入，不按工作小时累计。`
+                      : detail.detail.dayInfo.workday
+                        ? "今日金额 = 未提前舍入的每日预算 × 已计工时比例。午休暂停累计。"
+                        : `今日休息，由${{ manual: "手动安排", official: "节假日日历", schedule: "每周排班" }[detail.detail.dayInfo.source]}确定。`}
                   </p>
                 </>
               )}
@@ -130,7 +132,7 @@ export default function EarningsDetail({
                 </>
               )}
               <p className="hint">
-                金额每天四舍五入到分再累计；预计收入不含税费、带薪休假和加班费。
+                金额每天四舍五入到分再累计；含日历标注的法定节假日正常工资；不含税费、其他带薪假期和加班费。
               </p>
             </>
           )

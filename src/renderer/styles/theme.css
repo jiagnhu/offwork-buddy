@@ -1267,3 +1267,5 @@ td:last-child {
   animation: none !important;
   transition: none !important;
 }
+
+.day .day-income { display:block; font-size:11px; font-variant-numeric:tabular-nums; font-weight:600; margin-top:8px; color:var(--green); overflow-wrap:anywhere; }

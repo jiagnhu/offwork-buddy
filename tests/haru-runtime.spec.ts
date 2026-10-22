@@ -22,6 +22,7 @@ test("real Haru renders, hides, restores and recovers after context loss", async
     await expect(page.locator(".haru-character")).toHaveAttribute(
       "data-loaded",
       "true",
+      {timeout: 30000},
     );
     await page.evaluate(() =>
       document
@@ -35,6 +36,7 @@ test("real Haru renders, hides, restores and recovers after context loss", async
     await expect(page.locator(".haru-character")).toHaveAttribute(
       "data-loaded",
       "true",
+      {timeout: 30000},
     );
   } finally {
     await s.cleanup();

@@ -3,11 +3,13 @@ import { useWindowVisible } from "../../hooks/useWindowVisible";
 import { mountResource } from "./lifecycle";
 import type { HaruAction, HaruRuntime } from "./types";
 export default function HaruCharacter({
+  displayName = "丝袜妹",
   active = true,
   reducedMotion,
   actionRequest,
   onInteract,
 }: {
+  displayName?: string;
   active?: boolean;
   reducedMotion: boolean;
   actionRequest?: { id: string; action: HaruAction };
@@ -83,7 +85,7 @@ export default function HaruCharacter({
         <canvas
           key={retry}
           ref={canvas}
-          aria-label="Haru Live2D 角色"
+          aria-label={`${displayName} Live2D 角色`}
           onClick={onInteract}
           onPointerMove={(e) => {
             const r = e.currentTarget.getBoundingClientRect();
@@ -96,7 +98,7 @@ export default function HaruCharacter({
         />
       )}
       {!loaded && !error && enabled && (
-        <span className="haru-loading">Haru 正在准备中…</span>
+        <span className="haru-loading">{displayName} 正在准备中…</span>
       )}
       {error && (
         <div className="haru-error" role="alert">

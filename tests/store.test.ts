@@ -1,3 +1,4 @@
+import { parseState } from "../src/shared/schema";
 import { it, expect, afterEach } from "vitest";
 import {
   mkdtemp,
@@ -32,7 +33,7 @@ it("round trips and recovers previous valid state from corrupt primary", async (
   expect((await loadState(d)).state.preferences.theme).toBe("dark");
   await writeFile(path.join(d, "state.json"), "broken");
   const loaded = await loadState(d);
-  expect(loaded.state).toEqual(fixture());
+  expect(loaded.state).toEqual(parseState(fixture()));
   expect(loaded.recoveryNotice).toBeTruthy();
   expect((await readdir(d)).some((f) => f.startsWith("corrupt-"))).toBe(true);
 });
@@ -48,7 +49,7 @@ it("write failure leaves old primary readable", async () => {
   await saveState(d, fixture());
   await mkdir(path.join(d, "state.tmp"));
   await expect(saveState(d, fixture())).rejects.toThrow();
-  expect((await loadState(d)).state).toEqual(fixture());
+  expect((await loadState(d)).state).toEqual(parseState(fixture()));
 });
 it("refuses corrupt file when no backup exists", async () => {
   const d = await dir();
