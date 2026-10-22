@@ -48,12 +48,12 @@
 
 **Interfaces:**
 - `parseState(input: unknown): State` 保持调用接口，返回 `schemaVersion: 2`。
-- `migrateState(input: unknown): State`：验证 v1 再补默认值，拒绝未知未来版本；纯函数不写盘。v1 验证器与 v2 验证器放在 schema 模块，migration 只调用，不引入循环依赖。
+- `migrateV1(input: LegacyState): State`：纯函数补默认值，不写盘，只依赖 model 中保留的 LegacyState 类型。parseState 在 schema 中先验证 v1，再调用 migrateV1，最后验证 v2；拒绝未知未来版本，migration 不导入 schema，避免循环依赖。
 - Preferences 新增 `movementMode: 'bottom'|'stationary'`, `cardHidden: boolean`, `cardPosition?: {x:number;y:number}`, `reminders: {lunch:boolean;offwork:boolean;leadMinutes:0|5|10}`, `accessory: 'none'|'star'|'pillow'`；旧 position 保留为角色稳定位置，新增 `displayId?: number` 仅作提示，失效时按位置选择屏幕。
 - State 新增 `growth: {points:number;days:Record<DateKey,{interacted:boolean;rewardedPlanIds:string[];planRewardCount:number}>}`, `reminderHistory: Record<string,number>`（值为触发点毫秒）。保留历史奖励 ID，避免重建相同 ID 绕过限制。
 - LedgerEntry 新增可选 `algorithm: 'normal-schedule-v1'`；v1 迁移不填算法标签。
 
-- [ ] 写失败测试：v1 16000 月薪、84211 分历史记录和完成计划迁移后逐项不变；成长为 0；减少动画 true 保留；v2 导出再导入等价；未来版本拒绝。断言 `migrateState(v1).ledger[d].amountCents === 84211`、`growth.points === 0`。
+- [ ] 写失败测试：v1 16000 月薪、84211 分历史记录和完成计划迁移后逐项不变；成长为 0；减少动画 true 保留；v2 导出再导入等价；未来版本拒绝。断言 `parseState(v1).ledger[d].amountCents === 84211`、`growth.points === 0`。
 - [ ] 运行 `npx vitest run tests/migration.test.ts tests/store.test.ts tests/schema.test.ts`，确认新行为缺失导致失败。
 - [ ] 实现迁移与 Zod 约束。loadState 在迁移前保存只创建不覆盖的 `state.pre-v2.json` 原文；若备份不能创建，停止升级且保持原文件。备份恢复路径同样遵守；导入继续保留导入前用户数据，并保留所导入的原始 v1 内容。初始提醒 true/true/5、底部模式、配饰 none、空成长与去重历史。
 - [ ] 测试只读目录迁移失败时原文件原文未变；运行上述命令和 `npm run typecheck`，预期通过；更新现有 fixture 到 v2 并保留独立 v1 fixture。
