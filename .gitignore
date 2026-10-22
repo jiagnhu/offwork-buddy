@@ -5,3 +5,4 @@ test-results/
 .superpowers/
 *.log
 .cache/
+vendor/cubism-framework/lib/

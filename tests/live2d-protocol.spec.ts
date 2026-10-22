@@ -13,6 +13,6 @@ test('only local whitelisted model resources load with sandbox intact',async()=>
       return {model:model.status,mime:model.headers.get('content-type'),texture:texture.status,missing:missing.status,post:post.status,external};
     });
     expect(results).toEqual({model:200,mime:'application/json',texture:200,missing:404,post:405,external:false});
-    expect(await s.app.evaluate(({BrowserWindow})=>BrowserWindow.getAllWindows().every(w=>{const p=w.webContents.getLastWebPreferences();return p.sandbox&&p.contextIsolation&&!p.nodeIntegration;}))).toBe(true);
+    expect(await s.app.evaluate(({BrowserWindow})=>BrowserWindow.getAllWindows().every(w=>{const p=(w.webContents as any).getLastWebPreferences();return p.sandbox&&p.contextIsolation&&!p.nodeIntegration;}))).toBe(true);
   }finally{await s.cleanup();}
 });

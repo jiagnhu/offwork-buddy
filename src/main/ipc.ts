@@ -1,4 +1,4 @@
-import { ipcMain } from "electron";
+import { ipcMain, BrowserWindow } from "electron";
 import { pathToFileURL } from "node:url";
 import path from "node:path";
 import { ZodError } from "zod";
@@ -8,7 +8,10 @@ export function registerIpc(
   const allowed = pathToFileURL(
     path.join(__dirname, "../renderer/index.html"),
   ).href;
-  for (const [name, fn] of Object.entries(handlers))
+  for (const [name, fn] of Object.entries({
+    ...handlers,
+    getWindowVisibility: (..._args: any[]) => false,
+  }))
     ipcMain.handle("buddy:" + name, async (event, ...args) => {
       try {
         if (
@@ -17,7 +20,14 @@ export function registerIpc(
           event.senderFrame.url.split("#")[0] !== allowed
         )
           throw new Error("不允许的窗口请求");
-        return { ok: true, value: await fn(...args) };
+        const win = BrowserWindow.fromWebContents(event.sender);
+        return {
+          ok: true,
+          value:
+            name === "getWindowVisibility"
+              ? !!win?.isVisible() && !win?.isMinimized()
+              : await fn(...args),
+        };
       } catch (error) {
         return {
           ok: false,

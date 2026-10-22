@@ -1,3 +1,5 @@
+import { execFileSync } from 'node:child_process';
+execFileSync(process.execPath,['node_modules/typescript/bin/tsc','-p','vendor/cubism-framework/tsconfig.json'],{stdio:'inherit'});
 import { build } from "esbuild";
 import { build as viteBuild } from "vite";
 import { mkdir, cp, readFile } from "node:fs/promises";

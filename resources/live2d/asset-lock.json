@@ -134,6 +134,71 @@
       "mime": "application/json"
     },
     {
+      "path": "haru/shaders/fragshadersrcalphablend.frag",
+      "sha256": "855b247f02042a808a41e282ee4d7de7cc4533abeb5032b4ab8fe84f7dec107f",
+      "mime": "text/plain"
+    },
+    {
+      "path": "haru/shaders/fragshadersrccolorblend.frag",
+      "sha256": "01d4bf6a14b4a738976e9a538767a21da0defa8816f3845a7df08a7713327538",
+      "mime": "text/plain"
+    },
+    {
+      "path": "haru/shaders/fragshadersrccopy.frag",
+      "sha256": "15c67a4ec3adda4c849aff2a8319a3f6aceef8a84d5e5e1f3fb7fd9cd681193c",
+      "mime": "text/plain"
+    },
+    {
+      "path": "haru/shaders/fragshadersrcmaskinvertedpremultipliedalpha.frag",
+      "sha256": "1005cff8113de587cf1c0e295288d04d85f0f4ebc223684c8340e017fd8fc788",
+      "mime": "text/plain"
+    },
+    {
+      "path": "haru/shaders/fragshadersrcmaskpremultipliedalpha.frag",
+      "sha256": "f84ff615393d26ea6ab7c28747803db6472524c92567c0ad01e8225fbab36a3b",
+      "mime": "text/plain"
+    },
+    {
+      "path": "haru/shaders/fragshadersrcpremultipliedalpha.frag",
+      "sha256": "c93abe215357cc782a25fc4ef20f5fe1f34e2cc193ee23d763b56b81fae5fce1",
+      "mime": "text/plain"
+    },
+    {
+      "path": "haru/shaders/fragshadersrcpremultipliedalphablend.frag",
+      "sha256": "2155076275199a2946959838391dfb856e9d1db91b6ca3abd19ed70d4ff27e15",
+      "mime": "text/plain"
+    },
+    {
+      "path": "haru/shaders/fragshadersrcsetupmask.frag",
+      "sha256": "3cccc0b68a56cfbf4bd4841b0a759431dd159812c38dc280981ba633fa0afe7a",
+      "mime": "text/plain"
+    },
+    {
+      "path": "haru/shaders/vertshadersrc.vert",
+      "sha256": "291ed3f35f71f1e71e6df33fb055f009a8a9b36ee664f74f24f6cefef0c4029b",
+      "mime": "text/plain"
+    },
+    {
+      "path": "haru/shaders/vertshadersrcblend.vert",
+      "sha256": "2589837bd7a6a550a1c3af41b4fa776011e6e71f2531320fa39afcb83b209bf4",
+      "mime": "text/plain"
+    },
+    {
+      "path": "haru/shaders/vertshadersrccopy.vert",
+      "sha256": "b7bc4ba7517f405af4812ac47d99bc2b633c99f463c1224029556b00e8dff3cf",
+      "mime": "text/plain"
+    },
+    {
+      "path": "haru/shaders/vertshadersrcmasked.vert",
+      "sha256": "6704a9df2e6d3ee5176c72fca4ba59358ba4827a07054b1e0a72a3c574e281fd",
+      "mime": "text/plain"
+    },
+    {
+      "path": "haru/shaders/vertshadersrcsetupmask.vert",
+      "sha256": "649aad2f6c0af55a7a4adcf33dbf78937ef9d77ed6ba917fd716176adce25afe",
+      "mime": "text/plain"
+    },
+    {
       "path": "licenses/Framework-LICENSE.md",
       "sha256": "7ed849bff1e6499aa7cd882e47d246ddbbe06817c1e84cb974df949488302614",
       "mime": "text/plain"
@@ -145,7 +210,7 @@
     },
     {
       "path": "licenses/THIRD_PARTY_NOTICES.md",
-      "sha256": "afe3248c1dffe2484c45a0d440a50377a3e9336ce2a8181011bd346e3eaea164",
+      "sha256": "8dab5dbd026ffb242d6b48e1753b68776ede0933e1f75eb810011c9db9a58f02",
       "mime": "text/plain"
     }
   ],
@@ -156,6 +221,7 @@
     }
   ],
   "modifications": [
+    "Framework adapter patch: cancellable shader prepare and per-context release; official shaders unchanged.",
     "Haru.model3.json: removed all four Sound properties; audio omitted from app.",
     "All files extracted from pinned official SDK archive SHA256 67064a7fb1812cf502f5c4a03bfe12cc638c75a621bb4acf06bb28763df06ba0."
   ]

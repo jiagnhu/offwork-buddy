@@ -1,0 +1,68 @@
+diff --git a/vendor/cubism-framework/src/rendering/cubismshader_webgl.ts b/vendor/cubism-framework/src/rendering/cubismshader_webgl.ts
+index b3d605d..8bd46d7 100644
+--- a/vendor/cubism-framework/src/rendering/cubismshader_webgl.ts
++++ b/vendor/cubism-framework/src/rendering/cubismshader_webgl.ts
+@@ -65,15 +65,16 @@ export class CubismShader_WebGL {
+    *
+    * @return シェーダーのソースコード
+    */
+-  private async loadShader(url: string): Promise<string> {
+-    const response = await fetch(url);
++  private async loadShader(url: string, signal?: AbortSignal): Promise<string> {
++    const response = await fetch(url, {signal});
++    if (!response.ok) throw new Error(`Shader load failed: ${url}`);
+     return await response.text();
+   }
+ 
+   /**
+    * ブレンドモード用のシェーダーを読み込む
+    */
+-  private async loadShaders(): Promise<void> {
++  private async loadShaders(signal?: AbortSignal): Promise<void> {
+     // _shaderPathがnullまたはundefinedの場合はデフォルトパスを使用
+     const shaderDir = this._shaderPath ?? this._defaultShaderPath;
+ 
+@@ -123,12 +124,7 @@ export class CubismShader_WebGL {
+     // シェーダーファイルを非同期で読み込み、結果をプロパティに設定
+     const results = await Promise.all(
+       shaderFiles.map(file =>
+-        this.loadShader(file.path)
+-          .then(data => ({ prop: file.prop, data }))
+-          .catch(error => {
+-            console.error(`Error loading ${file.path} shader:`, error);
+-            return { prop: file.prop, data: '' };
+-          })
++        this.loadShader(file.path, signal).then(data => ({ prop: file.prop, data }))
+       )
+     );
+ 
+@@ -1076,6 +1072,17 @@ export class CubismShader_WebGL {
+    * @param vertShaderSrc 頂点シェーダのソース
+    * @param fragShaderSrc フラグメントシェーダのソース
+    */
++  // Offwork Buddy: awaitable, cancellable initialization before the first draw.
++  public async prepare(signal?: AbortSignal): Promise<void> {
++    this._isShaderLoading = true;
++    await this.loadShaders(signal);
++    signal?.throwIfAborted();
++    this._shaderSets = Array.from({length:this._shaderCount},()=>new CubismShaderSet());
++    this.registerShader();
++    this.registerBlendShader();
++    this._isShaderLoading = false;
++    this._isShaderLoaded = true;
++  }
+   public generateShaders(): void {
+     if (this._isShaderLoading) {
+       return;
+@@ -1990,6 +1997,11 @@ export class CubismShaderManager_WebGL {
+   /**
+    * GLContextごとのShaderを保持する変数
+    */
++  // Offwork Buddy: release one canvas without disrupting other model previews.
++  public removeContext(gl: WebGLRenderingContext): void {
++    this._shaderMap.get(gl)?.release();
++    this._shaderMap.delete(gl);
++  }
+   private _shaderMap: Map<WebGLRenderingContext, CubismShader_WebGL>;
+ }
+ 

@@ -11,6 +11,8 @@ export interface SettingsInput {
   startDate: string;
 }
 export interface BuddyBridge {
+  getWindowVisibility(): Promise<boolean>;
+  onWindowVisibility(listener:(visible:boolean)=>void):()=>void;
   getSnapshot(): Promise<Snapshot>;
   saveSettings(input: SettingsInput): Promise<Snapshot>;
   setPreferences(input: Partial<Preferences>): Promise<Snapshot>;

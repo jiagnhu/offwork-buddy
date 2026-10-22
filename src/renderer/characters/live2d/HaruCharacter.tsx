@@ -1,0 +1,121 @@
+import { useEffect, useRef, useState } from "react";
+import { useWindowVisible } from "../../hooks/useWindowVisible";
+import { createHaruRuntime } from "./runtime";
+import { mountResource } from "./lifecycle";
+import type { HaruAction, HaruRuntime } from "./types";
+export default function HaruCharacter({
+  active = true,
+  reducedMotion,
+  actionRequest,
+  onInteract,
+}: {
+  active?: boolean;
+  reducedMotion: boolean;
+  actionRequest?: { id: string; action: HaruAction };
+  onInteract: () => void;
+}) {
+  const visible = useWindowVisible(),
+    canvas = useRef<HTMLCanvasElement>(null),
+    runtime = useRef<HaruRuntime | null>(null);
+  const [error, setError] = useState(""),
+    [loaded, setLoaded] = useState(false),
+    [retry, setRetry] = useState(0);
+  const motion = useRef(reducedMotion);
+  motion.current = reducedMotion;
+  const enabled = active && visible;
+  useEffect(() => {
+    if (!enabled || !canvas.current) return;
+    setError("");
+    setLoaded(false);
+    const element = canvas.current;
+    let observer: ResizeObserver | undefined;
+    const stop = mountResource(
+      (signal) =>
+        createHaruRuntime(element, {
+          signal,
+          reducedMotion: motion.current,
+          onError: (e) => {
+            setError(e.message);
+            setLoaded(false);
+          },
+        }),
+      (value) => {
+        runtime.current = value;
+        value.setReducedMotion(motion.current);
+        setLoaded(true);
+        observer = new ResizeObserver(() => {
+          const r = element.getBoundingClientRect();
+          value.resize(r.width, r.height, devicePixelRatio);
+        });
+        observer.observe(element);
+      },
+      (e) => setError(e.message),
+    );
+    return () => {
+      setLoaded(false);
+      observer?.disconnect();
+      runtime.current = null;
+      stop();
+    };
+  }, [enabled, retry]);
+  useEffect(
+    () => runtime.current?.setReducedMotion(reducedMotion),
+    [reducedMotion],
+  );
+  const lastAction = useRef("");
+  useEffect(() => {
+    if (!loaded || !actionRequest || lastAction.current === actionRequest.id)
+      return;
+    lastAction.current = actionRequest.id;
+    try {
+      runtime.current?.play(actionRequest.action);
+    } catch (e) {
+      setError(String(e));
+    }
+  }, [actionRequest, loaded]);
+  return (
+    <div className="haru-character" data-loaded={loaded && enabled && !error}>
+      {enabled && !error && (
+        <canvas
+          key={retry}
+          ref={canvas}
+          aria-label="Haru Live2D 角色"
+          onClick={onInteract}
+          onPointerMove={(e) => {
+            const r = e.currentTarget.getBoundingClientRect();
+            runtime.current?.setPointer(
+              ((e.clientX - r.left) / r.width) * 2 - 1,
+              1 - ((e.clientY - r.top) / r.height) * 2,
+            );
+          }}
+          onPointerLeave={() => runtime.current?.setPointer(0, 0)}
+        />
+      )}
+      {!loaded && !error && enabled && (
+        <span className="haru-loading">Haru 正在准备中…</span>
+      )}
+      {error && (
+        <div className="haru-error" role="alert">
+          <p>{error}</p>
+          <button
+            onClick={() => {
+              setError("");
+              setRetry((n) => n + 1);
+            }}
+          >
+            重试
+          </button>
+          <button
+            onClick={() =>
+              void window.buddy
+                .setPreferences({ character: "assistant" })
+                .catch((e) => setError(e.message))
+            }
+          >
+            切回原角色
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
