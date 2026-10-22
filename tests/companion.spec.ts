@@ -17,7 +17,7 @@ test("companion switches characters, collapses, scales and respects reduced moti
     },
   });
   try {
-    await expect.poll(() => app.windows().length).toBe(2);
+    await expect.poll(() => app.windows().length).toBe(3);
     const page = app.windows().find((w) => w.url().includes("companion"))!;
     await expect(
       page.getByRole("button", { name: "和年糕互动" }),
@@ -29,12 +29,12 @@ test("companion switches characters, collapses, scales and respects reduced moti
     await page.getByRole("button", { name: "和小沐互动" }).click();
     await expect(page.locator(".speech-bubble")).toBeVisible();
     await page.getByRole("button", { name: "收起信息卡" }).click();
-    await expect(page.locator(".floating-card")).toHaveCount(0);
+    expect(await app.evaluate(({BrowserWindow})=>BrowserWindow.getAllWindows().find(w=>w.webContents.getURL().endsWith('#desktop-card'))!.isVisible())).toBe(false);
     await page.evaluate(() =>
       window.buddy.setPreferences({
         scale: 1.25,
         reducedMotion: true,
-        collapsed: false,
+        collapsed: false,cardHidden:false,
       }),
     );
     await expect(page.locator("html")).toHaveAttribute(
@@ -50,7 +50,7 @@ test("companion switches characters, collapses, scales and respects reduced moti
       await page.evaluate(
         () =>
           document.body.getBoundingClientRect().bottom >=
-          document.querySelector(".floating-card")!.getBoundingClientRect()
+          document.querySelector(".companion-root")!.getBoundingClientRect()
             .bottom,
       ),
     ).toBe(true);

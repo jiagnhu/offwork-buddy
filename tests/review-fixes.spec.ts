@@ -17,8 +17,8 @@ async function launch() {
       BUDDY_DATA_DIR: data,
     },
   });
-  await expect.poll(() => app.windows().length).toBe(2);
-  const page = app.windows().find((w) => !w.url().includes("companion"))!;
+  await expect.poll(() => app.windows().length).toBe(3);
+  const page = app.windows().find((w) => w.url().endsWith("index.html"))!;
   await expect
     .poll(() => page.evaluate(() => typeof window.buddy))
     .toBe("object");
@@ -62,7 +62,7 @@ test("companion fits small work area without clipping", async () => {
       (rule) => window.buddy.saveSettings({ rule, startDate: "2026-10-01" }),
       rule,
     );
-    const buddy = app.windows().find((w) => w.url().includes("companion"))!;
+    const buddy = app.windows().find((w) => w.url().endsWith("#desktop-card"))!;
     await page.evaluate(() => window.buddy.setPreferences({ scale: 1.25 }));
     await app.evaluate(({ screen }) => {
       const display = screen.getPrimaryDisplay();

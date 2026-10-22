@@ -85,6 +85,7 @@ export type LegacyState = Omit<State, "schemaVersion" | "growth" | "reminderHist
   preferences: Omit<Preferences, "movementMode" | "cardHidden" | "cardPosition" | "displayId" | "reminders" | "accessory">;
 };
 export interface Snapshot {
+  desktop: {visible:boolean;paused:boolean};
   state: State;
   progress: DayProgress;
   settledCents: number;

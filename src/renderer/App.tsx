@@ -1,3 +1,4 @@
+import DesktopCard from './pages/DesktopCard';
 import Companion from "./pages/Companion";
 import EarningsDetail from './components/EarningsDetail';
 import type {NavigateTarget} from '../shared/bridge';
@@ -56,6 +57,7 @@ export default function App() {
         <p>{error || "搭子正在赶来…"}</p>
       </div>
     );
+  if (location.hash === "#desktop-card") return <DesktopCard snapshot={snapshot}/>;
   if (location.hash === "#companion") return <Companion snapshot={snapshot} />;
   if (!snapshot.state.configured) return <Onboarding snapshot={snapshot} />;
   const title =

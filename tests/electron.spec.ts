@@ -17,8 +17,8 @@ test("desktop windows isolate renderer and apply preferences", async () => {
     },
   });
   try {
-    await expect.poll(() => app.windows().length).toBe(2);
-    const page = app.windows().find((w) => !w.url().includes("companion"))!;
+    await expect.poll(() => app.windows().length).toBe(3);
+    const page = app.windows().find((w) => w.url().endsWith("index.html"))!;
     await page.waitForLoadState("domcontentloaded");
     expect(await page.evaluate(() => typeof (window as any).require)).toBe(
       "undefined",

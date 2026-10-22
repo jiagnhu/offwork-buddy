@@ -12,6 +12,7 @@ import {
   applyPreferences,
   openPanel,
   showCompanion,
+  hideCompanion, recallCompanion, isDesktopVisible, onDesktopVisibility,
   companion,
   panel,
 } from "./windows";
@@ -69,6 +70,7 @@ function snapshot(): Snapshot {
   );
   return {
     state,
+    desktop:{visible:isDesktopVisible(),paused:state.preferences.movementMode==="stationary"||state.preferences.reducedMotion},
     progress,
     settledCents,
     totalCents: settledCents + (state.ledger[today] ? 0 : progress.earnedCents),
@@ -139,11 +141,11 @@ else {
       lastDate = dateKey(new Date());
       createWindows(
         state.preferences,
-        (p) => {
+        (p,kind) => {
           void serial(() =>
             commit({
               ...state,
-              preferences: { ...state.preferences, position: p },
+              preferences: { ...state.preferences, [kind==="card"?"cardPosition":"position"]: p },
             }),
           ).catch((e) => {
             notice = e.message;
@@ -162,6 +164,7 @@ else {
           ).catch(() => openPanel());
         },
       );
+      onDesktopVisibility(()=>{if(!isDesktopVisible())stopEvents();broadcast()});
       configureEvents(e=>{for(const w of BrowserWindow.getAllWindows())w.webContents.send('buddy:companion-event',e)},()=>companion.isVisible());
       app.on('before-quit',stopEvents);
       registerIpc({
@@ -274,7 +277,9 @@ else {
           if(input!==undefined){const target=z.union([z.object({page:z.literal('calendar'),date:dateSchema}),z.object({page:z.literal('earnings'),date:dateSchema}),z.object({page:z.literal('growth')})]).parse(input);pendingNavigation=target;panel.webContents.send('buddy:navigate',target);}
           openPanel();
         },
-        hideCompanion: () => companion.hide(),
+        hideCompanion: () => hideCompanion(),
+        recallCompanion:()=>recallCompanion(),
+        setCardHidden:(hidden:unknown)=>serial(()=>commit({...state,preferences:{...state.preferences,cardHidden:z.boolean().parse(hidden),collapsed:false}})),
         showCompanion: () => showCompanion(),
       });
       const tick = () => {

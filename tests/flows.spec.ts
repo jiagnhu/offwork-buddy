@@ -18,8 +18,8 @@ test("calendar edits, dialog cancel, bad import and responsive layouts", async (
     },
   });
   try {
-    await expect.poll(() => app.windows().length).toBe(2);
-    const page = app.windows().find((w) => !w.url().includes("companion"))!;
+    await expect.poll(() => app.windows().length).toBe(3);
+    const page = app.windows().find((w) => w.url().endsWith("index.html"))!;
     await expect
       .poll(() => page.evaluate(() => typeof window.buddy))
       .toBe("object");
@@ -40,7 +40,7 @@ test("calendar edits, dialog cancel, bad import and responsive layouts", async (
       await app.evaluate(
         ({ BrowserWindow }, { width, height }) =>
           BrowserWindow.getAllWindows()
-            .find((w) => !w.webContents.getURL().includes("companion"))!
+            .find((w) => w.webContents.getURL().endsWith("index.html"))!
             .setSize(width, height),
         { width, height },
       );

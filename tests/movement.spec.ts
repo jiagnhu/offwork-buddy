@@ -17,8 +17,8 @@ test("saving a drag does not reset native size or z-order; showing rescues an of
     },
   });
   try {
-    await expect.poll(() => app.windows().length).toBe(2);
-    const page = app.windows().find((w) => !w.url().includes("companion"))!;
+    await expect.poll(() => app.windows().length).toBe(3);
+    const page = app.windows().find((w) => w.url().endsWith("index.html"))!;
     await expect
       .poll(() => page.evaluate(() => typeof window.buddy))
       .toBe("object");

@@ -20,8 +20,8 @@ test("daily plans can be completed, reopened and survive restart", async () => {
     });
   let app = await launch();
   try {
-    await expect.poll(() => app.windows().length).toBe(2);
-    let page = app.windows().find((w) => !w.url().includes("companion"))!;
+    await expect.poll(() => app.windows().length).toBe(3);
+    let page = app.windows().find((w) => w.url().endsWith("index.html"))!;
     await expect
       .poll(() => page.evaluate(() => typeof window.buddy))
       .toBe("object");
@@ -54,7 +54,7 @@ test("daily plans can be completed, reopened and survive restart", async () => {
     await check.click();
     await expect(check).toBeChecked();
     await page.screenshot({ path: "test-results/daily-plans.png" });
-    const companion = app.windows().find((w) => w.url().includes("companion"))!;
+    const companion = app.windows().find((w) => w.url().endsWith("#desktop-card"))!;
     await expect(companion.locator(".floating-card")).not.toContainText(
       "累计预计",
     );
@@ -64,8 +64,8 @@ test("daily plans can be completed, reopened and survive restart", async () => {
     await companion.screenshot({ path: "test-results/companion-1.1.png", omitBackground: true });
     await app.close();
     app = await launch();
-    await expect.poll(() => app.windows().length).toBe(2);
-    page = app.windows().find((w) => !w.url().includes("companion"))!;
+    await expect.poll(() => app.windows().length).toBe(3);
+    page = app.windows().find((w) => w.url().endsWith("index.html"))!;
     await page.getByRole("button", { name: "工作日历", exact: true }).click();
     await expect(page.locator(".day.today")).toContainText("1/1");
     await page.locator(".day.today").click();

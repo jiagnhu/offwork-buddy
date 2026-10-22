@@ -18,8 +18,8 @@ test("onboarding, navigation, appearance and character survive restart", async (
     env,
   });
   try {
-    await expect.poll(() => app.windows().length).toBe(2);
-    let page = app.windows().find((w) => !w.url().includes("companion"))!;
+    await expect.poll(() => app.windows().length).toBe(3);
+    let page = app.windows().find((w) => w.url().endsWith("index.html"))!;
     await expect(
       page.getByRole("heading", { name: /让每一秒，\s*都有回报。/ }),
     ).toBeVisible();
@@ -43,8 +43,8 @@ test("onboarding, navigation, appearance and character survive restart", async (
       args: process.env.BUDDY_EXECUTABLE ? [] : ["."],
       env,
     });
-    await expect.poll(() => app.windows().length).toBe(2);
-    page = app.windows().find((w) => !w.url().includes("companion"))!;
+    await expect.poll(() => app.windows().length).toBe(3);
+    page = app.windows().find((w) => w.url().endsWith("index.html"))!;
     await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
     expect(
       await page.evaluate(

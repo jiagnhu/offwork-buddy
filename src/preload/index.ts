@@ -25,6 +25,8 @@ const bridge: BuddyBridge = {
   onNavigate:(listener)=>{const fn=(_:unknown,target:any)=>listener(target);ipcRenderer.on('buddy:navigate',fn);return ()=>ipcRenderer.removeListener('buddy:navigate',fn)},
   hideCompanion: () => invoke("hideCompanion"),
   showCompanion: () => invoke("showCompanion"),
+  setCardHidden:(hidden)=>invoke('setCardHidden',hidden),
+  recallCompanion:()=>invoke('recallCompanion'),
   onSnapshot: (listener) => {
     const fn = (_: unknown, value: any) => listener(value);
     ipcRenderer.on("buddy:snapshot", fn);

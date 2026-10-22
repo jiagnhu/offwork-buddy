@@ -25,6 +25,8 @@ export interface BuddyBridge {
   onNavigate(listener:(target:NavigateTarget)=>void):()=>void;
   hideCompanion(): Promise<void>;
   showCompanion(): Promise<void>;
+  setCardHidden(hidden:boolean):Promise<Snapshot>;
+  recallCompanion():Promise<void>;
   onSnapshot(listener: (s: Snapshot) => void): () => void;
 }
 declare global {
