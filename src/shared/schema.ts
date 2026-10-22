@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { validDate, weekday } from "../core/date";
 import type { State } from "./model";
+import { migrateV1 } from './migration';
 export const dateSchema = z
   .string()
   .refine(validDate, "请输入有效日期（2000–2099）");
@@ -42,7 +43,7 @@ export const ruleSchema = ruleInputSchema
         message: "午休须在工作时间内，且不能覆盖整个班次",
       });
   });
-export const preferencesSchema = z.object({
+const legacyPreferencesSchema = z.object({
   theme: z.enum(["light", "dark"]),
   character: z.enum(["pet", "assistant"]),
   reducedMotion: z.boolean(),
@@ -53,6 +54,12 @@ export const preferencesSchema = z.object({
   position: z
     .object({ x: z.number().finite(), y: z.number().finite() })
     .optional(),
+});
+export const preferencesSchema = legacyPreferencesSchema.extend({
+ movementMode:z.enum(['bottom','stationary']),cardHidden:z.boolean(),
+ cardPosition:z.object({x:z.number().finite(),y:z.number().finite()}).optional(),displayId:z.number().finite().optional(),
+ reminders:z.object({lunch:z.boolean(),offwork:z.boolean(),leadMinutes:z.union([z.literal(0),z.literal(5),z.literal(10)])}),
+ accessory:z.enum(['none','star','pillow']),
 });
 const dayInfo = z.object({
   workday: z.boolean(),
@@ -72,6 +79,7 @@ export const calendarSchema = z
         ctx.addIssue({ code: "custom", message: "日历日期与年份不一致" });
   });
 const entry = z.object({
+  algorithm:z.literal('normal-schedule-v1').optional(),
   date: dateSchema,
   ruleId: z.string(),
   workday: z.boolean(),
@@ -96,9 +104,11 @@ export const plansSchema = z
     (items) => new Set(items.map((item) => item.id)).size === items.length,
     "计划编号重复",
   );
-export const stateSchema = z
+const stateBase = z
   .object({
-    schemaVersion: z.literal(1),
+    schemaVersion: z.literal(2),
+    growth:z.object({points:z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),days:z.record(dateSchema,z.object({interacted:z.boolean(),rewardedPlanIds:z.array(z.string()).max(5),planRewardCount:z.number().int().min(0).max(5)}).refine(d=>d.planRewardCount===d.rewardedPlanIds.length && new Set(d.rewardedPlanIds).size===d.rewardedPlanIds.length,'成长记录不一致'))}),
+    reminderHistory:z.record(z.string().max(160),z.number().finite()),
     configured: z.boolean(),
     startDate: dateSchema,
     rules: z.array(ruleSchema).max(40000),
@@ -107,8 +117,9 @@ export const stateSchema = z
     plans: z.record(dateSchema, plansSchema).default({}),
     ledger: z.record(dateSchema, entry),
     preferences: preferencesSchema,
-  })
-  .superRefine((s, ctx) => {
+  });
+const legacySchema=stateBase.omit({growth:true,reminderHistory:true}).extend({schemaVersion:z.literal(1),preferences:legacyPreferencesSchema});
+export const stateSchema=stateBase.superRefine((s, ctx) => {
     const issue = (message: string) =>
       ctx.addIssue({ code: "custom", message });
     if (s.configured && !s.rules.some((r) => r.effectiveFrom <= s.startDate))
@@ -127,7 +138,8 @@ export const stateSchema = z
     if (!Number.isSafeInteger(total)) issue("累计金额超出支持范围");
   });
 export function parseState(input: unknown): State {
-  const state = stateSchema.parse(input);
+  const version=(input as {schemaVersion?:unknown}|null)?.schemaVersion;
+  const state = stateSchema.parse(version===1 ? migrateV1(legacySchema.parse(input)) : input);
   state.rules.sort((a, b) => a.effectiveFrom.localeCompare(b.effectiveFrom));
   return state;
 }

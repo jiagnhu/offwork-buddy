@@ -29,7 +29,7 @@ it("rejects impossible date and unknown version", () => {
   const s = fixture();
   s.startDate = "2026-02-30";
   expect(() => validateBackup(s)).toThrow();
-  expect(() => validateBackup({ ...fixture(), schemaVersion: 2 })).toThrow();
+  expect(() => validateBackup({ ...fixture(), schemaVersion: 99 })).toThrow();
 });
 it("rejects lunch outside shift and duplicate rule dates", () => {
   const s = fixture();

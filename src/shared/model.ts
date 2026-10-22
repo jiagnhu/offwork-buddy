@@ -35,6 +35,7 @@ export interface DayProgress {
   calendarMissing: boolean;
 }
 export interface LedgerEntry {
+  algorithm?: "normal-schedule-v1";
   date: DateKey;
   ruleId: string;
   workday: boolean;
@@ -44,6 +45,12 @@ export interface LedgerEntry {
   workdayCount: number;
 }
 export interface Preferences {
+  movementMode: "bottom" | "stationary";
+  cardHidden: boolean;
+  cardPosition?: { x: number; y: number };
+  displayId?: number;
+  reminders: { lunch: boolean; offwork: boolean; leadMinutes: 0 | 5 | 10 };
+  accessory: "none" | "star" | "pillow";
   theme: "light" | "dark";
   character: "pet" | "assistant";
   reducedMotion: boolean;
@@ -59,7 +66,9 @@ export interface DailyPlan {
   completed: boolean;
 }
 export interface State {
-  schemaVersion: 1;
+  schemaVersion: 2;
+  growth: { points: number; days: Record<DateKey, { interacted: boolean; rewardedPlanIds: string[]; planRewardCount: number }> };
+  reminderHistory: Record<string, number>;
   configured: boolean;
   startDate: DateKey;
   rules: RuleVersion[];
@@ -69,6 +78,10 @@ export interface State {
   ledger: Record<DateKey, LedgerEntry>;
   preferences: Preferences;
 }
+export type LegacyState = Omit<State, "schemaVersion" | "growth" | "reminderHistory" | "preferences"> & {
+  schemaVersion: 1;
+  preferences: Omit<Preferences, "movementMode" | "cardHidden" | "cardPosition" | "displayId" | "reminders" | "accessory">;
+};
 export interface Snapshot {
   state: State;
   progress: DayProgress;

@@ -234,7 +234,8 @@ else {
           serial(async () => {
             const file = await selectJson();
             if (!file) return false;
-            const next = validateBackup(await readJson(file));
+            const raw = await readJson(file);
+            validateBackup(raw);
             const r = await dialog.showMessageBox({
               type: "warning",
               message: "用这个备份替换当前所有记录？",
@@ -244,7 +245,7 @@ else {
               cancelId: 0,
             });
             if (r.response !== 1) return false;
-            state = await importBackup(directory, next);
+            state = await importBackup(directory, raw);
             await commit(settleThrough(state, new Date()));
             return true;
           }),
