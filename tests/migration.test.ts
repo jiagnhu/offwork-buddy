@@ -17,7 +17,7 @@ function legacy() {
 it("legacy data migrates without earning retroactive rewards", () => {
   const old = legacy(),
     next: any = parseState(old);
-  expect(next.schemaVersion).toBe(2);
+  expect(next.schemaVersion).toBe(3);
   expect(next.growth.points).toBe(0);
   expect(next.plans).toMatchObject(old.plans);
   expect(next.rules).toEqual(old.rules);

@@ -1,5 +1,8 @@
-import type { LegacyState, State } from "./model";
-export function migrateV1(input: LegacyState): State {
+import type { LegacyState, State, StateV2 } from "./model";
+export function migrateV2(input: StateV2): State {
+  return { ...input, schemaVersion: 3 };
+}
+export function migrateV1(input: LegacyState): StateV2 {
   return {
     ...input,
     plans: Object.fromEntries(

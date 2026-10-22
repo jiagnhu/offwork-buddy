@@ -22,12 +22,28 @@ export async function loadState(directory: string): Promise<LoadResult> {
     let raw: unknown;
     try {
       raw = parseJsonStrict(original);
+    } catch {
+      raw = undefined;
+    }
+    const version = (raw as { schemaVersion?: unknown } | undefined)
+      ?.schemaVersion;
+    if (typeof version === "number" && version > 3)
+      throw new Error("数据来自更新版本，请升级软件后再打开。原文件已保留。");
+    try {
       parseState(raw);
     } catch {
       raw = undefined; /* recovered below */
     }
-    if ((raw as { schemaVersion?: number } | undefined)?.schemaVersion === 1) {
-      await preserveLegacy(directory, original);
+    if (
+      [1, 2].includes(
+        (raw as { schemaVersion?: number } | undefined)?.schemaVersion ?? 0,
+      )
+    ) {
+      await preserveLegacy(
+        directory,
+        original,
+        (raw as { schemaVersion: number }).schemaVersion,
+      );
     }
   }
   try {
@@ -57,9 +73,14 @@ export async function loadState(directory: string): Promise<LoadResult> {
       const state = parseState(parseJsonStrict(backupText));
       if (
         (parseJsonStrict(backupText) as { schemaVersion: number })
-          .schemaVersion === 1
+          .schemaVersion < 3
       )
-        await preserveLegacy(directory, backupText);
+        await preserveLegacy(
+          directory,
+          backupText,
+          (parseJsonStrict(backupText) as { schemaVersion: number })
+            .schemaVersion,
+        );
       if (!missingPrimary)
         await copyFile(
           primary,
@@ -84,8 +105,15 @@ export async function loadState(directory: string): Promise<LoadResult> {
     }
   }
 }
-async function preserveLegacy(directory: string, text: string) {
-  const file = path.join(directory, "state.pre-v2.json");
+async function preserveLegacy(
+  directory: string,
+  text: string,
+  version: number,
+) {
+  const file = path.join(
+    directory,
+    version === 1 ? "state.pre-v2.json" : "state.pre-v3.json",
+  );
   try {
     await writeFile(file, text, { flag: "wx" });
   } catch (e) {

@@ -2,7 +2,7 @@ import { unlocks } from "../core/growth";
 import { z } from "zod";
 import { validDate, weekday } from "../core/date";
 import type { State } from "./model";
-import { migrateV1 } from "./migration";
+import { migrateV1, migrateV2 } from "./migration";
 export const dateSchema = z
   .string()
   .refine(validDate, "请输入有效日期（2000–2099）");
@@ -56,7 +56,7 @@ const legacyPreferencesSchema = z.object({
     .object({ x: z.number().finite(), y: z.number().finite() })
     .optional(),
 });
-export const preferencesSchema = legacyPreferencesSchema.extend({
+const preferencesV2Schema = legacyPreferencesSchema.extend({
   movementMode: z.enum(["bottom", "stationary"]),
   cardHidden: z.boolean(),
   cardPosition: z
@@ -69,6 +69,9 @@ export const preferencesSchema = legacyPreferencesSchema.extend({
     leadMinutes: z.union([z.literal(0), z.literal(5), z.literal(10)]),
   }),
   accessory: z.enum(["none", "star", "pillow"]),
+});
+export const preferencesSchema = preferencesV2Schema.extend({
+  character: z.enum(["pet", "assistant", "haru"]),
 });
 const dayInfo = z.object({
   workday: z.boolean(),
@@ -129,7 +132,7 @@ export const plansSchema = z
     "计划编号重复",
   );
 const stateBase = z.object({
-  schemaVersion: z.literal(2),
+  schemaVersion: z.literal(3),
   growth: z.object({
     points: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
     days: z.record(
@@ -157,6 +160,10 @@ const stateBase = z.object({
   plans: z.record(dateSchema, plansSchema).default({}),
   ledger: z.record(dateSchema, entry),
   preferences: preferencesSchema,
+});
+const stateV2Schema = stateBase.extend({
+  schemaVersion: z.literal(2),
+  preferences: preferencesV2Schema,
 });
 const legacySchema = stateBase
   .omit({ growth: true, reminderHistory: true })
@@ -189,7 +196,11 @@ export const stateSchema = stateBase.superRefine((s, ctx) => {
 export function parseState(input: unknown): State {
   const version = (input as { schemaVersion?: unknown } | null)?.schemaVersion;
   const state = stateSchema.parse(
-    version === 1 ? migrateV1(legacySchema.parse(input)) : input,
+    version === 1
+      ? migrateV2(migrateV1(legacySchema.parse(input)))
+      : version === 2
+        ? migrateV2(stateV2Schema.parse(input))
+        : input,
   );
   state.rules.sort((a, b) => a.effectiveFrom.localeCompare(b.effectiveFrom));
   return state;

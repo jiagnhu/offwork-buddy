@@ -1,4 +1,5 @@
 export type DateKey = string;
+export type CharacterKind = "pet" | "assistant" | "haru";
 export interface RuleVersion {
   id: string;
   effectiveFrom: DateKey;
@@ -52,7 +53,7 @@ export interface Preferences {
   reminders: { lunch: boolean; offwork: boolean; leadMinutes: 0 | 5 | 10 };
   accessory: "none" | "star" | "pillow";
   theme: "light" | "dark";
-  character: "pet" | "assistant";
+  character: CharacterKind;
   reducedMotion: boolean;
   scale: number;
   alwaysOnTop: boolean;
@@ -74,7 +75,7 @@ export interface CompanionEvent {
   durationMs: number;
 }
 export interface State {
-  schemaVersion: 2;
+  schemaVersion: 3;
   growth: {
     points: number;
     days: Record<
@@ -96,13 +97,20 @@ export interface State {
   ledger: Record<DateKey, LedgerEntry>;
   preferences: Preferences;
 }
+export type PreferencesV2 = Omit<Preferences, "character"> & {
+  character: "pet" | "assistant";
+};
+export type StateV2 = Omit<State, "schemaVersion" | "preferences"> & {
+  schemaVersion: 2;
+  preferences: PreferencesV2;
+};
 export type LegacyState = Omit<
-  State,
+  StateV2,
   "schemaVersion" | "growth" | "reminderHistory" | "preferences"
 > & {
   schemaVersion: 1;
   preferences: Omit<
-    Preferences,
+    PreferencesV2,
     | "movementMode"
     | "cardHidden"
     | "cardPosition"

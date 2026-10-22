@@ -17,7 +17,7 @@ export function defaultRule(now = new Date()): RuleInput {
 }
 export function initialState(now = new Date()): State {
   return {
-    schemaVersion: 2,
+    schemaVersion: 3,
     growth: { points: 0, days: {} },
     reminderHistory: {},
     configured: false,

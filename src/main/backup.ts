@@ -11,9 +11,10 @@ export async function importBackup(
   input: unknown,
 ): Promise<State> {
   const state = validateBackup(input);
-  if ((input as { schemaVersion?: number })?.schemaVersion === 1)
+  const version = (input as { schemaVersion?: number })?.schemaVersion;
+  if (version === 1 || version === 2)
     await writeFile(
-      path.join(directory, `imported-v1-${Date.now()}.json`),
+      path.join(directory, `imported-v${version}-${Date.now()}.json`),
       JSON.stringify(input, null, 2),
       { flag: "wx" },
     );

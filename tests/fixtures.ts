@@ -15,7 +15,7 @@ export const rule: RuleVersion = {
 };
 export function fixture(): State {
   return {
-    schemaVersion: 2,
+    schemaVersion: 3,
     growth: { points: 0, days: {} },
     reminderHistory: {},
     configured: true,

@@ -3,6 +3,17 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { launchDesktop } from "./desktop-helper";
 import { addDays, dateKey } from "../src/core/date";
+test('v2 upgrade preserves growth and preferences while enabling Haru',async()=>{
+  const s=await launchDesktop(state=>{(state as any).schemaVersion=2;state.growth.points=30;state.preferences.accessory='pillow';state.preferences.character='assistant';});
+  try {
+    expect(JSON.parse(await readFile(path.join(s.data,'state.pre-v3.json'),'utf8')).schemaVersion).toBe(2);
+    let state=(await s.page.evaluate(()=>window.buddy.getSnapshot())).state;
+    expect(state.schemaVersion).toBe(3);expect(state.preferences.character).toBe('assistant');expect(state.growth.points).toBe(30);
+    await s.page.evaluate(()=>window.buddy.setPreferences({character:'haru'}));
+    const {page}=await s.restart();state=(await page.evaluate(()=>window.buddy.getSnapshot())).state;
+    expect(state.preferences.character).toBe('haru');expect(state.preferences.accessory).toBe('pillow');expect(state.preferences.movementMode).toBe('bottom');expect(state.growth.points).toBe(30);
+  }finally{await s.cleanup();}
+});
 test("v1 upgrade preserves historic money and blocks retroactive plan rewards across restart", async () => {
   const today = dateKey(new Date()),
     yesterday = addDays(today, -1);
