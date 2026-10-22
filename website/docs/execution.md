@@ -7,3 +7,9 @@ Ruling: Reuse the current codex branch and isolate all edits in website/ as the 
 Ruling: Use this portable ledger and native Node/PowerShell instead of the skill's Unix bookkeeping wrappers on Windows. Cost: progress is recorded manually.
 
 Pre-flight: tasks 1 and 3 share detectPlatform/recommendDownload; tasks 2 and 3 share releases.json and validated download URL. The server and build will supply the same release data contract.
+
+Task 1: complete — 13 platform/selection tests pass after missing-module RED.
+Task 2: local download complete — streaming HTTP verification passed for actual 115094734-byte installer and SHA-256. HTML/size/hash/404 test passed after missing-module RED.
+Ruling: Node 20 on Windows does not expand the test glob; use node --test tests. Cost: none; tests are discovered portably.
+Ruling: Ship installer as verified static 20 MiB parts, reconstructed in the browser, so deployment needs no new storage account or backend. Cost: download requires JavaScript and approximately 350 MiB free browser memory; user receives the original .exe. Direct HTTPS download configuration remains supported.
+Task 3: complete first implementation — responsive page, two character previews, platform selector and download state implemented. Browser inspection found JSX stopColor attributes were invalid in standalone SVG; converted to stop-color.

@@ -1,4 +1,4 @@
-import {mkdir,cp,readFile,writeFile,open} from 'node:fs/promises';
+import {mkdir,cp,readFile,writeFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
