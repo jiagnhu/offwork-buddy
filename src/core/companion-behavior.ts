@@ -120,9 +120,18 @@ export function stepBehavior(
     w = Math.min(i.windowSize.width, area.width),
     h = Math.min(i.windowSize.height, area.height);
   const bottom =
-      area.y + area.height - h - Math.min(12, Math.max(0, area.height - h)),
-    minX = area.x,
+    area.y + area.height - h - Math.min(12, Math.max(0, area.height - h));
+  let minX = area.x,
     maxX = area.x + area.width - w;
+  // Treat a card occupying the bottom strip as an edge of the reachable lane.
+  // Otherwise its nearest safe point can equal our current position forever.
+  const card = i.cardBounds;
+  if (card && card.y < bottom + h && card.y + card.height > bottom) {
+    if (s.position.x + w <= card.x)
+      maxX = Math.max(minX, Math.min(maxX, card.x - w - 12));
+    else if (s.position.x >= card.x + card.width)
+      minX = Math.min(maxX, Math.max(minX, card.x + card.width + 12));
+  }
   const distance = 80 + 80 * r,
     sign = s.direction === "right" ? 1 : -1;
   let x = s.position.x + distance * sign;

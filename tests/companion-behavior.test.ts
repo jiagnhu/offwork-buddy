@@ -91,3 +91,35 @@ it("escapes an existing overlap without moving deeper into the card", () => {
     s = stepBehavior(s, { ...i, now: t });
   expect(s.position.x + 360 <= 500 || s.position.x >= 860).toBe(true);
 });
+import { describe } from "vitest";
+describe("continued roaming after descending next to a card", () => {
+  it.each(["left", "right"] as const)(
+    "turns away from a card on the %s after arriving at the bottom",
+    (side) => {
+      const i = {
+        ...input(0),
+        workArea: { x: -1920, y: 0, width: 1920, height: 1040 },
+        windowSize: { width: 432, height: 372 },
+        cardBounds: { x: -1115, y: 250, width: 432, height: 528 },
+      };
+      const x = side === "right" ? -1559 : -671;
+      let s = {
+        ...holdAt({ x, y: 100 }, 0),
+        direction: side,
+        manualHoldUntil: 0,
+        phaseUntil: 0,
+      };
+      let arrived = false;
+      const afterArrival: number[] = [];
+      for (let now = 100; now <= 180000; now += 100) {
+        s = stepBehavior(s, { ...i, now, pointer: { x: 10000, y: 10000 } });
+        if (s.position.y === 656) arrived = true;
+        if (arrived) afterArrival.push(s.position.x);
+      }
+      expect(arrived).toBe(true);
+      expect(
+        Math.max(...afterArrival) - Math.min(...afterArrival),
+      ).toBeGreaterThan(80);
+    },
+  );
+});
