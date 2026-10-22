@@ -10,7 +10,8 @@ export function detectPlatform(input = {}) {
   if (/arm|aarch/i.test(input.architecture || '') || /arm64|aarch64/i.test(text)) arch = 'arm';
   else if (input.bitness === '32') arch = 'x86';
   else if (input.bitness === '64' && /x86|x64/i.test(input.architecture || '')) arch = 'x64';
-  else if (/win64|wow64|x86_64|x64|amd64/i.test(text)) arch = 'x64';
+  // Windows browsers may freeze Win64/x64 in the UA even on other hardware.
+  else if (os !== 'windows' && /x86_64|x64|amd64/i.test(text)) arch = 'x64';
   else if (/i[3-6]86/i.test(text)) arch = 'x86';
   return { os, arch };
 }
@@ -30,6 +31,7 @@ export function createSelection(initial) {
   return {
     current: () => value,
     manual(next) { manual = true; value = next; },
+    resumeAutomatic(next) { manual = false; value = next; },
     automatic(next) { if (!manual) value = next; },
   };
 }

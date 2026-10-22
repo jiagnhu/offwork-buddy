@@ -5,7 +5,7 @@ import { detectPlatform, recommendDownload, createSelection } from '../src/platf
 const releases = [{ platform: 'windows', arch: 'x64', version: '1.1.2' }];
 for (const [name, input, expected] of [
   ['Windows 64', { platform: 'Windows', architecture: 'x86', bitness: '64' }, {os:'windows',arch:'x64'}],
-  ['Windows UA', {userAgent:'Mozilla Windows NT 10.0; Win64; x64'}, {os:'windows',arch:'x64'}],
+  ['Reduced Windows UA cannot prove x64 hardware', {userAgent:'Mozilla Windows NT 10.0; Win64; x64'}, {os:'windows',arch:'unknown'}],
   ['Windows unknown', {platform:'Win32'}, {os:'windows',arch:'unknown'}],
   ['Windows ARM', {platform:'Windows',architecture:'arm',bitness:'64'}, {os:'windows',arch:'arm'}],
   ['Windows 32', {platform:'Windows',architecture:'x86',bitness:'32'}, {os:'windows',arch:'x86'}],
@@ -28,4 +28,11 @@ test('manual selection survives late automatic detection', () => {
   selection.manual({os:'mac',arch:'unknown'});
   selection.automatic({os:'windows',arch:'x64'});
   assert.equal(selection.current().os,'mac');
+});
+test('returning to auto permits delayed trustworthy ARM architecture', () => {
+  const selection = createSelection({os:'windows',arch:'unknown'});
+  selection.manual({os:'mac',arch:'unknown'});
+  selection.resumeAutomatic({os:'windows',arch:'unknown'});
+  selection.automatic({os:'windows',arch:'arm'});
+  assert.equal(selection.current().arch,'arm');
 });

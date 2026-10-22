@@ -43,7 +43,8 @@ function renderDownload() {
   $('platform-select').disabled = downloading;
 }
 $('platform-select').addEventListener('change', event => {
-  selection.manual(event.target.value === 'auto' ? detectPlatform(deviceInput) : {os:event.target.value,arch:event.target.value === 'windows' ? 'x64' : 'unknown'});
+  if(event.target.value === 'auto') selection.resumeAutomatic(detectPlatform(deviceInput));
+  else selection.manual({os:event.target.value,arch:event.target.value === 'windows' ? 'x64' : 'unknown'});
   $('download-progress').textContent = '';
   renderDownload();
 });
