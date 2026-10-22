@@ -1,0 +1,8 @@
+dist/
+downloads/
+node_modules/
+.openai/local/
+*.log
+*.tar.gz
+*.exe
+qa/

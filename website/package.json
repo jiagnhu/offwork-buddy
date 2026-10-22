@@ -1,0 +1,13 @@
+{
+  "name": "offwork-buddy-website",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "dev": "node scripts/server.mjs",
+    "build": "node scripts/build.mjs",
+    "test": "node --test tests",
+    "verify:download": "node scripts/verify-download.mjs"
+  }
+}
