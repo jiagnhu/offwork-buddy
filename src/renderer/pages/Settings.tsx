@@ -258,7 +258,6 @@ export default function Settings({ snapshot }: { snapshot: Snapshot }) {
       <section className="card">
         <div className="section-title">
           <div>
-            <span className="eyebrow">WORK & PAY</span>
             <h2>定义你的工作节奏</h2>
           </div>
         </div>

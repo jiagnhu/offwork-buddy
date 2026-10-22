@@ -8,7 +8,6 @@ export default function Onboarding({ snapshot }: { snapshot: Snapshot }) {
         <div className="brandmark">
           <Sparkles size={28} />
         </div>
-        <span className="eyebrow">HELLO, WORK BUDDY</span>
         <h1>
           让每一秒，
           <br />

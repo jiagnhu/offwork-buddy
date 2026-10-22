@@ -75,7 +75,6 @@ export default function Overview({
         </section>
         <section className="buddy-card card">
           <div className="section-title">
-            <span className="eyebrow">YOUR LITTLE BUDDY</span>
             <span className="tiny-pill">陪伴中</span>
           </div>
           <div className="overview-character" id="character-preview">
@@ -147,7 +146,6 @@ export default function Overview({
       <section className="card week-card">
         <div className="section-title">
           <div>
-            <span className="eyebrow">A LITTLE PLAN FOR THIS WEEK</span>
             <h2>这一周，张弛有度。</h2>
           </div>
           <button className="text-button" onClick={() => navigate("calendar")}>

@@ -198,7 +198,6 @@ export default function Calendar({ snapshot }: { snapshot: Snapshot }) {
             >
               <X size={18} />
             </button>
-            <span className="eyebrow">YOUR SCHEDULE</span>
             <h2>{selected} 怎么安排？</h2>
             <div className="plan-heading">
               <h3>每日工作计划</h3>

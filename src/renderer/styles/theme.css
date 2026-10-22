@@ -122,14 +122,6 @@ h3 {
 .hint {
   margin: 12px 0;
 }
-.eyebrow {
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 2px;
-  color: var(--muted);
-  display: block;
-  margin-bottom: 9px;
-}
 .app-shell {
   display: flex;
   min-height: 100vh;
@@ -164,19 +156,6 @@ h3 {
 .brand strong {
   font-size: 19px;
   letter-spacing: 1px;
-}
-.brand small {
-  font-size: 8px;
-  display: block;
-  letter-spacing: 1.8px;
-  color: var(--muted);
-  margin-top: 4px;
-}
-.nav-caption {
-  font-size: 8px;
-  letter-spacing: 1.6px;
-  color: var(--muted);
-  margin: 0 12px 15px;
 }
 nav {
   display: flex;
@@ -320,9 +299,6 @@ nav button.active {
   gap: 10px;
   margin-bottom: 20px;
 }
-.section-title .eyebrow {
-  font-size: 8px;
-}
 .overview-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.8fr) minmax(230px, 1fr);
@@ -457,10 +433,6 @@ nav button.active {
 }
 .buddy-card .section-title {
   margin-bottom: 0;
-}
-.buddy-card .eyebrow {
-  font-size: 7px;
-  letter-spacing: 1.3px;
 }
 .tiny-pill {
   font-size: 9px;
@@ -1212,9 +1184,6 @@ td:last-child {
   }
   .brand strong {
     font-size: 16px;
-  }
-  .brand small {
-    font-size: 7px;
   }
   .main-content {
     margin-left: 180px;

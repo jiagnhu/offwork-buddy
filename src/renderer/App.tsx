@@ -66,10 +66,8 @@ export default function App() {
           </div>
           <div>
             <strong>下班搭子</strong>
-            <small>OFFWORK BUDDY</small>
           </div>
         </div>
-        <span className="nav-caption">MY LITTLE WORKSPACE</span>
         <nav>
           {navigation.map(({ id, label, icon: Icon }) => (
             <button
@@ -95,17 +93,12 @@ export default function App() {
         <div className="sidebar-bottom">
           <ShieldCheck size={15} />
           <span>本地存储 · 安心陪伴</span>
-          <small>v1.0.0</small>
+          <small>v1.1.1</small>
         </div>
       </aside>
       <main className="main-content">
         <header className="page-header">
           <div>
-            <span className="eyebrow">
-              {page === "overview"
-                ? "MAKE EVERY SECOND COUNT"
-                : "YOUR OWN LITTLE SPACE"}
-            </span>
             <h1>{title}</h1>
             <p>
               {page === "overview"

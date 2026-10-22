@@ -15,7 +15,6 @@ export default function Ledger({ snapshot }: { snapshot: Snapshot }) {
     <>
       <div className="ledger-hero card">
         <div>
-          <span className="eyebrow">EVERY LITTLE COUNTS</span>
           <h2>努力，都有迹可循。</h2>
           <p className="muted">
             从 {snapshot.state.startDate} 开始，记录属于你的积累。

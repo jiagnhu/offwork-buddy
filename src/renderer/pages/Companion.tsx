@@ -163,7 +163,7 @@ export default function Companion({ snapshot }: { snapshot: Snapshot }) {
               </p>
               <strong className="float-clock">
                 {snapshot.progress.status === "rest"
-                  ? "DAY OFF"
+                  ? "今日休息"
                   : countdown(snapshot.progress.countdownSeconds).join(" : ")}
               </strong>
               <div className="float-line">
