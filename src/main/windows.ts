@@ -5,6 +5,10 @@ import { clampBounds } from "./bounds";
 export let panel: BrowserWindow, companion: BrowserWindow, desktopCard: BrowserWindow;
 let tray: Tray, quitting = false, currentPreferences: Preferences;
 let desktopVisible=true;
+let automaticPosition:{x:number;y:number}|null=null;
+let recalled=()=>{};
+export function onRecall(fn:()=>void){recalled=fn}
+export function moveCharacter(x:number,y:number){automaticPosition={x,y};companion.setPosition(x,y)}
 let visibilityChanged=()=>{};
 export function onDesktopVisibility(fn:()=>void){visibilityChanged=fn}
 export function isDesktopVisible(){return desktopVisible}
@@ -14,7 +18,7 @@ export function hideCompanion(){desktopVisible=false;companion.hide();desktopCar
 export function showCompanion(){desktopVisible=true;applyPreferences(currentPreferences);if(companion.isMinimized())companion.restore();companion.show();if(currentPreferences.alwaysOnTop)companion.moveTop();visibilityChanged()}
 export function recallCompanion(){
  const c=desktopCard.getBounds(),b=companion.getBounds();const area=screen.getDisplayMatching(c).workArea;
- const next=clampBounds({...b,x:c.x-b.width-12,y:c.y},[area]);companion.setPosition(next.x,next.y);showCompanion();
+ const next=clampBounds({...b,x:c.x-b.width-12,y:c.y},[area]);companion.setPosition(next.x,next.y);showCompanion();recalled();
 }
 export function createWindows(prefs:Preferences,onPosition:(p:{x:number;y:number},kind?:'card'|'character')=>void,onToggleTop:()=>void){
  const webPreferences={preload:path.join(__dirname,'preload.cjs'),contextIsolation:true,nodeIntegration:false,sandbox:true};
@@ -33,7 +37,8 @@ export function createWindows(prefs:Preferences,onPosition:(p:{x:number;y:number
  desktopCard.setPosition(prefs.cardPosition?.x??prefs.position?.x??area.x+area.width-390,prefs.cardPosition?.y??area.y+area.height-790);
  for(const [win,kind] of [[companion,'character'],[desktopCard,'card']] as const){
   let timer:ReturnType<typeof setTimeout>;
-  win.on('moved',()=>{clearTimeout(timer);timer=setTimeout(()=>{if(!quitting){const[x,y]=win.getPosition();onPosition({x,y},kind)}},300)});
+  win.on('will-move',()=>{if(kind==='character')automaticPosition=null});
+  win.on('moved',()=>{clearTimeout(timer);timer=setTimeout(()=>{if(!quitting){const[x,y]=win.getPosition();if(kind==='character'&&automaticPosition?.x===x&&automaticPosition?.y===y)return;onPosition({x,y},kind)}},300)});
   app.on('before-quit',()=>clearTimeout(timer));
  }
  tray=new Tray(nativeImage.createFromPath(path.join(__dirname,'../resources/icon.png')).resize({width:32,height:32}));

@@ -1,8 +1,9 @@
+import {startCompanionController} from './companion-controller';
 import {applyPlanAction} from '../core/plans';
 import {startReminderController} from './reminder-controller';
 import {rewardInteraction,unlocks} from '../core/growth';
-import {configureEvents,emitCompanionEvent,stopEvents} from './companion-events';
-import { app, BrowserWindow, dialog, powerMonitor } from "electron";
+import {configureEvents,emitCompanionEvent,stopEvents,reactionUntil} from './companion-events';
+import { app, BrowserWindow, dialog, powerMonitor, screen } from "electron";
 import { readFile, writeFile, stat } from "node:fs/promises";
 import path from "node:path";
 import { z } from "zod";
@@ -15,7 +16,7 @@ import {
   showCompanion,
   hideCompanion, recallCompanion, isDesktopVisible, onDesktopVisibility,
   companion,
-  panel,
+  panel, desktopCard, moveCharacter, onRecall,
 } from "./windows";
 import { registerIpc } from "./ipc";
 import type { State, Snapshot } from "../shared/model";
@@ -43,6 +44,7 @@ if (process.env.BUDDY_DATA_DIR)
   app.setPath("userData", path.resolve(process.env.BUDDY_DATA_DIR));
 app.setName("下班搭子");
 let state: State;
+let behavior:Snapshot["behavior"]={phase:"idle",direction:"right"};
 let notice: string | null = null;
 let lastDate = "";
 let queue = Promise.resolve();
@@ -71,6 +73,7 @@ function snapshot(): Snapshot {
   );
   return {
     state,
+    behavior,
     desktop:{visible:isDesktopVisible(),paused:state.preferences.movementMode==="stationary"||state.preferences.reducedMotion},
     progress,
     settledCents,
@@ -283,6 +286,19 @@ else {
         setCardHidden:(hidden:unknown)=>serial(()=>commit({...state,preferences:{...state.preferences,cardHidden:z.boolean().parse(hidden),collapsed:false}})),
         showCompanion: () => showCompanion(),
       });
+      let suspended=false;
+      let activeDisplay=screen.getDisplayMatching(companion.getBounds()).id;
+      const mover=startCompanionController({window:companion,move:moveCharacter,publish:b=>{behavior={phase:b.phase,direction:b.direction};broadcast()},getInput:()=>{
+        const displays=screen.getAllDisplays();const display=displays.find(d=>d.id===activeDisplay)??screen.getPrimaryDisplay();
+        const bounds=companion.getBounds();
+        return {now:Date.now(),random:Math.random(),workArea:display.workArea,windowSize:{width:bounds.width,height:bounds.height},cardBounds:desktopCard.isVisible()?desktopCard.getBounds():null,pointer:screen.getCursorScreenPoint(),visible:isDesktopVisible(),suspended,reducedMotion:state.preferences.reducedMotion,mode:state.preferences.movementMode,dragging:false,reactionUntil:reactionUntil()};
+      }});
+      companion.on('moved',()=>{activeDisplay=screen.getDisplayMatching(companion.getBounds()).id});
+      onRecall(()=>{activeDisplay=screen.getDisplayMatching(companion.getBounds()).id;mover.recall()});
+      powerMonitor.on('suspend',()=>{suspended=true;mover.pause()});
+      powerMonitor.on('resume',()=>{suspended=false;mover.resume()});
+      screen.on('display-removed',()=>mover.resume());screen.on('display-metrics-changed',()=>mover.resume());
+      app.on('before-quit',()=>mover.stop());
       const tick = () => {
         if (dateKey(new Date()) !== lastDate)
           void serial(async () => {

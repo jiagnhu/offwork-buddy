@@ -268,7 +268,7 @@ export default function Settings({ snapshot }: { snapshot: Snapshot }) {
         {(['lunch','offwork'] as const).map(key=><label className="toggle-row" key={key}>{key==='lunch'?'午休提醒':'下班提醒'}<input type="checkbox" role="switch" checked={p.reminders[key]} onChange={e=>act(()=>window.buddy.setPreferences({reminders:{...p.reminders,[key]:e.target.checked}}))}/></label>)}
         <label className="field-title">提前提醒<select aria-label="提前提醒" value={p.reminders.leadMinutes} onChange={e=>act(()=>window.buddy.setPreferences({reminders:{...p.reminders,leadMinutes:Number(e.target.value) as 0|5|10}}))}><option value={0}>仅到点提醒</option><option value={5}>提前 5 分钟</option><option value={10}>提前 10 分钟</option></select></label></section>
         <section className="card">
-          <h2>让搭子更像你</h2>
+          <h2>让搭子更像你</h2><label className="field-title">自主活动<select aria-label="自主活动" value={p.movementMode} onChange={e=>act(()=>window.buddy.setPreferences({movementMode:e.target.value as 'bottom'|'stationary'}))}><option value="bottom">屏幕底部散步</option><option value="stationary">原地陪伴</option></select></label><p className="hint">鼠标靠近时停下；拖动后停留一分钟。减少动画会暂停散步。</p>
           <p className="muted">外观更改会立即生效</p>
           <label className="field-title">界面主题</label>
           <div className="segmented">
