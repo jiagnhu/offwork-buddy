@@ -61,10 +61,12 @@ export interface Preferences {
   position?: { x: number; y: number };
 }
 export interface DailyPlan {
+  rewardClaimed?: boolean;
   id: string;
   text: string;
   completed: boolean;
 }
+export interface CompanionEvent {id:string;kind:'interaction'|'plan-complete'|'reminder';text:string;createdAt:number;durationMs:number}
 export interface State {
   schemaVersion: 2;
   growth: { points: number; days: Record<DateKey, { interacted: boolean; rewardedPlanIds: string[]; planRewardCount: number }> };

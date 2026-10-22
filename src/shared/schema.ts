@@ -89,6 +89,7 @@ const entry = z.object({
   workdayCount: z.number().int().min(0).max(31),
 });
 export const planSchema = z.object({
+  rewardClaimed:z.boolean().optional(),
   id: z.string().min(1).max(100),
   text: z
     .string()
@@ -97,7 +98,13 @@ export const planSchema = z.object({
     .max(200, "计划最多 200 个字"),
   completed: z.boolean(),
 });
+export const planActionSchema=z.discriminatedUnion('type',[
+ z.object({type:z.literal('add'),id:planSchema.shape.id,text:planSchema.shape.text}),
+ z.object({type:z.literal('complete'),id:planSchema.shape.id,completed:z.boolean()}),
+ z.object({type:z.literal('delete'),id:planSchema.shape.id}),
+]);
 export const plansSchema = z
+ 
   .array(planSchema)
   .max(100, "每天最多 100 项计划")
   .refine(

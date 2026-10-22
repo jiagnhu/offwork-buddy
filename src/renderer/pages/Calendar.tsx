@@ -1,3 +1,4 @@
+import type {PlanAction} from '../../core/plans';
 import { useState,useEffect } from "react";
 import {
   ChevronLeft,
@@ -38,12 +39,12 @@ export default function Calendar({ snapshot,initialDate }: { snapshot: Snapshot;
   const year = state.calendar[month.slice(0, 4)];
   const workdays = days.filter((d) => d.workday).length;
   const plans = selected ? (state.plans[selected] ?? []) : [];
-  async function savePlans(next: DailyPlan[]) {
+  async function savePlans(next: PlanAction) {
     if (!selected || busy) return false;
     setBusy(true);
     setError("");
     try {
-      await window.buddy.savePlans(selected, next);
+      await window.buddy.updatePlan(selected, next);
       return true;
     } catch (e) {
       setError((e as Error).message);
@@ -212,14 +213,7 @@ export default function Calendar({ snapshot,initialDate }: { snapshot: Snapshot;
                 e.preventDefault();
                 if (!draft.trim()) return;
                 if (
-                  await savePlans([
-                    ...plans,
-                    {
-                      id: crypto.randomUUID(),
-                      text: draft.trim(),
-                      completed: false,
-                    },
-                  ])
+                  await savePlans({type:'add',id:crypto.randomUUID(),text:draft.trim()})
                 )
                   setDraft("");
               }}
@@ -251,13 +245,7 @@ export default function Calendar({ snapshot,initialDate }: { snapshot: Snapshot;
                       checked={plan.completed}
                       disabled={busy}
                       onChange={(e) =>
-                        void savePlans(
-                          plans.map((p) =>
-                            p.id === plan.id
-                              ? { ...p, completed: e.target.checked }
-                              : p,
-                          ),
-                        )
+                        void savePlans({type:'complete',id:plan.id,completed:e.target.checked})
                       }
                     />
                     <span className="plan-text">{plan.text}</span>
@@ -267,7 +255,7 @@ export default function Calendar({ snapshot,initialDate }: { snapshot: Snapshot;
                     disabled={busy}
                     aria-label={`删除计划：${plan.text}`}
                     onClick={() =>
-                      void savePlans(plans.filter((p) => p.id !== plan.id))
+                      void savePlans({type:'delete',id:plan.id})
                     }
                   >
                     <X size={16} />

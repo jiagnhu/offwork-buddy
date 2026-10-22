@@ -1,3 +1,6 @@
+import {applyPlanAction} from '../core/plans';
+import {rewardInteraction,unlocks} from '../core/growth';
+import {configureEvents,emitCompanionEvent,stopEvents} from './companion-events';
 import { app, BrowserWindow, dialog, powerMonitor } from "electron";
 import { readFile, writeFile, stat } from "node:fs/promises";
 import path from "node:path";
@@ -20,7 +23,7 @@ import {
   dateSchema,
   calendarSchema,
   parseState,
-  plansSchema,
+  planActionSchema,
 } from "../shared/schema";
 import { dateKey, addDays } from "../core/date";
 import {
@@ -80,6 +83,8 @@ function broadcast() {
   return s;
 }
 async function commit(next: State) {
+  const unlocked=unlocks(next.growth.points);
+  if(next.preferences.accessory!=="none"&&!unlocked[next.preferences.accessory]) throw new Error("这个配饰尚未解锁");
   try {
     await saveState(directory, next);
   } catch (error) {
@@ -157,6 +162,8 @@ else {
           ).catch(() => openPanel());
         },
       );
+      configureEvents(e=>{for(const w of BrowserWindow.getAllWindows())w.webContents.send('buddy:companion-event',e)},()=>companion.isVisible());
+      app.on('before-quit',stopEvents);
       registerIpc({
         getSnapshot: () => snapshot(),
         saveSettings: (input: unknown) =>
@@ -200,15 +207,15 @@ else {
             else next.overrides[d] = v;
             return commit(next);
           }),
-        savePlans: (date: unknown, input: unknown) =>
-          serial(() => {
-            const d = dateSchema.parse(date),
-              plans = plansSchema.parse(input);
-            const next = structuredClone(state);
-            if (plans.length) next.plans[d] = plans;
-            else delete next.plans[d];
-            return commit(next);
-          }),
+        updatePlan: (date:unknown,input:unknown)=>serial(async()=>{
+          const d=dateSchema.parse(date), action=planActionSchema.parse(input);
+          const previous=state.plans[d]?.find(p=>p.id===action.id)?.completed;
+          const next=applyPlanAction(state,d,action,new Date());
+          const result=await commit(next);
+          if(action.type==='complete'&&action.completed&&!previous&&d===dateKey(new Date()))emitCompanionEvent('plan-complete','又完成了一件事，做得很好！');
+          return result;
+        }),
+        interact:()=>serial(async()=>{const next=rewardInteraction(state,new Date());const result=next.growth.points!==state.growth.points?await commit(next):snapshot();emitCompanionEvent('interaction','我在这里陪着你，慢慢来就好。');return result}),
         recalculate: (from: unknown, to: unknown) =>
           serial(async () => {
             const f = dateSchema.parse(from),

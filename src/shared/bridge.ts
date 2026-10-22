@@ -1,5 +1,7 @@
 import type { Snapshot, RuleInput, Preferences, DailyPlan } from "./model";
 import type {EarningsDetail} from '../core/earnings-detail';
+import type {PlanAction} from '../core/plans';
+import type {CompanionEvent} from './model';
 export type NavigateTarget = {page:'calendar';date:string}|{page:'earnings';date:string}|{page:'growth'};
 export interface SettingsInput {
   rule: RuleInput;
@@ -10,7 +12,9 @@ export interface BuddyBridge {
   saveSettings(input: SettingsInput): Promise<Snapshot>;
   setPreferences(input: Partial<Preferences>): Promise<Snapshot>;
   setDayOverride(date: string, value: boolean | null): Promise<Snapshot>;
-  savePlans(date: string, plans: DailyPlan[]): Promise<Snapshot>;
+  updatePlan(date:string,action:PlanAction):Promise<Snapshot>;
+  interact():Promise<Snapshot>;
+  onCompanionEvent(listener:(event:CompanionEvent)=>void):()=>void;
   recalculate(from: string, to: string): Promise<Snapshot>;
   exportBackup(): Promise<string | null>;
   importBackup(): Promise<boolean>;

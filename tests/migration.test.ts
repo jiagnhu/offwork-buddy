@@ -9,7 +9,7 @@ function legacy(){ const s:any=fixture(); s.schemaVersion=1; delete s.growth;del
 it('legacy data migrates without earning retroactive rewards',()=>{
  const old=legacy(),next:any=parseState(old);
  expect(next.schemaVersion).toBe(2);expect(next.growth.points).toBe(0);
- expect(next.plans).toEqual(old.plans);expect(next.rules).toEqual(old.rules);
+ expect(next.plans).toMatchObject(old.plans);expect(next.rules).toEqual(old.rules);
  expect(next.preferences.reducedMotion).toBe(true);expect(next.preferences.movementMode).toBe('bottom');
  expect(parseState(JSON.parse(JSON.stringify(next)))).toEqual(next);
 });
