@@ -18,6 +18,7 @@ import {
   dateSchema,
   calendarSchema,
   parseState,
+  plansSchema,
 } from "../shared/schema";
 import { dateKey, addDays } from "../core/date";
 import {
@@ -192,6 +193,15 @@ else {
               next = structuredClone(state);
             if (v === null) delete next.overrides[d];
             else next.overrides[d] = v;
+            return commit(next);
+          }),
+        savePlans: (date: unknown, input: unknown) =>
+          serial(() => {
+            const d = dateSchema.parse(date),
+              plans = plansSchema.parse(input);
+            const next = structuredClone(state);
+            if (plans.length) next.plans[d] = plans;
+            else delete next.plans[d];
             return commit(next);
           }),
         recalculate: (from: unknown, to: unknown) =>

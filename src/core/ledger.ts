@@ -1,7 +1,7 @@
 import type { DateKey, RuleInput, RuleVersion, State } from "../shared/model";
 import { addDays, dateKey, validDate } from "./date";
 import { calculateDay } from "./earnings";
-import { countWorkdays, resolveDay } from "./calendar";
+import { countScheduledDays, resolveDay } from "./calendar";
 export function ruleForDate(
   state: State,
   date: DateKey,
@@ -27,12 +27,7 @@ export function settleThrough(state: State, now: Date): State {
         .earnedCents,
       rule: structuredClone(rule),
       calendarSnapshot: day,
-      workdayCount: countWorkdays(
-        d.slice(0, 7),
-        rule,
-        state.calendar,
-        state.overrides,
-      ),
+      workdayCount: countScheduledDays(d.slice(0, 7), rule),
     };
   }
   return result;

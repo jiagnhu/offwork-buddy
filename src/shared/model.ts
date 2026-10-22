@@ -28,6 +28,7 @@ export interface DayInfo {
 export interface DayProgress {
   status: "unconfigured" | "rest" | "before" | "working" | "break" | "finished";
   countdownSeconds: number;
+  countdownTarget: "lunch" | "resume" | "offwork";
   earnedCents: number;
   budgetCents: number;
   fraction: number;
@@ -52,6 +53,11 @@ export interface Preferences {
   autoStart: boolean;
   position?: { x: number; y: number };
 }
+export interface DailyPlan {
+  id: string;
+  text: string;
+  completed: boolean;
+}
 export interface State {
   schemaVersion: 1;
   configured: boolean;
@@ -59,6 +65,7 @@ export interface State {
   rules: RuleVersion[];
   calendar: CalendarData;
   overrides: Record<DateKey, boolean>;
+  plans: Record<DateKey, DailyPlan[]>;
   ledger: Record<DateKey, LedgerEntry>;
   preferences: Preferences;
 }

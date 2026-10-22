@@ -21,6 +21,7 @@ export function fixture(): State {
     rules: [{ ...rule }],
     calendar: {},
     overrides: {},
+    plans: {},
     ledger: {},
     preferences: {
       theme: "light",

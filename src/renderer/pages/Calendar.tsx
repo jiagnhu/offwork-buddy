@@ -6,7 +6,7 @@ import {
   CalendarDays,
   X,
 } from "lucide-react";
-import type { Snapshot } from "../../shared/model";
+import type { Snapshot, DailyPlan } from "../../shared/model";
 import { monthDates, weekday } from "../../core/date";
 import { resolveDay } from "../../core/calendar";
 import { ruleForDate } from "../../core/ledger";
@@ -14,6 +14,8 @@ import { defaultRule } from "../../shared/defaults";
 export default function Calendar({ snapshot }: { snapshot: Snapshot }) {
   const [month, setMonth] = useState(snapshot.today.slice(0, 7)),
     [selected, setSelected] = useState<string | null>(null),
+    [draft, setDraft] = useState(""),
+    [busy, setBusy] = useState(false),
     [error, setError] = useState("");
   const state = snapshot.state;
   const dates = monthDates(month);
@@ -34,6 +36,21 @@ export default function Calendar({ snapshot }: { snapshot: Snapshot }) {
   }));
   const year = state.calendar[month.slice(0, 4)];
   const workdays = days.filter((d) => d.workday).length;
+  const plans = selected ? (state.plans[selected] ?? []) : [];
+  async function savePlans(next: DailyPlan[]) {
+    if (!selected || busy) return false;
+    setBusy(true);
+    setError("");
+    try {
+      await window.buddy.savePlans(selected, next);
+      return true;
+    } catch (e) {
+      setError((e as Error).message);
+      return false;
+    } finally {
+      setBusy(false);
+    }
+  }
   function move(n: number) {
     const d = new Date(month + "-01T00:00:00Z");
     d.setUTCMonth(d.getUTCMonth() + n);
@@ -97,7 +114,11 @@ export default function Calendar({ snapshot }: { snapshot: Snapshot }) {
             <button
               key={d.date}
               className={`day ${d.workday ? "work" : "rest"} ${d.date === snapshot.today ? "today" : ""} ${d.source === "manual" ? "manual" : ""}`}
-              onClick={() => setSelected(d.date)}
+              onClick={() => {
+                setSelected(d.date);
+                setDraft("");
+                setError("");
+              }}
             >
               <span>{Number(d.date.slice(-2))}</span>
               <small>
@@ -112,6 +133,12 @@ export default function Calendar({ snapshot }: { snapshot: Snapshot }) {
                       : "休息日"}
               </small>
               {d.date === snapshot.today && <i>今天</i>}
+              {!!state.plans[d.date]?.length && (
+                <span className="day-plans">
+                  计划 {state.plans[d.date].filter((p) => p.completed).length}/
+                  {state.plans[d.date].length}
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -124,7 +151,7 @@ export default function Calendar({ snapshot }: { snapshot: Snapshot }) {
             <i className="rest-dot" />
             休息日
           </span>
-          <span>点击日期，调整公司特殊排班</span>
+          <span>点击日期，安排计划或调整排班</span>
         </div>
       </section>
       <section className="calendar-foot">
@@ -150,16 +177,22 @@ export default function Calendar({ snapshot }: { snapshot: Snapshot }) {
           导入年度日历
         </button>
       </section>
-      {error && (
+      {error && !selected && (
         <p className="error" role="alert">
           {error}
         </p>
       )}
       {selected && (
         <div className="modal-backdrop">
-          <section className="modal card">
+          <section
+            className="modal card plan-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-label={`${selected} 工作计划`}
+          >
             <button
               className="modal-close"
+              disabled={busy}
               onClick={() => setSelected(null)}
               aria-label="关闭"
             >
@@ -167,16 +200,112 @@ export default function Calendar({ snapshot }: { snapshot: Snapshot }) {
             </button>
             <span className="eyebrow">YOUR SCHEDULE</span>
             <h2>{selected} 怎么安排？</h2>
+            <div className="plan-heading">
+              <h3>每日工作计划</h3>
+              <span className="muted">
+                {plans.filter((p) => p.completed).length}/{plans.length} 已完成
+              </span>
+            </div>
+            <form
+              className="plan-add"
+              onSubmit={async (e) => {
+                e.preventDefault();
+                if (!draft.trim()) return;
+                if (
+                  await savePlans([
+                    ...plans,
+                    {
+                      id: crypto.randomUUID(),
+                      text: draft.trim(),
+                      completed: false,
+                    },
+                  ])
+                )
+                  setDraft("");
+              }}
+            >
+              <input
+                aria-label="新增工作计划"
+                placeholder="今天想完成什么？"
+                value={draft}
+                maxLength={200}
+                disabled={busy}
+                onChange={(e) => setDraft(e.target.value)}
+              />
+              <button
+                className="primary"
+                disabled={busy || !draft.trim() || plans.length >= 100}
+              >
+                添加计划
+              </button>
+            </form>
+            <ul className="plan-list">
+              {plans.map((plan) => (
+                <li
+                  key={plan.id}
+                  className={plan.completed ? "plan-completed" : ""}
+                >
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={plan.completed}
+                      disabled={busy}
+                      onChange={(e) =>
+                        void savePlans(
+                          plans.map((p) =>
+                            p.id === plan.id
+                              ? { ...p, completed: e.target.checked }
+                              : p,
+                          ),
+                        )
+                      }
+                    />
+                    <span className="plan-text">{plan.text}</span>
+                  </label>
+                  <button
+                    className="plan-delete"
+                    disabled={busy}
+                    aria-label={`删除计划：${plan.text}`}
+                    onClick={() =>
+                      void savePlans(plans.filter((p) => p.id !== plan.id))
+                    }
+                  >
+                    <X size={16} />
+                  </button>
+                </li>
+              ))}
+            </ul>
+            {!plans.length && (
+              <p className="muted plan-empty">还没有计划，从一件小事开始吧。</p>
+            )}
+            {error && (
+              <p className="error" role="alert">
+                {error}
+              </p>
+            )}
+            <hr className="plan-divider" />
             <p className="muted">手动设置优先于节假日与每周排班。</p>
             <div className="button-row">
-              <button className="primary" onClick={() => override(true)}>
+              <button
+                className="secondary"
+                disabled={busy}
+                onClick={() => override(true)}
+              >
                 设为工作日
               </button>
-              <button className="secondary" onClick={() => override(false)}>
+              <button
+                className="secondary"
+                disabled={busy}
+                onClick={() => override(false)}
+              >
                 设为休息日
               </button>
             </div>
-            <button className="text-button" onClick={() => override(null)}>
+            <button
+              className="text-button"
+              disabled={busy}
+              onClick={() => override(null)}
+            >
               恢复自动判断
             </button>
           </section>

@@ -1015,6 +1015,96 @@ td:last-child {
 .modal > .text-button {
   margin-top: 15px;
 }
+.plan-modal {
+  width: min(560px, calc(100vw - 48px));
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+}
+.plan-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 24px;
+}
+.plan-heading h3 {
+  margin: 0 0 12px;
+  font-size: 15px;
+}
+.plan-heading span {
+  font-size: 12px;
+}
+.plan-add {
+  display: flex;
+  gap: 8px;
+}
+.plan-add input {
+  flex: 1;
+  min-width: 0;
+}
+.plan-add button {
+  white-space: nowrap;
+}
+.plan-list {
+  list-style: none;
+  padding: 0;
+  margin: 16px 0;
+}
+.plan-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--line);
+  padding: 10px 0;
+}
+.plan-list label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+}
+.plan-list input {
+  width: 17px;
+  height: 17px;
+  margin-top: 3px;
+  flex-shrink: 0;
+  accent-color: #6c9985;
+}
+.plan-text {
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+  font-size: 14px;
+}
+.plan-completed .plan-text {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+.plan-delete {
+  background: transparent;
+  border: 0;
+  color: var(--muted);
+  padding: 8px;
+  flex-shrink: 0;
+}
+.plan-delete:hover {
+  color: #c25757;
+}
+.plan-empty {
+  padding: 12px 0;
+  font-size: 13px;
+}
+.plan-divider {
+  border: 0;
+  border-top: 1px solid var(--line);
+  margin-top: 24px;
+}
+.day .day-plans {
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 4px;
+}
 .onboarding {
   min-height: 100vh;
   display: grid;

@@ -23,6 +23,7 @@ export function initialState(now = new Date()): State {
     rules: [],
     calendar: {},
     overrides: {},
+    plans: {},
     ledger: {},
     preferences: {
       theme: "light",

@@ -10,7 +10,13 @@ import {
   ChevronRight,
 } from "lucide-react";
 import type { Snapshot } from "../../shared/model";
-import { countdown, money, statusLabels, time } from "../components/format";
+import {
+  countdown,
+  countdownLabels,
+  money,
+  statusLabels,
+  time,
+} from "../components/format";
 import { ruleForDate } from "../../core/ledger";
 import { addDays, weekday } from "../../core/date";
 import { resolveDay } from "../../core/calendar";
@@ -42,7 +48,7 @@ export default function Overview({
               ? "工作已收尾，生活正开始"
               : progress.status === "rest"
                 ? "今天，把时间留给自己"
-                : "距离下班，还有"}
+                : countdownLabels[progress.countdownTarget]}
           </p>
           <div className="clock-display">
             {progress.status === "rest" ? (

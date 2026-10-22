@@ -5,11 +5,12 @@ import type {
   DayProgress,
   RuleVersion,
 } from "../shared/model";
-import { countWorkdays, resolveDay } from "./calendar";
+import { countScheduledDays, resolveDay } from "./calendar";
 import { dateKey, secondsIntoDay } from "./date";
 export const emptyProgress: DayProgress = {
   status: "unconfigured",
   countdownSeconds: 0,
+  countdownTarget: "offwork",
   earnedCents: 0,
   budgetCents: 0,
   fraction: 0,
@@ -42,7 +43,7 @@ export function calculateDay(
   const fraction = total > 0 ? Math.max(0, Math.min(1, elapsed / total)) : 0;
   let budget = new Decimal(rule.amount);
   if (rule.mode === "monthly") {
-    const count = countWorkdays(date.slice(0, 7), rule, calendar, overrides);
+    const count = countScheduledDays(date.slice(0, 7), rule);
     budget = count ? budget.div(count) : new Decimal(0);
   }
   if (rule.mode === "hourly") budget = budget.mul(total).div(3600);
@@ -56,7 +57,20 @@ export function calculateDay(
           : "working";
   return {
     status,
-    countdownSeconds: Math.max(0, end - seconds),
+    countdownTarget:
+      seconds < bs && rule.breakStart !== null
+        ? "lunch"
+        : status === "break"
+          ? "resume"
+          : "offwork",
+    countdownSeconds: Math.max(
+      0,
+      (seconds < bs && rule.breakStart !== null
+        ? bs
+        : status === "break"
+          ? be
+          : end) - seconds,
+    ),
     budgetCents: budget
       .mul(100)
       .toDecimalPlaces(0, Decimal.ROUND_HALF_UP)

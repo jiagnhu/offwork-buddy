@@ -24,3 +24,8 @@ export const statusLabels = {
   break: "午休充电中",
   finished: "今日已下班",
 };
+export const countdownLabels = {
+  lunch: "距离午休还有",
+  resume: "距离下午上班还有",
+  offwork: "距离下班还有",
+};

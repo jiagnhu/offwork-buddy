@@ -12,6 +12,7 @@ const bridge: BuddyBridge = {
   saveSettings: (i) => invoke("saveSettings", i),
   setPreferences: (i) => invoke("setPreferences", i),
   setDayOverride: (d, v) => invoke("setDayOverride", d, v),
+  savePlans: (d, p) => invoke("savePlans", d, p),
   recalculate: (f, t) => invoke("recalculate", f, t),
   exportBackup: () => invoke("exportBackup"),
   importBackup: () => invoke("importBackup"),

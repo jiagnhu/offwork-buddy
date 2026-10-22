@@ -176,11 +176,10 @@
 }
 .float-earnings > div {
   display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-.float-earnings > div:last-child {
-  text-align: right;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 12px;
 }
 .float-earnings small {
   font-size: 9px;

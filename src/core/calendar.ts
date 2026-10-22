@@ -36,3 +36,7 @@ export function countWorkdays(
     (d) => resolveDay(d, rule, calendar, overrides).workday,
   ).length;
 }
+// Baseline schedule only: holidays, makeup days and personal overrides must not inflate daily pay.
+export function countScheduledDays(month: string, rule: RuleVersion): number {
+  return countWorkdays(month, { ...rule, official: false }, {}, {});
+}

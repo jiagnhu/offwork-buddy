@@ -11,7 +11,12 @@ import {
 } from "lucide-react";
 import type { Snapshot } from "../../shared/model";
 import Character from "../characters/Character";
-import { countdown, money, statusLabels } from "../components/format";
+import {
+  countdown,
+  countdownLabels,
+  money,
+  statusLabels,
+} from "../components/format";
 export default function Companion({ snapshot }: { snapshot: Snapshot }) {
   const p = snapshot.state.preferences;
   const [speech, setSpeech] = useState(""),
@@ -136,7 +141,6 @@ export default function Companion({ snapshot }: { snapshot: Snapshot }) {
           <header className="drag-handle">
             <span className="live-dot" />
             {statusLabels[snapshot.progress.status]}
-            <small>OFFWORK BUDDY</small>
           </header>
           {!snapshot.state.configured ? (
             <>
@@ -155,7 +159,7 @@ export default function Companion({ snapshot }: { snapshot: Snapshot }) {
                   ? "下班快乐，今天辛苦啦"
                   : snapshot.progress.status === "rest"
                     ? "今日休息，好好享受生活"
-                    : "距离下班还有"}
+                    : countdownLabels[snapshot.progress.countdownTarget]}
               </p>
               <strong className="float-clock">
                 {snapshot.progress.status === "rest"
@@ -171,10 +175,6 @@ export default function Companion({ snapshot }: { snapshot: Snapshot }) {
                 <div>
                   <small>今日预计</small>
                   <b>¥ {money(snapshot.progress.earnedCents)}</b>
-                </div>
-                <div>
-                  <small>累计预计</small>
-                  <b>¥ {money(snapshot.totalCents)}</b>
                 </div>
               </div>
             </>

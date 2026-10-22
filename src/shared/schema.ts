@@ -80,6 +80,22 @@ const entry = z.object({
   calendarSnapshot: dayInfo,
   workdayCount: z.number().int().min(0).max(31),
 });
+export const planSchema = z.object({
+  id: z.string().min(1).max(100),
+  text: z
+    .string()
+    .trim()
+    .min(1, "请输入计划内容")
+    .max(200, "计划最多 200 个字"),
+  completed: z.boolean(),
+});
+export const plansSchema = z
+  .array(planSchema)
+  .max(100, "每天最多 100 项计划")
+  .refine(
+    (items) => new Set(items.map((item) => item.id)).size === items.length,
+    "计划编号重复",
+  );
 export const stateSchema = z
   .object({
     schemaVersion: z.literal(1),
@@ -88,6 +104,7 @@ export const stateSchema = z
     rules: z.array(ruleSchema).max(40000),
     calendar: calendarSchema,
     overrides: z.record(dateSchema, z.boolean()),
+    plans: z.record(dateSchema, plansSchema).default({}),
     ledger: z.record(dateSchema, entry),
     preferences: preferencesSchema,
   })

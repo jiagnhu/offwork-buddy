@@ -1,4 +1,4 @@
-import type { Snapshot, RuleInput, Preferences } from "./model";
+import type { Snapshot, RuleInput, Preferences, DailyPlan } from "./model";
 export interface SettingsInput {
   rule: RuleInput;
   startDate: string;
@@ -8,6 +8,7 @@ export interface BuddyBridge {
   saveSettings(input: SettingsInput): Promise<Snapshot>;
   setPreferences(input: Partial<Preferences>): Promise<Snapshot>;
   setDayOverride(date: string, value: boolean | null): Promise<Snapshot>;
+  savePlans(date: string, plans: DailyPlan[]): Promise<Snapshot>;
   recalculate(from: string, to: string): Promise<Snapshot>;
   exportBackup(): Promise<string | null>;
   importBackup(): Promise<boolean>;

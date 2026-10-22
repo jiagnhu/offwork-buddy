@@ -91,7 +91,7 @@ export default function Ledger({ snapshot }: { snapshot: Snapshot }) {
           调整历史记录
         </summary>
         <p className="muted">
-          修改过历史日历？可主动重算指定日期。执行前会再次确认。
+          修改过历史日历或升级了计薪算法？可主动重算指定日期。月薪将按正常周排班天数分摊，执行前会再次确认。
         </p>
         <div className="button-row">
           <input
