@@ -1,8 +1,3 @@
-import {
-  characterOrder,
-  characterName,
-  type Live2dKind,
-} from "../../shared/characters";
 import { useState, useEffect } from "react";
 import {
   ArrowUpRight,
@@ -12,17 +7,11 @@ import {
   Sun,
   Moon,
   Heart,
-  Cat,
-  Sparkles,
 } from "lucide-react";
 import type { Snapshot, RuleInput } from "../../shared/model";
 import { defaultRule } from "../../shared/defaults";
 import { time, toMinutes } from "../components/format";
-import HaruPreview from "../components/HaruPreview";
-import {
-  CompanionNameSetting,
-  RestReminderSetting,
-} from "../components/CompanionSettings";
+import { RestReminderSetting } from "../components/CompanionSettings";
 export function WorkForm({
   snapshot,
   onDone,
@@ -250,7 +239,6 @@ export function WorkForm({
   );
 }
 export default function Settings({ snapshot }: { snapshot: Snapshot }) {
-  const [preview, setPreview] = useState<Live2dKind | null>(null);
   const p = snapshot.state.preferences;
   const [message, setMessage] = useState(""),
     [error, setError] = useState("");
@@ -275,16 +263,6 @@ export default function Settings({ snapshot }: { snapshot: Snapshot }) {
         <WorkForm snapshot={snapshot} />
       </section>
       <div className="settings-side">
-        <section className="card">
-          <h2>伙伴成长</h2>
-          <p className="muted">每天互动与完成计划，一起积攒小小的快乐。</p>
-          <button
-            className="secondary"
-            onClick={() => void window.buddy.openPanel({ page: "growth" })}
-          >
-            查看成长与配饰
-          </button>
-        </section>
         <section className="card">
           <h2>无声提醒</h2>
           <p className="muted">只用气泡和动作提醒，不播放任何声音。</p>
@@ -329,29 +307,7 @@ export default function Settings({ snapshot }: { snapshot: Snapshot }) {
           <RestReminderSetting preferences={p} />
         </section>
         <section className="card">
-          <h2>让搭子更像你</h2>
-          <label className="field-title">
-            自主活动
-            <select
-              aria-label="自主活动"
-              disabled
-              value="stationary"
-              onChange={(e) =>
-                act(() =>
-                  window.buddy.setPreferences({
-                    movementMode: e.target.value as "bottom" | "stationary",
-                  }),
-                )
-              }
-            >
-              <option value="bottom">屏幕底部散步</option>
-              <option value="stationary">原地陪伴</option>
-            </select>
-          </label>
-          <p className="hint">
-            当前角色以原地动画陪伴；Miara 可在预览中播放原作行走场景。
-          </p>
-          <p className="muted">外观更改会立即生效</p>
+          <h2>界面与桌面</h2>
           <label className="field-title">界面主题</label>
           <div className="segmented">
             {(["light", "dark"] as const).map((theme) => (
@@ -367,31 +323,6 @@ export default function Settings({ snapshot }: { snapshot: Snapshot }) {
               </button>
             ))}
           </div>
-          <label className="field-title">你的桌面伙伴</label>
-          <div className="character-options">
-            {characterOrder.map((kind) => (
-              <button
-                key={kind}
-                className={p.character === kind ? "selected" : ""}
-                aria-label={`预览 ${characterName(kind, p.haruName)}`}
-                onClick={() => setPreview(kind)}
-              >
-                <Sparkles />
-                {characterName(kind, p.haruName)}
-                <span>预览</span>
-              </button>
-            ))}
-          </div>
-          <CompanionNameSetting preferences={p} />
-          {preview && (
-            <HaruPreview
-              key={preview}
-              kind={preview}
-              displayName={characterName(preview, p.haruName)}
-              reducedMotion={p.reducedMotion}
-              onClose={() => setPreview(null)}
-            />
-          )}
           {(
             [
               ["alwaysOnTop", "桌面伙伴始终置顶"],

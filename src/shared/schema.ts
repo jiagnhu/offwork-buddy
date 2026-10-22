@@ -70,18 +70,27 @@ const preferencesV2Schema = legacyPreferencesSchema.extend({
   }),
   accessory: z.enum(["none", "star", "pillow"]),
 });
+const characterNickname = z
+  .string()
+  .trim()
+  .min(1, "请输入角色名称")
+  .max(20, "名称最多20个字");
 export const preferencesSchema = preferencesV2Schema.extend({
   character: z
     .enum(["pet", "assistant", "haru", "mao", "hiyori", "miara", "rice"])
     .transform((kind) =>
       kind === "pet" || kind === "assistant" ? ("haru" as const) : kind,
     ),
-  haruName: z
-    .string()
-    .trim()
-    .min(1, "请输入角色名称")
-    .max(20, "名称最多20个字")
-    .default("丝袜妹"),
+  haruName: characterNickname.default("Haru"),
+  characterNames: z
+    .object({
+      mao: characterNickname.optional(),
+      hiyori: characterNickname.optional(),
+      miara: characterNickname.optional(),
+      rice: characterNickname.optional(),
+    })
+    .strict()
+    .optional(),
   reminders: preferencesV2Schema.shape.reminders.extend({
     restMinutes: z
       .union([z.literal(0), z.number().int().min(5).max(240)])
@@ -233,5 +242,11 @@ export function parseState(input: unknown): State {
         : input,
   );
   state.rules.sort((a, b) => a.effectiveFrom.localeCompare(b.effectiveFrom));
+  // The map also marks the one-time upgrade from the old default name.
+  if (!state.preferences.characterNames) {
+    if (state.preferences.haruName === "丝袜妹")
+      state.preferences.haruName = "Haru";
+    state.preferences.characterNames = {};
+  }
   return state;
 }

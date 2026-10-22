@@ -28,7 +28,8 @@ export function initialState(now = new Date()): State {
     plans: {},
     ledger: {},
     preferences: {
-      haruName: "丝袜妹",
+      haruName: "Haru",
+      characterNames: {},
       movementMode: "bottom",
       cardHidden: false,
       reminders: { lunch: true, offwork: true, leadMinutes: 5, restMinutes: 0 },

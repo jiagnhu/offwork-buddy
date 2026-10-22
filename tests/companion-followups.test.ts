@@ -9,7 +9,7 @@ import calendar from "../resources/calendar.json";
 const at = (t: string) => new Date("2026-10-22T" + t + "+08:00");
 it("old settings receive the editable name and disabled periodic reminder", () => {
   const s = parseState(fixture());
-  expect(s.preferences.haruName).toBe("丝袜妹");
+  expect(s.preferences.haruName).toBe("Haru");
   expect(s.preferences.reminders.restMinutes).toBe(0);
   expect(
     preferencesSchema.safeParse({ ...s.preferences, haruName: "   " }).success,

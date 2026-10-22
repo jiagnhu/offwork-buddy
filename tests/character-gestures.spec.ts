@@ -24,7 +24,7 @@ test("all character gestures affect real model parameters and remain stable when
         return model;
       };
     });
-    await s.page.getByRole("button", { name: "偏好设置", exact: true }).click();
+    await s.page.getByRole("button", { name: "角色空间", exact: true }).click();
     const values = () =>
       s.page.evaluate(() => {
         const p = (window as any).__gestureModel.parameters;
@@ -46,6 +46,20 @@ test("all character gestures affect real model parameters and remain stable when
         { timeout: 30000 },
       );
       const neutral = await values();
+      if (kind === "haru") {
+        const opacities = await s.page.evaluate(() => {
+          const p = (window as any).__gestureModel.parts;
+          return Object.fromEntries(
+            p.ids.map((id: string, i: number) => [id, p.opacities[i]]),
+          );
+        });
+        expect(
+          opacities.Part01ArmRA001 + opacities.Part01ArmRB001,
+        ).toBeLessThanOrEqual(1.01);
+        expect(
+          opacities.Part01ArmLA001 + opacities.Part01ArmLB001,
+        ).toBeLessThanOrEqual(1.01);
+      }
       for (const [cue, label] of Object.entries(gestureLabels[kind])) {
         const ids = Object.keys(sampleGesture(kind, cue as GestureCue, 0.4));
         expect(ids.filter((id) => !(id in neutral))).toEqual([]);

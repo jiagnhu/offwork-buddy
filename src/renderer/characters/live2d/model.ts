@@ -117,6 +117,8 @@ export class HaruModel extends CubismUserModel {
           JSON.parse(new TextDecoder().decode(b)).Parameters,
         );
       }
+      // Pose groups select alternate arms/outfits even when no animation runs.
+      this._pose?.updateParameters(this._model, 0);
       this._model.saveParameters();
       return Array.from({ length: settings.getTextureCount() }, (_, i) =>
         settings.getTextureFileName(i),

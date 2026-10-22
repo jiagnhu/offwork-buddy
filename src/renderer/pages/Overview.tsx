@@ -80,7 +80,10 @@ export default function Overview({
           </div>
           <div className="overview-character" id="character-preview">
             <Character
-              displayName={state.preferences.haruName}
+              displayName={characterName(
+                state.preferences.character,
+                state.preferences,
+              )}
               kind={state.preferences.character}
               status={progress.status}
               reducedMotion={state.preferences.reducedMotion}
@@ -89,7 +92,7 @@ export default function Overview({
           </div>
           <div className="buddy-copy">
             <h2>
-              {characterName(state.preferences.character, state.preferences.haruName)}
+              {characterName(state.preferences.character, state.preferences)}
               陪你，慢慢来。
             </h2>
             <p>认真生活，也要记得休息。</p>

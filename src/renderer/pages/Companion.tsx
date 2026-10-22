@@ -1,3 +1,4 @@
+import { characterName } from "../../shared/characters";
 import { useState } from "react";
 import type { Snapshot } from "../../shared/model";
 import Character from "../characters/Character";
@@ -47,7 +48,7 @@ export default function Companion({ snapshot }: { snapshot: Snapshot }) {
         )}
         <Character
           displayScale={scale}
-          displayName={p.haruName}
+          displayName={characterName(p.character, p)}
           event={event}
           active={snapshot.desktop.visible}
           pose={pose}

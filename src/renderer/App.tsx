@@ -1,4 +1,5 @@
-import Growth from "./pages/Growth";
+import CharacterSpace from "./pages/CharacterSpace";
+import { version } from "../../package.json";
 import DesktopCard from "./pages/DesktopCard";
 import Companion from "./pages/Companion";
 import EarningsDetail from "./components/EarningsDetail";
@@ -26,7 +27,7 @@ const navigation = [
   { id: "overview", label: "今日概览", icon: LayoutDashboard },
   { id: "calendar", label: "工作日历", icon: CalendarDays },
   { id: "ledger", label: "收入记录", icon: Wallet },
-  { id: "growth", label: "伙伴成长", icon: Sparkles },
+  { id: "growth", label: "角色空间", icon: Sparkles },
   { id: "settings", label: "偏好设置", icon: SettingsIcon },
 ];
 export default function App() {
@@ -88,7 +89,7 @@ export default function App() {
         : page === "ledger"
           ? "每一份努力，都算数。"
           : page === "growth"
-            ? "小小的陪伴，慢慢的成长。"
+            ? "让每一天的陪伴，都有温度。"
             : "你的节奏，你来定义。";
   return (
     <div className="app-shell">
@@ -126,7 +127,7 @@ export default function App() {
         <div className="sidebar-bottom">
           <ShieldCheck size={15} />
           <span>本地存储 · 安心陪伴</span>
-          <small>v1.3.2</small>
+          <small>v{version}</small>
         </div>
       </aside>
       <main className="main-content">
@@ -197,7 +198,7 @@ export default function App() {
         ) : page === "ledger" ? (
           <Ledger snapshot={snapshot} />
         ) : page === "growth" ? (
-          <Growth snapshot={snapshot} />
+          <CharacterSpace snapshot={snapshot} />
         ) : (
           <Settings snapshot={snapshot} />
         )}

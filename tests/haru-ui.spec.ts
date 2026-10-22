@@ -5,10 +5,10 @@ import { join } from 'node:path';
 test('failed character save leaves preview open and keeps the existing character',async()=>{
   const s=await launchDesktop();
   try {
-    await s.page.getByRole('button',{name:'偏好设置',exact:true}).click();
-    await s.page.getByRole('button',{name:'预览 丝袜妹'}).click();
+    await s.page.getByRole('button',{name:'角色空间',exact:true}).click();
+    await s.page.getByRole('button',{name:'预览 Haru'}).click();
     await mkdir(join(s.data,'state.tmp'));
-    await s.page.getByRole('button',{name:'使用 丝袜妹',exact:true}).click();
+    await s.page.getByRole('button',{name:'使用 Haru',exact:true}).click();
     await expect(s.page.getByRole('dialog').getByRole('alert')).toBeVisible();
     expect((await s.page.evaluate(()=>window.buddy.getSnapshot())).state.preferences.character).toBe('haru');
     await rm(join(s.data,'state.tmp'),{recursive:true});
@@ -18,8 +18,8 @@ test("preview tries all motions without rewards, explicit selection persists", a
   test.setTimeout(120000);
   const s = await launchDesktop();
   try {
-    await s.page.getByRole("button", { name: "偏好设置", exact: true }).click();
-    await s.page.getByRole("button", { name: "预览 丝袜妹" }).click();
+    await s.page.getByRole("button", { name: "角色空间", exact: true }).click();
+    await s.page.getByRole("button", { name: "预览 Haru" }).click();
     const dialog = s.page.getByRole("dialog");
     await expect(dialog.locator(".haru-character")).toHaveAttribute(
       "data-loaded",
@@ -47,7 +47,7 @@ test("preview tries all motions without rewards, explicit selection persists", a
     expect(before.preferences.character).toBe("haru");
     expect(before.growth.points).toBe(0);
     await dialog
-      .getByRole("button", { name: "使用 丝袜妹", exact: true })
+      .getByRole("button", { name: "使用 Haru", exact: true })
       .click();
     await expect(dialog).toHaveCount(0);
     const desktop = s.app

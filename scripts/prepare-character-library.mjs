@@ -9,7 +9,7 @@ if(digest(await readFile('.cache/miara_en.zip'))!=='021f44d062d7cc1cbe6ac13e25ef
 if(digest(await readFile('.cache/CubismSdkForWeb-5-r.5.zip'))!=='67064a7fb1812cf502f5c4a03bfe12cc638c75a621bb4acf06bb28763df06ba0') throw Error('SDK archive changed');
 const models={};
 for(const [kind,name,file,origin] of [
- ['haru','丝袜妹','Haru.model3.json',join(root,'haru')],
+ ['haru','Haru','Haru.model3.json',join(root,'haru')],
  ['mao','虹色 Mao','Mao.model3.json',join(sdk,'Mao')],
  ['hiyori','桃濑日和','Hiyori.model3.json',join(sdk,'Hiyori')],
  ['miara','Miara','miara_pro_t03.model3.json',resolve('.cache/miara/runtime')],

@@ -6,15 +6,17 @@ test("name and rest interval persist; calendar shows paid holidays and saved amo
     state.rules[0].official = true;
   });
   try {
-    await s.page.getByRole("button", { name: "偏好设置", exact: true }).click();
+    await s.page.getByRole("button", { name: "角色空间", exact: true }).click();
+    await expect(s.page.locator('.character-current .haru-character')).toHaveAttribute('data-loaded','true',{timeout:30000});
     await expect(
       s.page.getByRole("textbox", { name: "看板娘名称" }),
-    ).toHaveValue("丝袜妹");
+    ).toHaveValue("Haru");
     await s.page.getByRole("textbox", { name: "看板娘名称" }).fill("小星");
     await s.page.getByRole("button", { name: "保存名称", exact: true }).click();
     await expect(
       s.page.getByRole("button", { name: "预览 小星", exact: true }),
     ).toBeVisible();
+    await s.page.getByRole("button", { name: "偏好设置", exact: true }).click();
     await s.page.getByRole("switch", { name: "定时休息提醒" }).click();
     await expect(
       s.page.getByRole("switch", { name: "定时休息提醒" }),

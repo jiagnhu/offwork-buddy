@@ -21,7 +21,7 @@ test("all five characters preview, animate, select and load offline", async () =
       downloadThroughput: 0,
       uploadThroughput: 0,
     });
-    await s.page.getByRole("button", { name: "偏好设置", exact: true }).click();
+    await s.page.getByRole("button", { name: "角色空间", exact: true }).click();
     await expect(s.page.getByText("萌宠 · 年糕")).toHaveCount(0);
     await expect(s.page.getByText("看板娘 · 小沐")).toHaveCount(0);
     for (const kind of characterOrder) {

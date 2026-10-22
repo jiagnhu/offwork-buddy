@@ -20,7 +20,7 @@ test("companion switches characters, collapses, scales and respects reduced moti
     await expect.poll(() => app.windows().length).toBe(3);
     const page = app.windows().find((w) => w.url().includes("companion"))!;
     await expect(
-      page.getByLabel("丝袜妹 Live2D 角色"),
+      page.getByLabel("Haru Live2D 角色"),
     ).toBeVisible();
     await page.locator(".companion-stage").hover();
     await page.getByRole("button", { name: "切换伙伴" }).click();
@@ -68,7 +68,7 @@ test("companion switches characters, collapses, scales and respects reduced moti
       window.buddy.setPreferences({ character: "haru" }),
     );
     await expect(
-      page.getByLabel("丝袜妹 Live2D 角色"),
+      page.getByLabel("Haru Live2D 角色"),
     ).toBeVisible();
     await page.screenshot({
       path: "test-results/companion-pet.png",

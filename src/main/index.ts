@@ -254,15 +254,20 @@ else {
             return commit(settleThrough(parseState(next), new Date()));
           }),
         setPreferences: (input: unknown) =>
-          serial(() =>
-            commit({
+          serial(() => {
+            const patch = preferencesSchema.partial().parse(input);
+            return commit({
               ...state,
               preferences: preferencesSchema.parse({
                 ...state.preferences,
-                ...preferencesSchema.partial().parse(input),
+                ...patch,
+                characterNames: {
+                  ...state.preferences.characterNames,
+                  ...patch.characterNames,
+                },
               }),
-            }),
-          ),
+            });
+          }),
         setDayOverride: (date: unknown, value: unknown) =>
           serial(() => {
             const d = dateSchema.parse(date),

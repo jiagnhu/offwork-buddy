@@ -19,7 +19,7 @@ export default function Character(
       key={kind}
       kind={kind}
       displayScale={props.displayScale}
-      displayName={characterName(kind, props.displayName)}
+      displayName={props.displayName ?? characterName(kind)}
       active={props.active}
       reducedMotion={props.reducedMotion}
       onInteract={props.onInteract}

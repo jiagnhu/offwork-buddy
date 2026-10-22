@@ -41,7 +41,8 @@ test("v2 migration preserves money, plans, growth, accessories and roaming", () 
     preferences: {
       ...old.preferences,
       character: "haru",
-      haruName: "丝袜妹",
+      haruName: "Haru",
+      characterNames: {},
       reminders: { ...old.preferences.reminders, restMinutes: 0 },
     },
   });
@@ -63,7 +64,8 @@ test("only v3 accepts Haru and rejects unknown versions", () => {
     ...next,
     preferences: {
       ...next.preferences,
-      haruName: "丝袜妹",
+      haruName: "Haru",
+      characterNames: {},
       reminders: { ...next.preferences.reminders, restMinutes: 0 },
     },
   });

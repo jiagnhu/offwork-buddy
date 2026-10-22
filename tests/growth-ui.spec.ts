@@ -6,10 +6,10 @@ test("growth rewards are shared by the Live2D library and legacy accessories sta
     x.preferences.accessory = "pillow";
   });
   try {
-    await s.page.getByRole("button", { name: "伙伴成长", exact: true }).click();
+    await s.page.getByRole("button", { name: "角色空间", exact: true }).click();
     await expect(
       s.page.getByRole("button", { name: "佩戴抱枕" }),
-    ).toBeDisabled();
+    ).toHaveCount(0);
     await s.page.evaluate(() => window.buddy.interact());
     for (const character of ["mao", "hiyori", "miara", "rice"] as const) {
       await s.page.evaluate(

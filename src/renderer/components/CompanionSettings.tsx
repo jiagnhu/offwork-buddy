@@ -1,15 +1,25 @@
 import { useEffect, useState } from "react";
 import type { Preferences } from "../../shared/model";
+import {
+  characterName,
+  normalizeCharacter,
+  live2dModels,
+} from "../../shared/characters";
 
 export function CompanionNameSetting({
   preferences: p,
 }: {
   preferences: Preferences;
 }) {
-  const [name, setName] = useState(p.haruName ?? "丝袜妹");
+  const kind = normalizeCharacter(p.character),
+    saved = characterName(kind, p);
+  const [name, setName] = useState(saved);
   const [error, setError] = useState(""),
     [busy, setBusy] = useState(false);
-  useEffect(() => setName(p.haruName ?? "丝袜妹"), [p.haruName]);
+  useEffect(() => {
+    setName(saved);
+    setError("");
+  }, [kind, saved]);
   return (
     <form
       onSubmit={async (e) => {
@@ -17,7 +27,11 @@ export function CompanionNameSetting({
         setBusy(true);
         setError("");
         try {
-          await window.buddy.setPreferences({ haruName: name.trim() });
+          await window.buddy.setPreferences(
+            kind === "haru"
+              ? { haruName: name.trim() }
+              : { characterNames: { [kind]: name.trim() } },
+          );
         } catch (e) {
           setError((e as Error).message);
         } finally {
@@ -26,7 +40,7 @@ export function CompanionNameSetting({
       }}
     >
       <label className="field-title">
-        丝袜妹的昵称
+        {live2dModels[kind].name} 的昵称
         <input
           aria-label="看板娘名称"
           value={name}
@@ -37,9 +51,7 @@ export function CompanionNameSetting({
       </label>
       <button
         className="secondary"
-        disabled={
-          busy || !name.trim() || name.trim() === (p.haruName ?? "丝袜妹")
-        }
+        disabled={busy || !name.trim() || name.trim() === saved}
       >
         保存名称
       </button>

@@ -346,57 +346,6 @@ html.companion-window #root {
 .speech-bubble {
   cursor: pointer;
 }
-.growth-page {
-  display: grid;
-  gap: 22px;
-}
-.growth-hero {
-  display: grid;
-  grid-template-columns: 220px 1fr;
-  align-items: center;
-  gap: 30px;
-  background: linear-gradient(120deg, var(--lavender), var(--surface) 60%);
-}
-.growth-preview {
-  height: 245px;
-}
-.growth-points strong {
-  font-size: 46px;
-  font-weight: 600;
-  margin-right: 8px;
-  font-variant-numeric: tabular-nums;
-}
-.growth-points {
-  margin: 14px 0;
-}
-.growth-hero progress {
-  width: 100%;
-  height: 8px;
-  accent-color: #8e7db2;
-}
-.growth-hero small {
-  line-height: 1.9;
-}
-.growth-rewards {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 18px;
-}
-.growth-rewards .card {
-  padding: 24px;
-}
-.reward-symbol {
-  font-size: 32px;
-  color: #a48abc;
-  display: block;
-}
-.growth-rewards p {
-  font-size: 13px;
-  line-height: 1.8;
-}
-.growth-rewards button:disabled {
-  cursor: default;
-}
 .character-button[data-direction="left"] svg {
   transform: scaleX(-1);
 }

@@ -5,7 +5,7 @@ import type { HaruAction } from "../characters/live2d/types";
 import { gestureLabels, type GestureCue } from "../characters/live2d/gestures";
 export default function HaruPreview({
   kind = "haru",
-  displayName = "丝袜妹",
+  displayName = "Haru",
   reducedMotion,
   onClose,
 }: {

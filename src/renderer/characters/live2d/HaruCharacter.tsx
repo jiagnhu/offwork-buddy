@@ -5,7 +5,7 @@ import { mountResource } from "./lifecycle";
 import type { HaruAction, HaruRuntime } from "./types";
 export default function HaruCharacter({
   kind = "haru",
-  displayName = "丝袜妹",
+  displayName = "Haru",
   displayScale = 1,
   active = true,
   reducedMotion,

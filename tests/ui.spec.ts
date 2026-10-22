@@ -34,6 +34,7 @@ test("onboarding, navigation, appearance and character survive restart", async (
     await expect(page.getByRole("alert")).toContainText("午休");
     await page.getByLabel("午休开始").fill("12:00");
     await page.getByRole("button", { name: "深色", exact: true }).click();
+    await page.getByRole("button", { name: "角色空间", exact: true }).click();
     await page.getByRole("button", { name: "预览 虹色 Mao",exact:true }).click();
     await page.getByRole("button", { name: "使用 虹色 Mao",exact:true }).click();
     await expect(page.locator("html")).toHaveAttribute("data-theme", "dark", {timeout:30000});
