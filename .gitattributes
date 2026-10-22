@@ -1,0 +1,2 @@
+resources/live2d/** -text
+vendor/cubism-framework/** -text

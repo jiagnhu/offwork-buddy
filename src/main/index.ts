@@ -1,4 +1,7 @@
 import { startCompanionController } from "./companion-controller";
+import { registerLive2dScheme, installLive2dProtocol } from './live2d-assets';
+import live2dLock from '../../resources/live2d/asset-lock.json';
+registerLive2dScheme();
 import { applyPlanAction } from "../core/plans";
 import { startReminderController } from "./reminder-controller";
 import { rewardInteraction, unlocks } from "../core/growth";
@@ -145,6 +148,7 @@ else {
   app
     .whenReady()
     .then(async () => {
+      installLive2dProtocol(path.join(__dirname, "../resources/live2d"), live2dLock);
       const loaded = await loadState(directory);
       state = loaded.state;
       notice = loaded.recoveryNotice ?? null;
