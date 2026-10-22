@@ -65,4 +65,4 @@ npm run dist
 
 `npm run dev` 构建后启动应用；`npm run dist` 生成 x64 NSIS 安装包。构建不自动发布或上传任何数据。安装包未配置商业签名证书。
 
-测试使用独立临时数据目录，不修改用户正式账本。验证范围和限制记录在 `docs/verification.md`。
+测试使用独立临时数据目录，不修改用户正式账本。本次验证范围和限制记录在 `docs/verification-1.2.0.md`，原版记录在 `docs/verification.md`。
