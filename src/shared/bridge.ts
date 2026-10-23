@@ -1,3 +1,4 @@
+import type { AISettingsInput, AISettingsView } from "./ai-settings";
 import type { ChatState } from "./chat";
 import type { Snapshot, RuleInput, Preferences, DailyPlan } from "./model";
 import type { EarningsDetail } from "../core/earnings-detail";
@@ -13,6 +14,9 @@ export interface SettingsInput {
   startDate: string;
 }
 export interface BuddyBridge {
+  getAISettings(): Promise<AISettingsView>;
+  saveAISettings(input: AISettingsInput): Promise<AISettingsView>;
+  testAISettings(input: AISettingsInput): Promise<string>;
   getChat(): Promise<ChatState>;
   sendChat(text: string): Promise<ChatState>;
   retryChat(): Promise<ChatState>;

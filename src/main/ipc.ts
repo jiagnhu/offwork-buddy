@@ -20,6 +20,13 @@ export function registerIpc(
           event.senderFrame.url.split("#")[0] !== allowed
         )
           throw new Error("不允许的窗口请求");
+        if (
+          ["getAISettings", "saveAISettings", "testAISettings"].includes(
+            name,
+          ) &&
+          event.senderFrame.url !== allowed
+        )
+          throw new Error("仅主面板可以访问 AI 设置");
         const win = BrowserWindow.fromWebContents(event.sender);
         if (
           name === "dragCompanion" &&

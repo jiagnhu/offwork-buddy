@@ -85,6 +85,7 @@ export function createChatServer(config: {
         config.baseURL.replace(/\/$/, "") + "/chat/completions",
         {
           method: "POST",
+          redirect: "error",
           headers: {
             Authorization: `Bearer ${config.key}`,
             "Content-Type": "application/json",

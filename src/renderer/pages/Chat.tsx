@@ -1,6 +1,7 @@
 /// <reference types="vite/client" />
 import { useEffect, useRef, useState } from "react";
 import {
+  Settings,
   MessageCircle,
   Send,
   Square,
@@ -16,6 +17,7 @@ import {
   normalizeCharacter,
 } from "../../shared/characters";
 import "../styles/chat.css";
+import AISettingsDialog from "../components/AISettingsDialog";
 const portraits = import.meta.glob("../assets/characters/*.png", {
   eager: true,
   query: "?url",
@@ -30,6 +32,20 @@ export default function Chat({ snapshot }: { snapshot: Snapshot }) {
     [busy, setBusy] = useState(false),
     [drafts, setDrafts] = useState<Record<string, string>>({}),
     [away, setAway] = useState(false);
+  const [aiEnabled, setAiEnabled] = useState(false),
+    [settingsOpen, setSettingsOpen] = useState(false);
+  useEffect(() => {
+    let live = true;
+    void window.buddy
+      .getAISettings()
+      .then((s) => {
+        if (live) setAiEnabled(s.enabled);
+      })
+      .catch(() => {});
+    return () => {
+      live = false;
+    };
+  }, []);
   const list = useRef<HTMLDivElement>(null),
     following = useRef(true),
     composing = useRef(false);
@@ -89,12 +105,26 @@ export default function Chat({ snapshot }: { snapshot: Snapshot }) {
   }
   return (
     <section className="chat-card card" aria-label="伙伴聊天">
+      {settingsOpen && (
+        <AISettingsDialog onClose={() => setSettingsOpen(false)} />
+      )}
       <header className="chat-heading">
         <img src={portraits[`../assets/characters/${kind}.png`]} alt="" />
         <div>
           <h2>{name}</h2>
           <p>{active ? "正在回复…" : "留一点时间，说说今天。"}</p>
         </div>
+        {aiEnabled && (
+          <button
+            className="icon-button"
+            aria-label="AI 服务设置"
+            title="AI 服务设置（开发版）"
+            disabled={active}
+            onClick={() => setSettingsOpen(true)}
+          >
+            <Settings size={18} />
+          </button>
+        )}
         <label className="chat-switch">
           聊天伙伴
           <select

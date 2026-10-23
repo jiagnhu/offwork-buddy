@@ -13,8 +13,16 @@ type Transport = (
   signal: AbortSignal,
   delta: (text: string) => void,
 ) => Promise<void>;
-export const chatTransport: Transport = async (body, signal, delta) => {
-  const endpoint = process.env.BUDDY_CHAT_SERVICE ?? "http://127.0.0.1:17863";
+export const chatTransport = async (
+  body: Parameters<Transport>[0],
+  signal: AbortSignal,
+  delta: (text: string) => void,
+  endpointOverride?: string,
+) => {
+  const endpoint =
+    endpointOverride ??
+    process.env.BUDDY_CHAT_SERVICE ??
+    "http://127.0.0.1:17863";
   const url = new URL(endpoint);
   if (
     url.protocol !== "http:" ||

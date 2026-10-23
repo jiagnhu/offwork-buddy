@@ -1,7 +1,7 @@
 {
   "name": "offwork-buddy",
   "productName": "下班搭子",
-  "version": "1.7.0",
+  "version": "1.7.1",
   "description": "你的桌面下班伙伴",
   "author": "Offwork Buddy",
   "private": true,
@@ -13,7 +13,9 @@
     "dev": "npm run build && electron .",
     "test:e2e": "playwright test",
     "dist": "npm run build && electron-builder --win nsis --x64",
-    "chat:server": "node scripts/chat-server.mjs"
+    "chat:server": "node scripts/chat-server.mjs",
+    "build:developer": "node scripts/build-developer.mjs",
+    "dist:developer": "npm run build:developer && electron-builder --config electron-builder.developer.yml --win nsis --x64"
   },
   "dependencies": {
     "decimal.js": "^10.6.0",

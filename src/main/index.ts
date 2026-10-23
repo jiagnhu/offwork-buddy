@@ -1,4 +1,6 @@
-import { ChatController } from "./chat-controller";
+import { AISettings } from "./ai-settings";
+import { safeStorage } from "electron";
+import { ChatController, chatTransport } from "./chat-controller";
 import { loadChat, saveChat } from "./chat-store";
 import { characterName, normalizeCharacter } from "../shared/characters";
 import { setLeave } from "../core/ledger";
@@ -169,6 +171,12 @@ else {
       );
       const loaded = await loadState(directory);
       state = loaded.state;
+      const ai = new AISettings(
+        directory,
+        process.env.BUDDY_DEVELOPER_BUILD === "1",
+        safeStorage,
+      );
+      await ai.load();
       const chat = new ChatController(
         await loadChat(directory),
         (s) => saveChat(directory, s),
@@ -176,6 +184,8 @@ else {
           if (panel && !panel.isDestroyed())
             panel.webContents.send("buddy:chat", s);
         },
+        (body, signal, delta) =>
+          chatTransport(body, signal, delta, ai.endpoint),
       );
       notice = loaded.recoveryNotice ?? null;
       try {
@@ -250,6 +260,14 @@ else {
       );
       app.on("before-quit", stopEvents);
       registerIpc({
+        getAISettings: () => ai.view(),
+        saveAISettings: (input: unknown) =>
+          serial(async () => {
+            if (chat.get().active)
+              throw Error("请先停止当前回复，再修改 AI 设置。");
+            return ai.save(input);
+          }),
+        testAISettings: (input: unknown) => serial(() => ai.test(input)),
         getChat: () => chat.get(),
         sendChat: (text: unknown) =>
           serial(() =>
@@ -553,6 +571,7 @@ else {
         void serial(async () => {
           try {
             await chat.flush();
+            await ai.close();
             const c = companion.getBounds(),
               card = desktopCard.getBounds();
             await saveState(directory, {

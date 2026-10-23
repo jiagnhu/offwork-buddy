@@ -9,6 +9,7 @@ await verifyAssets('resources/live2d', JSON.parse(await readFile('resources/live
 await mkdir("dist/main", { recursive: true });
 await build({
   entryPoints: ["src/main/index.ts"],
+  define: { "process.env.BUDDY_DEVELOPER_BUILD": JSON.stringify(process.env.BUDDY_DEVELOPER_BUILD === "1" ? "1" : "0") },
   bundle: true,
   platform: "node",
   format: "cjs",
