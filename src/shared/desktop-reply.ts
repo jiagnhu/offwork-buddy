@@ -3,4 +3,5 @@ export interface DesktopReply {
   message: ChatMessage;
   side: "left" | "right";
   theme: "light" | "dark";
+  maxHeight: number;
 }

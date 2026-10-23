@@ -5,6 +5,7 @@ import Character from "../characters/Character";
 import CompanionControls from "../components/CompanionControls";
 import { useCompanionEvent, useDesktopScale } from "../hooks/useCompanionEvent";
 import { characterCapabilities } from "../../shared/character-capabilities";
+import { countdown } from "../components/format";
 export default function Companion({ snapshot }: { snapshot: Snapshot }) {
   const p = snapshot.state.preferences,
     { event, dismiss } = useCompanionEvent(),
@@ -36,6 +37,11 @@ export default function Companion({ snapshot }: { snapshot: Snapshot }) {
       }}
     >
       <CompanionControls snapshot={snapshot} onError={setError} />
+      {(p.cardHidden || p.collapsed) && (
+        <div className="companion-mini-clock" aria-label="下班倒计时">
+          {countdown(snapshot.progress.countdownSeconds).join(":")}
+        </div>
+      )}
       <div className="companion-stage">
         {event && (
           <button

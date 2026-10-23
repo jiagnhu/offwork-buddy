@@ -29,7 +29,11 @@ export function registerIpc(
           throw new Error("仅主面板可以访问 AI 设置");
         const win = BrowserWindow.fromWebContents(event.sender);
         if (
-          name === "resizeDesktopReply" &&
+          [
+            "resizeDesktopReply",
+            "shapeDesktopReply",
+            "keepDesktopReply",
+          ].includes(name) &&
           !event.senderFrame.url.endsWith("#desktop-reply")
         )
           throw new Error("仅对白窗口可调整气泡大小");

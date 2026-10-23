@@ -1,20 +1,16 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { DesktopReply as Reply } from "../../shared/desktop-reply";
+import { splitReplyPages } from "../components/reply-pages";
 import "../styles/desktop-chat.css";
 export default function DesktopReply() {
   const [reply, setReply] = useState<Reply | null>(null);
-  const body = useRef<HTMLDivElement>(null),
-    content = useRef<HTMLDivElement>(null),
-    following = useRef(true);
-  const resizeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const pendingHeight = useRef(64),
-    sentHeight = useRef(0);
-  useEffect(
-    () => () => {
-      if (resizeTimer.current) clearTimeout(resizeTimer.current);
-    },
-    [],
-  );
+  const [height, setHeight] = useState(135),
+    [pages, setPages] = useState(["…"]),
+    [page, setPage] = useState(0);
+  const wrap = useRef<HTMLDivElement>(null),
+    measure = useRef<HTMLDivElement>(null);
+  const lastId = useRef("");
   useEffect(() => {
     let live = true,
       revision = 0;
@@ -35,49 +31,113 @@ export default function DesktopReply() {
     if (reply) document.documentElement.dataset.theme = reply.theme;
   }, [reply?.theme]);
   useEffect(() => {
-    following.current = true;
-  }, [reply?.message.id]);
-  useEffect(() => {
-    if (!content.current) return;
-    pendingHeight.current = Math.min(
-      270,
-      Math.max(64, content.current.scrollHeight + 42),
+    if (!wrap.current) return;
+    let last = 0;
+    const observer = new ResizeObserver(([entry]) => {
+      const h = Math.ceil(
+        entry.borderBoxSize?.[0]?.blockSize ?? entry.contentRect.height,
+      );
+      if (h !== last) {
+        last = h;
+        void window.buddy.shapeDesktopReply(h);
+      }
+    });
+    observer.observe(wrap.current);
+    return () => observer.disconnect();
+  }, [!!reply]);
+  useLayoutEffect(() => {
+    if (!reply || !measure.current) return;
+    const m = reply.message,
+      el = measure.current;
+    const text =
+      (m.content || (m.status === "streaming" ? "…" : "暂时没有回复")) +
+      (m.error ? "\n" + m.error : "") +
+      (m.status === "stopped" ? "\n已停止回复" : "");
+    const getHeight = (s: string) => {
+      el.textContent = s;
+      return el.scrollHeight;
+    };
+    const limit = Math.max(60, reply.maxHeight);
+    const full = getHeight(text);
+    const next =
+      full + 42 <= limit
+        ? [text]
+        : splitReplyPages(text, Math.max(22, limit - 78), getHeight);
+    setPages(next);
+    if (lastId.current !== m.id) {
+      lastId.current = m.id;
+      setPage(0);
+    } else setPage((p) => Math.min(p, next.length - 1));
+  }, [
+    reply?.message.content,
+    reply?.message.id,
+    reply?.message.status,
+    reply?.message.error,
+    reply?.maxHeight,
+  ]);
+  useLayoutEffect(() => {
+    if (!reply || !measure.current) return;
+    measure.current.textContent = pages[page] ?? "";
+    const target = Math.min(
+      reply.maxHeight,
+      Math.max(
+        135,
+        measure.current.scrollHeight + 42 + (pages.length > 1 ? 36 : 0),
+      ),
     );
-    if (pendingHeight.current !== sentHeight.current && !resizeTimer.current) {
-      resizeTimer.current = setTimeout(() => {
-        resizeTimer.current = null;
-        if (sentHeight.current === pendingHeight.current) return;
-        sentHeight.current = pendingHeight.current;
-        void window.buddy.resizeDesktopReply(sentHeight.current);
-      }, 120);
-    }
-    if (following.current && body.current)
-      body.current.scrollTop = body.current.scrollHeight;
-  }, [reply?.message.content, reply?.message.status, reply?.message.error]);
+    let live = true;
+    // Reserve native space before animating the inner bubble, rather than resizing
+    // the window on every animation frame or showing temporary scrollbars.
+    void window.buddy.resizeDesktopReply(target).then(() => {
+      if (live) setHeight(target);
+    });
+    return () => {
+      live = false;
+    };
+  }, [pages, page, reply?.maxHeight]);
   if (!reply) return null;
-  const m = reply.message;
+  const turn = (index: number) => {
+    setPage(index);
+    void window.buddy.keepDesktopReply();
+  };
   return (
-    <div className="comic-wrap" data-side={reply.side}>
+    <>
+      <div className="comic-measure" aria-hidden="true" ref={measure} />
       <div
-        className="comic-bubble"
-        aria-label="伙伴对白"
-        data-status={m.status}
-        ref={body}
-        onScroll={() => {
-          const el = body.current;
-          if (el)
-            following.current =
-              el.scrollHeight - el.scrollTop - el.clientHeight < 30;
-        }}
+        ref={wrap}
+        className="comic-wrap"
+        data-side={reply.side}
+        style={{ height }}
       >
-        <div ref={content}>
-          {m.content || (m.status === "streaming" ? "…" : "暂时没有回复")}
-          {m.error && <small className="comic-error">{m.error}</small>}
-          {m.status === "stopped" && (
-            <small className="comic-error">已停止回复</small>
+        <div
+          className="comic-bubble"
+          aria-label="伙伴对白"
+          data-status={reply.message.status}
+        >
+          <div className="comic-text">{pages[page]}</div>
+          {pages.length > 1 && (
+            <nav className="comic-pages" aria-label="回复分页">
+              <button
+                aria-label="上一页"
+                disabled={page === 0}
+                onClick={() => turn(page - 1)}
+              >
+                <ChevronLeft size={14} />
+              </button>
+              <span>
+                {page + 1} / {pages.length}
+              </span>
+              <button
+                aria-label="下一页"
+                disabled={page === pages.length - 1}
+                onClick={() => turn(page + 1)}
+              >
+                <ChevronRight size={14} />
+              </button>
+            </nav>
           )}
         </div>
       </div>
-    </div>
+    </>
   );
 }

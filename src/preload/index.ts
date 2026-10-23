@@ -10,6 +10,8 @@ const invoke = <T>(method: string, ...args: unknown[]): Promise<T> =>
 const bridge: BuddyBridge = {
   getDesktopReply: () => invoke("getDesktopReply"),
   resizeDesktopReply: (height) => invoke("resizeDesktopReply", height),
+  shapeDesktopReply: (height) => invoke("shapeDesktopReply", height),
+  keepDesktopReply: () => invoke("keepDesktopReply"),
   onDesktopReply: (listener) => {
     const fn = (_: unknown, reply: any) => listener(reply);
     ipcRenderer.on("buddy:desktop-reply", fn);

@@ -10,6 +10,26 @@
   border-radius: 21px;
   color: var(--ink);
   position: relative;
+  opacity: 0.16;
+  transition: opacity 450ms ease;
+}
+.desktop-input:hover {
+  opacity: 1;
+}
+.desktop-input-drag {
+  -webkit-app-region: drag;
+  align-self: stretch;
+  display: grid;
+  place-items: center;
+  cursor: grab;
+  color: var(--muted);
+  flex-shrink: 0;
+  width: 14px;
+  user-select: none;
+}
+.desktop-input textarea,
+.desktop-input button {
+  -webkit-app-region: no-drag;
 }
 .desktop-input:focus-within {
   border-color: #96c9b5;
@@ -68,7 +88,8 @@
   color: var(--ink);
 }
 .comic-wrap {
-  height: 100vh;
+  max-height: 100vh;
+  transition: height 240ms ease-out;
   padding: 5px 7px 5px 24px;
   position: relative;
 }
@@ -77,7 +98,7 @@
 }
 .comic-bubble {
   height: 100%;
-  overflow-y: auto;
+  overflow: hidden;
   overscroll-behavior: contain;
   padding: 13px 18px;
   border: 2px solid var(--ink);
@@ -90,6 +111,46 @@
   white-space: pre-wrap;
   overflow-wrap: anywhere;
   user-select: text;
+  scrollbar-width: none;
+}
+.comic-bubble::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+.comic-measure {
+  position: absolute;
+  visibility: hidden;
+  pointer-events: none;
+  top: 0;
+  left: 0;
+  width: calc(100vw - 71px);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font:
+    12px/1.8 "Microsoft YaHei UI",
+    sans-serif;
+}
+.comic-pages {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  height: 30px;
+  margin-top: 6px;
+  font-size: 11px;
+  white-space: normal;
+}
+.comic-pages button {
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: var(--input);
+  color: var(--ink);
+  border-radius: 8px;
+  width: 26px;
+  height: 25px;
+  padding: 0;
 }
 .comic-wrap::before,
 .comic-wrap::after {

@@ -25,4 +25,9 @@ export class ReplyLifetime {
     this.dismissed = true;
     this.publish(null);
   }
+  keepAlive() {
+    if (this.dismissed || !this.terminal) return;
+    clearTimeout(this.timer);
+    this.timer = setTimeout(() => this.dismiss(), 10000);
+  }
 }

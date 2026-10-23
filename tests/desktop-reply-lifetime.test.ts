@@ -9,6 +9,21 @@ const m = (id: string, status: ChatMessage["status"]): ChatMessage => ({
   at: 0,
 });
 afterEach(() => vi.useRealTimers());
+it("gives a fresh reading interval after paging without resurrecting dismissed replies", () => {
+  vi.useFakeTimers();
+  const emit = vi.fn();
+  const life = new ReplyLifetime(emit);
+  life.update(m("a", "streaming"));
+  life.update(m("a", "complete"));
+  vi.advanceTimersByTime(9000);
+  life.keepAlive();
+  vi.advanceTimersByTime(9000);
+  expect(emit.mock.lastCall?.[0]).not.toBeNull();
+  vi.advanceTimersByTime(1000);
+  expect(emit.mock.lastCall?.[0]).toBeNull();
+  life.keepAlive();
+  expect(emit.mock.lastCall?.[0]).toBeNull();
+});
 it("expires ten seconds after completion, never while streaming", () => {
   vi.useFakeTimers();
   const emit = vi.fn();

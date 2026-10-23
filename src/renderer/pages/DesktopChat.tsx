@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Send, Square, RotateCcw, X } from "lucide-react";
+import { Send, Square, RotateCcw, X, GripVertical } from "lucide-react";
 import type { Snapshot } from "../../shared/model";
 import type { ChatState } from "../../shared/chat";
 import { normalizeCharacter } from "../../shared/characters";
@@ -84,6 +84,13 @@ export default function DesktopChat({ snapshot }: { snapshot: Snapshot }) {
         void send();
       }}
     >
+      <span
+        className="desktop-input-drag"
+        title="拖动输入框"
+        aria-label="拖动输入框"
+      >
+        <GripVertical size={14} />
+      </span>
       <textarea
         ref={input}
         aria-label="桌面聊天内容"

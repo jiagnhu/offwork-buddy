@@ -6,6 +6,7 @@ import type { ChatState } from "../shared/chat";
 import type { Preferences } from "../shared/model";
 import type { DesktopReply } from "../shared/desktop-reply";
 import { normalizeCharacter } from "../shared/characters";
+import { clampBounds } from "./bounds";
 
 let anchor: BrowserWindow;
 let chatWindow: BrowserWindow | undefined;
@@ -16,7 +17,10 @@ let armed = false;
 let preferences: Preferences;
 let replyWindow: BrowserWindow | undefined;
 let replyReady = false;
-let replyHeight = 90;
+let replyHeight = 135;
+let visualHeight = 135;
+let targetReplyHeight = 135;
+let inputDetached = false;
 let reply: DesktopReply | null = null;
 const lifetime = new ReplyLifetime((message) => {
   if (!message) {
@@ -24,7 +28,18 @@ const lifetime = new ReplyLifetime((message) => {
     if (replyWindow && !replyWindow.isDestroyed()) replyWindow.hide();
     return;
   }
-  reply = { message, side: "right", theme: preferences.theme };
+  if (reply?.message.id !== message.id) {
+    replyHeight = 135;
+    targetReplyHeight = 135;
+    visualHeight = 135;
+  }
+  reply = {
+    message,
+    side: "right",
+    theme: preferences.theme,
+    maxHeight:
+      screen.getDisplayMatching(anchor.getBounds()).workArea.height - 20,
+  };
   ensureReplyWindow();
   positionDesktopReply();
   if (replyReady && anchor.isVisible() && !replyWindow!.isVisible())
@@ -42,10 +57,43 @@ export function getDesktopReply() {
 }
 export function resizeDesktopReply(height: number) {
   if (!Number.isFinite(height)) return;
-  const next = Math.max(64, Math.min(270, Math.ceil(height)));
+  const limit =
+    screen.getDisplayMatching(anchor.getBounds()).workArea.height - 20;
+  targetReplyHeight = Math.max(1, Math.min(limit, Math.ceil(height)));
+  if (targetReplyHeight <= replyHeight) {
+    if (Math.abs(visualHeight - targetReplyHeight) <= 1) settleReplySize();
+    return;
+  }
+  const next = Math.max(
+    replyHeight,
+    Math.min(limit, Math.ceil(height / 64) * 64),
+  );
   if (next === replyHeight) return;
   replyHeight = next;
   positionDesktopReply();
+}
+export function shapeDesktopReply(height: number) {
+  if (!Number.isFinite(height)) return;
+  visualHeight = Math.max(1, Math.min(replyHeight, Math.ceil(height)));
+  applyReplyShape();
+  if (Math.abs(visualHeight - targetReplyHeight) <= 1) settleReplySize();
+}
+function settleReplySize() {
+  if (replyHeight === targetReplyHeight) return;
+  replyHeight = targetReplyHeight;
+  positionDesktopReply();
+}
+export function keepDesktopReply() {
+  lifetime.keepAlive();
+}
+function applyReplyShape() {
+  if (!replyWindow || replyWindow.isDestroyed()) return;
+  const b = replyWindow.getBounds();
+  // Allocate space ahead of the CSS height animation. The unused
+  // transparent area must not intercept clicks intended for the desktop.
+  replyWindow.setShape([
+    { x: 0, y: 0, width: b.width, height: Math.min(visualHeight, b.height) },
+  ]);
 }
 export function syncDesktopChatPreferences(prefs: Preferences) {
   if (preferences && preferences.character !== prefs.character)
@@ -74,11 +122,14 @@ function positionDesktopReply() {
     previous.y !== next.y ||
     previous.width !== next.width ||
     previous.height !== next.height
-  )
+  ) {
     replyWindow.setBounds(next);
+    applyReplyShape();
+  }
   if (replyWindow.isAlwaysOnTop() !== anchor.isAlwaysOnTop())
     replyWindow.setAlwaysOnTop(anchor.isAlwaysOnTop(), "floating");
   if (reply) {
+    reply.maxHeight = screen.getDisplayMatching(b).workArea.height - 20;
     reply.side = next.x < b.x ? "left" : "right";
     if (replyReady) replyWindow.webContents.send("buddy:desktop-reply", reply);
   }
@@ -88,7 +139,7 @@ function ensureReplyWindow() {
   replyReady = false;
   const win = new BrowserWindow({
     width: 340,
-    height: 90,
+    height: 135,
     show: false,
     transparent: true,
     frame: false,
@@ -107,6 +158,7 @@ function ensureReplyWindow() {
     },
   });
   replyWindow = win;
+  applyReplyShape();
   win.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
   win.webContents.on("will-navigate", (e) => e.preventDefault());
   win.on("close", (e) => {
@@ -137,9 +189,20 @@ export function positionDesktopChat() {
   )
     return;
   const b = anchor.getBounds();
-  chatWindow.setBounds(
-    desktopChatBounds(b, screen.getDisplayMatching(b).workArea),
-  );
+  const next = inputDetached
+    ? clampBounds(
+        chatWindow.getBounds(),
+        screen.getAllDisplays().map((d) => d.workArea),
+      )
+    : desktopChatBounds(b, screen.getDisplayMatching(b).workArea);
+  const old = chatWindow.getBounds();
+  if (
+    old.x !== next.x ||
+    old.y !== next.y ||
+    old.width !== next.width ||
+    old.height !== next.height
+  )
+    chatWindow.setBounds(next);
   chatWindow.setAlwaysOnTop(anchor.isAlwaysOnTop(), "floating");
 }
 export function closeDesktopChat() {
@@ -191,6 +254,9 @@ export function openDesktopChat() {
       },
     });
     chatWindow = win;
+    win.on("will-move", () => {
+      inputDetached = true;
+    });
     win.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
     win.webContents.on("will-navigate", (e) => e.preventDefault());
     const visibility = () =>

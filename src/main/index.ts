@@ -5,6 +5,8 @@ import {
   updateDesktopReply,
   getDesktopReply,
   resizeDesktopReply,
+  shapeDesktopReply,
+  keepDesktopReply,
 } from "./desktop-chat-window";
 import { safeStorage } from "electron";
 import { ChatController, chatTransport } from "./chat-controller";
@@ -286,6 +288,8 @@ else {
         closeDesktopChat,
         getDesktopReply,
         resizeDesktopReply,
+        shapeDesktopReply,
+        keepDesktopReply,
         getChat: () => chat.get(),
         sendChat: (text: unknown) =>
           serial(() =>
