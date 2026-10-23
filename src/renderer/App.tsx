@@ -1,10 +1,11 @@
-import CharacterSpace from "./pages/CharacterSpace";
+import PageSkeleton from "./components/PageSkeleton";
+import { afterPaint } from "./hooks/afterPaint";
 import { version } from "../../package.json";
 import DesktopCard from "./pages/DesktopCard";
 import Companion from "./pages/Companion";
 import EarningsDetail from "./components/EarningsDetail";
 import type { NavigateTarget } from "../shared/bridge";
-import { useEffect, useState } from "react";
+import { lazy, Suspense, startTransition, useEffect, useState } from "react";
 import {
   LayoutDashboard,
   CalendarDays,
@@ -18,10 +19,11 @@ import {
 } from "lucide-react";
 import { useSnapshot } from "./hooks/useSnapshot";
 import Overview from "./pages/Overview";
-import Calendar from "./pages/Calendar";
-import Ledger from "./pages/Ledger";
-import Settings from "./pages/Settings";
-import Onboarding from "./pages/Onboarding";
+const Calendar = lazy(() => import("./pages/Calendar"));
+const Ledger = lazy(() => import("./pages/Ledger"));
+const Settings = lazy(() => import("./pages/Settings"));
+const CharacterSpace = lazy(() => import("./pages/CharacterSpace"));
+const Onboarding = lazy(() => import("./pages/Onboarding"));
 import "./styles/theme.css";
 const navigation = [
   { id: "overview", label: "今日概览", icon: LayoutDashboard },
@@ -33,6 +35,13 @@ const navigation = [
 export default function App() {
   const { snapshot, error } = useSnapshot();
   const [page, setPage] = useState("overview");
+  const [readyPage, setReadyPage] = useState("overview");
+  const ready = page === readyPage;
+  useEffect(() => {
+    if (page === readyPage) return;
+    window.scrollTo(0, 0);
+    return afterPaint(() => startTransition(() => setReadyPage(page)));
+  }, [page, readyPage]);
   const [calendarNavigation, setCalendarNavigation] = useState(0);
   const [actionError, setActionError] = useState("");
   const [detailDate, setDetailDate] = useState<string | null>(null),
@@ -80,7 +89,12 @@ export default function App() {
   if (location.hash === "#desktop-card")
     return <DesktopCard snapshot={snapshot} />;
   if (location.hash === "#companion") return <Companion snapshot={snapshot} />;
-  if (!snapshot.state.configured) return <Onboarding snapshot={snapshot} />;
+  if (!snapshot.state.configured)
+    return (
+      <Suspense fallback={<PageSkeleton page="onboarding" />}>
+        <Onboarding snapshot={snapshot} />
+      </Suspense>
+    );
   const title =
     page === "overview"
       ? "今天，也在慢慢变富。"
@@ -107,6 +121,7 @@ export default function App() {
             <button
               key={id}
               className={page === id ? "active" : ""}
+              aria-current={page === id ? "page" : undefined}
               onClick={() => setPage(id)}
             >
               <Icon size={19} />
@@ -188,28 +203,32 @@ export default function App() {
           </div>
         )}
         {/* The character library owns its own model; do not retain another GPU preview there. */}
-        {page !== "growth" && (
-          <div hidden={page !== "overview"}>
+        {readyPage !== "growth" && (
+          <div hidden={page !== "overview" || !ready}>
             <Overview
               snapshot={snapshot}
               navigate={setPage}
-              active={page === "overview"}
+              active={page === "overview" && ready}
             />
           </div>
         )}
-        {page === "overview" ? null : page === "calendar" ? (
-          <Calendar
-            key={calendarNavigation}
-            snapshot={snapshot}
-            initialDate={calendarDate}
-          />
-        ) : page === "ledger" ? (
-          <Ledger snapshot={snapshot} />
-        ) : page === "growth" ? (
-          <CharacterSpace snapshot={snapshot} />
-        ) : (
-          <Settings snapshot={snapshot} />
-        )}
+        <Suspense fallback={<PageSkeleton page={page} />}>
+          {!ready ? (
+            <PageSkeleton page={page} />
+          ) : page === "overview" ? null : page === "calendar" ? (
+            <Calendar
+              key={calendarNavigation}
+              snapshot={snapshot}
+              initialDate={calendarDate}
+            />
+          ) : page === "ledger" ? (
+            <Ledger snapshot={snapshot} />
+          ) : page === "growth" ? (
+            <CharacterSpace snapshot={snapshot} />
+          ) : (
+            <Settings snapshot={snapshot} />
+          )}
+        </Suspense>
       </main>
       {detailDate && (
         <EarningsDetail

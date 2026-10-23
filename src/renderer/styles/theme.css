@@ -1,5 +1,6 @@
 @import url("./companion.css");
 @import url("./character-space.css");
+@import url("./page-skeleton.css");
 :root {
   font-family: "Microsoft YaHei UI", "Segoe UI", sans-serif;
   color: #283a37;

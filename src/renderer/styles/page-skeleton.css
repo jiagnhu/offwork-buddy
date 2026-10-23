@@ -1,0 +1,58 @@
+.page-skeleton {
+  min-height: 420px;
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: var(--surface);
+}
+.skeleton-line {
+  width: 36%;
+  height: 22px;
+  margin: 22px 0;
+  border-radius: 8px;
+}
+.skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.skeleton-tile {
+  height: 110px;
+  border-radius: 14px;
+}
+.page-skeleton-calendar .skeleton-grid {
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 10px;
+}
+.page-skeleton-calendar .skeleton-tile {
+  height: 76px;
+}
+.skeleton-line,
+.skeleton-tile {
+  background: linear-gradient(
+    100deg,
+    var(--line) 25%,
+    var(--surface) 45%,
+    var(--line) 65%
+  );
+  background-size: 220% 100%;
+  animation: skeleton-shimmer 1.6s ease-in-out infinite;
+}
+@keyframes skeleton-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-line,
+  .skeleton-tile {
+    animation: none;
+  }
+}
+:root[data-motion="reduced"] .skeleton-line,
+:root[data-motion="reduced"] .skeleton-tile {
+  animation: none;
+}
