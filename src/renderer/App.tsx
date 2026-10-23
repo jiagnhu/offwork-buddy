@@ -187,9 +187,17 @@ export default function App() {
             节假日数据缺失，当前按常规排班。可在工作日历中导入年度数据。
           </div>
         )}
-        {page === "overview" ? (
-          <Overview snapshot={snapshot} navigate={setPage} />
-        ) : page === "calendar" ? (
+        {/* The character library owns its own model; do not retain another GPU preview there. */}
+        {page !== "growth" && (
+          <div hidden={page !== "overview"}>
+            <Overview
+              snapshot={snapshot}
+              navigate={setPage}
+              active={page === "overview"}
+            />
+          </div>
+        )}
+        {page === "overview" ? null : page === "calendar" ? (
           <Calendar
             key={calendarNavigation}
             snapshot={snapshot}

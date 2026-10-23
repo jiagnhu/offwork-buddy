@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { characterName } from "../../shared/characters";
 import Character from "../characters/Character";
 import {
@@ -21,12 +22,14 @@ import {
 import { ruleForDate } from "../../core/ledger";
 import { addDays, weekday } from "../../core/date";
 import { resolveDay } from "../../core/calendar";
-export default function Overview({
+function Overview({
   snapshot,
   navigate,
+  active = true,
 }: {
   snapshot: Snapshot;
   navigate: (p: string) => void;
+  active?: boolean;
 }) {
   const { state, progress } = snapshot;
   const rule = ruleForDate(state, snapshot.today) ?? state.rules.at(-1)!;
@@ -80,6 +83,8 @@ export default function Overview({
           </div>
           <div className="overview-character" id="character-preview">
             <Character
+              active={active}
+              retainWhenInactive
               displayName={characterName(
                 state.preferences.character,
                 state.preferences,
@@ -214,3 +219,9 @@ export default function Overview({
     </>
   );
 }
+
+// Hidden overview retains its paused canvas without processing every clock tick.
+export default memo(
+  Overview,
+  (previous, next) => previous.active === false && next.active === false,
+);

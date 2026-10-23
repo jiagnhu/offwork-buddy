@@ -10,6 +10,7 @@ export default function Character(
     displayScale?: number;
     kind: CharacterKind;
     active?: boolean;
+    retainWhenInactive?: boolean;
     event?: CompanionEvent | null;
   },
 ) {
@@ -21,6 +22,7 @@ export default function Character(
       displayScale={props.displayScale}
       displayName={props.displayName ?? characterName(kind)}
       active={props.active}
+      retainWhenInactive={props.retainWhenInactive}
       reducedMotion={props.reducedMotion}
       onInteract={props.onInteract}
       actionRequest={

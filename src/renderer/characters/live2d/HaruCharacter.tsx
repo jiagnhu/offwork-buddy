@@ -8,6 +8,7 @@ export default function HaruCharacter({
   displayName = "Haru",
   displayScale = 1,
   active = true,
+  retainWhenInactive = false,
   reducedMotion,
   actionRequest,
   onInteract,
@@ -16,6 +17,7 @@ export default function HaruCharacter({
   displayName?: string;
   displayScale?: number;
   active?: boolean;
+  retainWhenInactive?: boolean;
   reducedMotion: boolean;
   actionRequest?: { id: string; action: HaruAction };
   onInteract: () => void;
@@ -29,8 +31,12 @@ export default function HaruCharacter({
   const motion = useRef(reducedMotion);
   motion.current = reducedMotion;
   const enabled = active && visible;
+  // Retain only an already-loaded preview; never start a hidden model load.
+  const resident = visible && (active || (retainWhenInactive && loaded));
+  const activeRef = useRef(enabled);
+  activeRef.current = enabled;
   useEffect(() => {
-    if (!enabled || !canvas.current) return;
+    if (!resident || !canvas.current) return;
     setError("");
     setLoaded(false);
     const element = canvas.current;
@@ -69,6 +75,7 @@ export default function HaruCharacter({
       },
       (value) => {
         runtime.current = value;
+        value.setPaused(!activeRef.current);
         value.setReducedMotion(motion.current);
         setLoaded(true);
         observer = new ResizeObserver(resize);
@@ -87,7 +94,8 @@ export default function HaruCharacter({
       runtime.current = null;
       stop();
     };
-  }, [enabled, retry, kind]);
+  }, [resident, retry, kind]);
+  useEffect(() => runtime.current?.setPaused(!enabled), [enabled]);
   useEffect(
     () => runtime.current?.setReducedMotion(reducedMotion),
     [reducedMotion],
@@ -110,7 +118,7 @@ export default function HaruCharacter({
   }, [actionRequest, loaded]);
   return (
     <div className="haru-character" data-loaded={loaded && enabled && !error}>
-      {enabled && !error && (
+      {resident && !error && (
         <canvas
           key={`${kind}-${retry}`}
           ref={canvas}

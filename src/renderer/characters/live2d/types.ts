@@ -3,6 +3,7 @@ export type NativeAction =
 export type HaruAction =
   NativeAction | { kind: "random"; group?: "idle" | "tap" };
 export interface HaruRuntime {
+  setPaused(value: boolean): void;
   play(action: HaruAction): void;
   setPointer(x: number, y: number): void;
   setReducedMotion(value: boolean): void;

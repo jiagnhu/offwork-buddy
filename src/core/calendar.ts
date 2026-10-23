@@ -66,6 +66,19 @@ export function countWorkdays(
   ).length;
 }
 // Baseline schedule only: holidays, makeup days and personal overrides must not inflate daily pay.
+const scheduledCounts = new Map<string, number>();
 export function countScheduledDays(month: string, rule: RuleVersion): number {
-  return countWorkdays(month, { ...rule, official: false }, {}, {});
+  const key = JSON.stringify([
+    month,
+    rule.schedule,
+    rule.restDay,
+    rule.bigWeekMonday,
+  ]);
+  let count = scheduledCounts.get(key);
+  if (count === undefined) {
+    count = countWorkdays(month, { ...rule, official: false }, {}, {});
+    if (scheduledCounts.size >= 128) scheduledCounts.clear();
+    scheduledCounts.set(key, count);
+  }
+  return count;
 }

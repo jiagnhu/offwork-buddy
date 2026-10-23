@@ -3,6 +3,33 @@ import {
   mountResource,
   frameLoop,
 } from "../src/renderer/characters/live2d/lifecycle";
+test("inactive retained character stops all rendering and can resume without reload", () => {
+  const pending = new Map<number, FrameRequestCallback>();
+  let next = 0,
+    draws = 0;
+  vi.stubGlobal("requestAnimationFrame", (f: FrameRequestCallback) => {
+    pending.set(++next, f);
+    return next;
+  });
+  vi.stubGlobal("cancelAnimationFrame", (id: number) => pending.delete(id));
+  try {
+    const loop = frameLoop(() => draws++);
+    loop.setReduced(false);
+    loop.setPaused(true);
+    expect(pending.size).toBe(0);
+    loop.setReduced(true);
+    loop.invalidate();
+    expect(draws).toBe(0);
+    loop.setPaused(false);
+    expect(draws).toBe(1);
+    loop.setReduced(false);
+    expect(pending.size).toBe(1);
+    loop.dispose();
+    expect(pending.size).toBe(0);
+  } finally {
+    vi.unstubAllGlobals();
+  }
+});
 test("late load after unmount is released and never activated", async () => {
   let finish!: (v: { dispose: () => void }) => void;
   let live = 0,

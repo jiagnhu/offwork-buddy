@@ -26,11 +26,12 @@ export function mountResource<T extends { dispose(): void }>(
 export function frameLoop(draw: (delta: number) => void) {
   let raf = 0,
     reduced = true,
+    paused = false,
     disposed = false,
     last = -Infinity,
     deadline = -Infinity;
   const tick = (now: number) => {
-    if (disposed || reduced) return;
+    if (disposed || reduced || paused) return;
     if (now + 0.001 >= deadline) {
       const dt = Number.isFinite(last)
         ? Math.min((now - last) / 1000, 0.1)
@@ -44,9 +45,20 @@ export function frameLoop(draw: (delta: number) => void) {
       last = now;
       draw(dt);
     }
-    if (!disposed && !reduced) raf = requestAnimationFrame(tick);
+    if (!disposed && !reduced && !paused) raf = requestAnimationFrame(tick);
   };
   return {
+    setPaused(value: boolean) {
+      if (disposed || paused === value) return;
+      paused = value;
+      cancelAnimationFrame(raf);
+      raf = 0;
+      last = deadline = -Infinity;
+      if (!paused) {
+        if (reduced) draw(0);
+        else raf = requestAnimationFrame(tick);
+      }
+    },
     setReduced(value: boolean) {
       if (disposed) return;
       reduced = value;
@@ -54,11 +66,12 @@ export function frameLoop(draw: (delta: number) => void) {
       raf = 0;
       last = -Infinity;
       deadline = -Infinity;
+      if (paused) return;
       if (value) draw(0);
       else raf = requestAnimationFrame(tick);
     },
     invalidate() {
-      if (!disposed && reduced) draw(0);
+      if (!disposed && reduced && !paused) draw(0);
     },
     dispose() {
       disposed = true;

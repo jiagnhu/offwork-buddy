@@ -152,6 +152,9 @@ export async function createHaruRuntime(
     };
     loop = frameLoop(draw);
     const runtime: HaruRuntime = {
+      setPaused(value) {
+        if (!disposed) loop!.setPaused(value);
+      },
       play(action) {
         if (!disposed) {
           model.play(action, reduced);
@@ -172,7 +175,7 @@ export async function createHaruRuntime(
         }
       },
       resize(w, h, dpr) {
-        if (disposed) return;
+        if (disposed || w <= 0 || h <= 0) return;
         const size = rasterSize(w, h, dpr, gpuLimit);
         if (canvas.width === size.width && canvas.height === size.height)
           return;

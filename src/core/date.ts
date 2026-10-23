@@ -1,11 +1,25 @@
 import type { DateKey } from "../shared/model";
+const dateFormatters = new Map<string, Intl.DateTimeFormat>();
+const clockFormatter = new Intl.DateTimeFormat("en-GB", {
+  timeZone: "Asia/Shanghai",
+  hour: "2-digit",
+  minute: "2-digit",
+  second: "2-digit",
+  hourCycle: "h23",
+});
 export function dateKey(now: Date, zone = "Asia/Shanghai"): DateKey {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: zone,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(now);
+  let formatter = dateFormatters.get(zone);
+  if (!formatter) {
+    formatter = new Intl.DateTimeFormat("en-CA", {
+      timeZone: zone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
+    if (dateFormatters.size >= 16) dateFormatters.clear();
+    dateFormatters.set(zone, formatter);
+  }
+  return formatter.format(now);
 }
 export function dayNumber(date: DateKey): number {
   return Date.parse(date + "T00:00:00Z") / 86400000;
@@ -32,15 +46,6 @@ export function monthDates(month: string): DateKey[] {
   return result;
 }
 export function secondsIntoDay(now: Date): number {
-  const parts = new Intl.DateTimeFormat("en-GB", {
-    timeZone: "Asia/Shanghai",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hourCycle: "h23",
-  })
-    .format(now)
-    .split(":")
-    .map(Number);
+  const parts = clockFormatter.format(now).split(":").map(Number);
   return parts[0] * 3600 + parts[1] * 60 + parts[2];
 }

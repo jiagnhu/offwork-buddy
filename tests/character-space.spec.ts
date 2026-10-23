@@ -128,6 +128,8 @@ test("every character has an independent nickname across UI, desktop and restart
     }
     await s.page.getByRole("button", { name: "今日概览", exact: true }).click();
     await expect(s.page.getByRole("heading", { name: /^书书/ })).toBeVisible();
+    await expect(s.page.locator('.overview-character .haru-character')).toHaveAttribute('data-loaded','true',{timeout:30000});
+    await expect(s.page.locator('.overview-character').getByLabel('书书 Live2D 角色')).toBeVisible();
     const r = await s.restart();
     const p = (await r.page.evaluate(() => window.buddy.getSnapshot())).state
       .preferences;
