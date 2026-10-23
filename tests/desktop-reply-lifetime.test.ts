@@ -9,6 +9,37 @@ const m = (id: string, status: ChatMessage["status"]): ChatMessage => ({
   at: 0,
 });
 afterEach(() => vi.useRealTimers());
+it("pauses the remaining reading time on hover and resumes on leave", () => {
+  vi.useFakeTimers();
+  const emit = vi.fn(),
+    life = new ReplyLifetime(emit);
+  life.update(m("a", "streaming"));
+  life.update(m("a", "complete"));
+  vi.advanceTimersByTime(4000);
+  life.setHovered(true);
+  vi.advanceTimersByTime(30000);
+  expect(emit.mock.lastCall?.[0]).not.toBeNull();
+  life.setHovered(false);
+  vi.advanceTimersByTime(5999);
+  expect(emit.mock.lastCall?.[0]).not.toBeNull();
+  vi.advanceTimersByTime(1);
+  expect(emit.mock.lastCall?.[0]).toBeNull();
+});
+it("holds completion and paging timers while already hovered", () => {
+  vi.useFakeTimers();
+  const emit = vi.fn(),
+    life = new ReplyLifetime(emit);
+  life.update(m("a", "streaming"));
+  life.setHovered(true);
+  life.update(m("a", "complete"));
+  vi.advanceTimersByTime(30000);
+  life.keepAlive();
+  vi.advanceTimersByTime(30000);
+  expect(emit.mock.lastCall?.[0]).not.toBeNull();
+  life.setHovered(false);
+  vi.advanceTimersByTime(10000);
+  expect(emit.mock.lastCall?.[0]).toBeNull();
+});
 it("gives a fresh reading interval after paging without resurrecting dismissed replies", () => {
   vi.useFakeTimers();
   const emit = vi.fn();

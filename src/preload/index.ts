@@ -11,6 +11,7 @@ const bridge: BuddyBridge = {
   getDesktopReply: () => invoke("getDesktopReply"),
   resizeDesktopReply: (height) => invoke("resizeDesktopReply", height),
   shapeDesktopReply: (height) => invoke("shapeDesktopReply", height),
+  hoverDesktopReply: (hovered) => invoke("hoverDesktopReply", hovered),
   keepDesktopReply: () => invoke("keepDesktopReply"),
   onDesktopReply: (listener) => {
     const fn = (_: unknown, reply: any) => listener(reply);

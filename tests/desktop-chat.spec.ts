@@ -170,7 +170,7 @@ test("comic reply is separate, expires after completion and keeps input minimal"
       placement.input.y,
     );
     expect(placement.bubble.x + placement.bubble.width).toBeLessThanOrEqual(
-      placement.pet.x + Math.round(placement.pet.width * 0.12),
+      placement.pet.x + placement.pet.width / 2 - 95,
     );
     expect(placement.focusable).toBe(false);
     await expect(bubble.locator(".comic-wrap")).toHaveAttribute(

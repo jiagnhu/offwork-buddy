@@ -7,6 +7,8 @@ import {
   resizeDesktopReply,
   shapeDesktopReply,
   keepDesktopReply,
+  hoverDesktopReply,
+  showCompanionReply,
 } from "./desktop-chat-window";
 import { safeStorage } from "electron";
 import { ChatController, chatTransport } from "./chat-controller";
@@ -269,6 +271,7 @@ else {
       });
       configureEvents(
         (e) => {
+          showCompanionReply(e);
           for (const w of BrowserWindow.getAllWindows())
             w.webContents.send("buddy:companion-event", e);
         },
@@ -290,6 +293,7 @@ else {
         resizeDesktopReply,
         shapeDesktopReply,
         keepDesktopReply,
+        hoverDesktopReply,
         getChat: () => chat.get(),
         sendChat: (text: unknown) =>
           serial(() =>

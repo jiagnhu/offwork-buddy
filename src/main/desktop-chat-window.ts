@@ -3,7 +3,7 @@ import path from "node:path";
 import { desktopChatBounds, desktopReplyBounds } from "./desktop-chat-position";
 import { ReplyLifetime } from "./desktop-reply-lifetime";
 import type { ChatState } from "../shared/chat";
-import type { Preferences } from "../shared/model";
+import type { CompanionEvent, Preferences } from "../shared/model";
 import type { DesktopReply } from "../shared/desktop-reply";
 import { normalizeCharacter } from "../shared/characters";
 import { clampBounds } from "./bounds";
@@ -17,21 +17,24 @@ let armed = false;
 let preferences: Preferences;
 let replyWindow: BrowserWindow | undefined;
 let replyReady = false;
-let replyHeight = 135;
-let visualHeight = 135;
-let targetReplyHeight = 135;
+let replyHeight = 100;
+let visualHeight = 100;
+let targetReplyHeight = 100;
 let inputDetached = false;
 let reply: DesktopReply | null = null;
+let pendingEvents: CompanionEvent[] = [];
 const lifetime = new ReplyLifetime((message) => {
   if (!message) {
     reply = null;
     if (replyWindow && !replyWindow.isDestroyed()) replyWindow.hide();
+    const next = pendingEvents.shift();
+    if (next) queueMicrotask(() => showCompanionReply(next));
     return;
   }
   if (reply?.message.id !== message.id) {
-    replyHeight = 135;
-    targetReplyHeight = 135;
-    visualHeight = 135;
+    replyHeight = 100;
+    targetReplyHeight = 100;
+    visualHeight = 100;
   }
   reply = {
     message,
@@ -51,6 +54,30 @@ export function updateDesktopReply(state: ChatState) {
     state.sessions[normalizeCharacter(preferences.character)].at(-1);
   if (message?.role === "assistant") lifetime.update(message);
   else lifetime.dismiss();
+}
+export function showCompanionReply(event: CompanionEvent) {
+  if (!preferences || !anchor?.isVisible()) return;
+  // Preserve an AI reply while it is being generated or read.
+  if (reply && !reply.message.id.startsWith("event:")) {
+    // Reminders must remain readable after the AI reply, even if it is hovered.
+    pendingEvents = pendingEvents.filter(
+      (item) => item.kind !== event.kind || item.text !== event.text,
+    );
+    pendingEvents.push(event);
+    return;
+  }
+  const message = {
+    id: "event:" + event.id,
+    role: "assistant" as const,
+    content: event.text,
+    at: event.createdAt,
+    status: "streaming" as const,
+  };
+  lifetime.update(message);
+  lifetime.update({ ...message, status: "complete" });
+}
+export function hoverDesktopReply(hovered: unknown) {
+  if (typeof hovered === "boolean") lifetime.setHovered(hovered);
 }
 export function getDesktopReply() {
   return reply;
@@ -96,8 +123,10 @@ function applyReplyShape() {
   ]);
 }
 export function syncDesktopChatPreferences(prefs: Preferences) {
-  if (preferences && preferences.character !== prefs.character)
+  if (preferences && preferences.character !== prefs.character) {
+    pendingEvents = [];
     lifetime.dismiss();
+  }
   preferences = prefs;
   if (reply) reply.theme = prefs.theme;
   positionDesktopChat();
@@ -139,7 +168,7 @@ function ensureReplyWindow() {
   replyReady = false;
   const win = new BrowserWindow({
     width: 340,
-    height: 135,
+    height: 100,
     show: false,
     transparent: true,
     frame: false,
@@ -214,6 +243,7 @@ export function initializeDesktopChat(character: BrowserWindow) {
   character.on("move", positionDesktopChat);
   character.on("resize", positionDesktopChat);
   const hide = () => {
+    pendingEvents = [];
     armed = false;
     closeDesktopChat();
     lifetime.dismiss();
@@ -225,6 +255,7 @@ export function initializeDesktopChat(character: BrowserWindow) {
   screen.on("display-removed", positionDesktopChat);
   app.on("before-quit", () => {
     quitting = true;
+    pendingEvents = [];
     lifetime.dismiss();
   });
 }

@@ -19,7 +19,7 @@ describe("desktop chat placement", () => {
       { x: 300, y: 300, width: 360, height: 600 },
       area,
     );
-    expect(b.x).toBe(617);
+    expect(b.x).toBe(575);
     expect(b.y).toBeGreaterThanOrEqual(0);
   });
   it("switches to the left at the right edge", () => {
@@ -27,7 +27,7 @@ describe("desktop chat placement", () => {
       { x: 1560, y: 440, width: 360, height: 600 },
       area,
     );
-    expect(b.x + b.width).toBe(1603);
+    expect(b.x + b.width).toBe(1645);
     expect(b.y + b.height).toBeLessThanOrEqual(1040);
   });
   it.each([

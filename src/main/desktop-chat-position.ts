@@ -7,14 +7,14 @@ interface Rect {
 export function desktopReplyBounds(
   anchor: Rect,
   area: Rect,
-  requestedHeight = 120,
+  requestedHeight = 100,
 ): Rect {
   const width = Math.min(340, area.width),
     height = Math.min(requestedHeight, area.height);
   // Character canvases contain transparent side margins. Bring the tail closer.
-  const inset = Math.round(anchor.width * 0.12);
-  const right = anchor.x + anchor.width - inset;
-  const left = anchor.x - width + inset;
+  const center = anchor.x + anchor.width / 2;
+  const right = center + 95;
+  const left = center - 95 - width;
   const x = right + width <= area.x + area.width ? right : left;
   return {
     x: Math.round(Math.max(area.x, Math.min(x, area.x + area.width - width))),

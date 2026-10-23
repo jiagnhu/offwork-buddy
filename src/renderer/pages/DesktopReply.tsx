@@ -5,7 +5,7 @@ import { splitReplyPages } from "../components/reply-pages";
 import "../styles/desktop-chat.css";
 export default function DesktopReply() {
   const [reply, setReply] = useState<Reply | null>(null);
-  const [height, setHeight] = useState(135),
+  const [height, setHeight] = useState(100),
     [pages, setPages] = useState(["…"]),
     [page, setPage] = useState(0);
   const wrap = useRef<HTMLDivElement>(null),
@@ -81,7 +81,7 @@ export default function DesktopReply() {
     const target = Math.min(
       reply.maxHeight,
       Math.max(
-        135,
+        100,
         measure.current.scrollHeight + 42 + (pages.length > 1 ? 36 : 0),
       ),
     );
@@ -105,6 +105,8 @@ export default function DesktopReply() {
       <div className="comic-measure" aria-hidden="true" ref={measure} />
       <div
         ref={wrap}
+        onMouseEnter={() => void window.buddy.hoverDesktopReply(true)}
+        onMouseLeave={() => void window.buddy.hoverDesktopReply(false)}
         className="comic-wrap"
         data-side={reply.side}
         style={{ height }}

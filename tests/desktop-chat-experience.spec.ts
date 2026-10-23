@@ -94,7 +94,7 @@ test("long replies grow then paginate without scrolling; input fades and moves; 
     const bubble = s.app
       .windows()
       .find((w) => w.url().endsWith("#desktop-reply"))!;
-    await expect(bubble.locator(".comic-wrap")).toHaveCSS("height", "135px");
+    await expect(bubble.locator(".comic-wrap")).toHaveCSS("height", "100px");
     await expect(
       bubble.getByRole("navigation", { name: "回复分页" }),
     ).toBeVisible();

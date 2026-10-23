@@ -33,6 +33,7 @@ export function registerIpc(
             "resizeDesktopReply",
             "shapeDesktopReply",
             "keepDesktopReply",
+            "hoverDesktopReply",
           ].includes(name) &&
           !event.senderFrame.url.endsWith("#desktop-reply")
         )

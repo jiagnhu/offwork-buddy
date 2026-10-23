@@ -8,7 +8,7 @@ import { characterCapabilities } from "../../shared/character-capabilities";
 import { countdown } from "../components/format";
 export default function Companion({ snapshot }: { snapshot: Snapshot }) {
   const p = snapshot.state.preferences,
-    { event, dismiss } = useCompanionEvent(),
+    { event } = useCompanionEvent(),
     [error, setError] = useState("");
   const pose = event
     ? event.kind === "plan-complete" && snapshot.state.growth.points >= 60
@@ -43,15 +43,6 @@ export default function Companion({ snapshot }: { snapshot: Snapshot }) {
         </div>
       )}
       <div className="companion-stage">
-        {event && (
-          <button
-            className="speech-bubble"
-            onClick={dismiss}
-            aria-label="关闭伙伴提示"
-          >
-            {event.text}
-          </button>
-        )}
         <Character
           displayScale={scale}
           displayName={characterName(p.character, p)}
