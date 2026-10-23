@@ -11,8 +11,8 @@ test("character space replaces growth, selects models and keeps historical data"
     await expect(
       s.page.getByRole("button", { name: "伙伴成长", exact: true }),
     ).toHaveCount(0);
-    await expect(s.page.getByRole("button", { name: /^预览 / })).toHaveCount(8);
-    await expect(s.page.locator(".character-choice img")).toHaveCount(8);
+    await expect(s.page.getByRole("button", { name: /^预览 / })).toHaveCount(7);
+    await expect(s.page.locator(".character-choice img")).toHaveCount(7);
     await expect
       .poll(() =>
         s.page
@@ -104,7 +104,6 @@ test("every character has an independent nickname across UI, desktop and restart
       ["虹色 Mao", "小猫"],
       ["桃濑日和", "日和酱"],
       ["Miara", "精灵"],
-      ["柊亚里沙", "小柊"],
       ["Tororo", "白白"],
       ["Hijiki", "黑黑"],
       ["Rice", "书书"],
@@ -137,13 +136,12 @@ test("every character has an independent nickname across UI, desktop and restart
       mao: "小猫",
       hiyori: "日和酱",
       miara: "精灵",
-      arisa: "小柊",
       tororo: "白白",
       hijiki: "黑黑",
       rice: "书书",
     });
     await r.page.getByRole("button", { name: "角色空间", exact: true }).click();
-    for (const nickname of ["小晴", "小猫", "日和酱", "精灵", "小柊", "白白", "黑黑", "书书"])
+    for (const nickname of ["小晴", "小猫", "日和酱", "精灵", "白白", "黑黑", "书书"])
       await expect(
         r.page.getByRole("button", { name: `预览 ${nickname}`, exact: true }),
       ).toBeVisible();

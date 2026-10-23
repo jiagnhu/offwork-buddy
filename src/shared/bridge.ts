@@ -21,6 +21,10 @@ export interface BuddyBridge {
   getSnapshot(): Promise<Snapshot>;
   saveSettings(input: SettingsInput): Promise<Snapshot>;
   setPreferences(input: Partial<Preferences>): Promise<Snapshot>;
+  setLeave(
+    date: string,
+    intervals: import("./model").LeaveInterval[],
+  ): Promise<Snapshot>;
   setDayOverride(date: string, value: boolean | null): Promise<Snapshot>;
   updatePlan(date: string, action: PlanAction): Promise<Snapshot>;
   interact(): Promise<Snapshot>;

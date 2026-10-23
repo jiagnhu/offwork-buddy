@@ -13,7 +13,9 @@ export async function launchDesktop(change?: (state: State) => void) {
   await writeFile(path.join(data, "state.json"), JSON.stringify(state));
   const options = {
     executablePath: process.env.BUDDY_EXECUTABLE,
-    args: process.env.BUDDY_EXECUTABLE ? [] : ["."],
+    // Keep test canvases rendering when the test runner covers the native window.
+    // App-controlled hide/minimize still participates in useWindowVisible.
+    args: [...(process.env.BUDDY_EXECUTABLE ? [] : ["."]), "--disable-features=CalculateNativeWinOcclusion"],
     env: {
       ...Object.fromEntries(
         Object.entries(process.env).filter(

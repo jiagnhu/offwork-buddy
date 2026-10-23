@@ -13,11 +13,6 @@ import HaruPreview from "../components/HaruPreview";
 import { CompanionNameSetting } from "../components/CompanionSettings";
 
 const profiles = {
-  arisa: {
-    portrait: new URL("../assets/characters/arisa.png", import.meta.url).href,
-    description: "清新日常，灵动陪伴",
-    tone: "rose",
-  },
   tororo: {
     portrait: new URL("../assets/characters/tororo.png", import.meta.url).href,
     description: "软萌白猫，悠闲相伴",
@@ -140,9 +135,6 @@ export default function CharacterSpace({ snapshot }: { snapshot: Snapshot }) {
         </div>
         <p className="character-space-note">
           点击回应 · 完成计划时庆祝 · 休息时轻轻提醒
-        </p>
-        <p className="character-space-note">
-          使用 nizima LIVE 示例模型 · 柊亚里沙 © Live2D Inc. / 插画：かにビーム · 个人非商业使用
         </p>
       </section>
       {preview && (

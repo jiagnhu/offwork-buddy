@@ -1,3 +1,5 @@
+import { leaveSeconds } from "./leave";
+import type { LeaveInterval } from "../shared/model";
 import Decimal from "decimal.js";
 import type {
   CalendarData,
@@ -22,6 +24,7 @@ export function calculateDayDetail(
   rule: RuleVersion,
   calendar: CalendarData,
   overrides: Record<DateKey, boolean>,
+  leaves: LeaveInterval[] = [],
 ) {
   const info = resolveDay(date, rule, calendar, overrides);
   if (!info.workday && !info.paidHoliday)
@@ -31,6 +34,8 @@ export function calculateDayDetail(
         status: "rest" as const,
         calendarMissing: info.calendarMissing,
       },
+      leaveMinutes: 0,
+      leaveDeductionCents: 0,
       denominator: null,
       totalSeconds: 0,
       elapsedSeconds: 0,
@@ -47,12 +52,15 @@ export function calculateDayDetail(
   const elapsed =
     Math.max(0, Math.min(seconds, end) - start) -
     Math.max(0, Math.min(seconds, be) - bs);
+  const excluded = info.paidHoliday ? 0 : leaveSeconds(rule, leaves);
+  const paidElapsed =
+    elapsed - (info.paidHoliday ? 0 : leaveSeconds(rule, leaves, seconds));
   const fraction = info.paidHoliday
     ? date <= today
       ? 1
       : 0
     : total > 0
-      ? Math.max(0, Math.min(1, elapsed / total))
+      ? Math.max(0, Math.min(1, paidElapsed / total))
       : 0;
   let budget = new Decimal(rule.amount);
   let denominator: number | null = null;
@@ -89,12 +97,21 @@ export function calculateDayDetail(
               : end) - seconds,
         ),
     budgetCents: budget
+      .mul(total - excluded)
+      .div(total || 1)
       .mul(100)
       .toDecimalPlaces(0, Decimal.ROUND_HALF_UP)
       .toNumber(),
     earnedCents: budget
       .mul(100)
-      .mul(fraction)
+      .mul(
+        info.paidHoliday
+          ? date <= today
+            ? total
+            : 0
+          : Math.max(0, paidElapsed),
+      )
+      .div(total || 1)
       .toDecimalPlaces(0, Decimal.ROUND_HALF_UP)
       .toNumber(),
     fraction,
@@ -102,6 +119,10 @@ export function calculateDayDetail(
   };
   return {
     progress,
+    leaveMinutes: excluded / 60,
+    leaveDeductionCents:
+      budget.mul(100).toDecimalPlaces(0, Decimal.ROUND_HALF_UP).toNumber() -
+      progress.budgetCents,
     denominator,
     totalSeconds: info.paidHoliday ? 0 : total,
     elapsedSeconds: info.paidHoliday ? 0 : Math.round(fraction * total),

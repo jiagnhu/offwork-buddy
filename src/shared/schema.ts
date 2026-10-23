@@ -77,9 +77,22 @@ const characterNickname = z
   .max(20, "名称最多20个字");
 export const preferencesSchema = preferencesV2Schema.extend({
   character: z
-    .enum(["pet", "assistant", "haru", "mao", "hiyori", "miara", "rice", "arisa", "tororo", "hijiki"])
+    .enum([
+      "pet",
+      "assistant",
+      "haru",
+      "mao",
+      "hiyori",
+      "miara",
+      "rice",
+      "arisa",
+      "tororo",
+      "hijiki",
+    ])
     .transform((kind) =>
-      kind === "pet" || kind === "assistant" ? ("haru" as const) : kind,
+      kind === "pet" || kind === "assistant" || kind === "arisa"
+        ? ("haru" as const)
+        : kind,
     ),
   haruName: characterNickname.default("Haru"),
   characterNames: z
@@ -93,6 +106,7 @@ export const preferencesSchema = preferencesV2Schema.extend({
       hijiki: characterNickname.optional(),
     })
     .strict()
+    .transform(({ arisa: _retired, ...names }) => names)
     .optional(),
   reminders: preferencesV2Schema.shape.reminders.extend({
     restMinutes: z
@@ -132,7 +146,27 @@ export const calendarSchema = z
         });
     }
   });
+export const leaveSchema = z
+  .array(
+    z
+      .object({ start: minute, end: z.number().int().min(1).max(1440) })
+      .refine((p) => p.end > p.start, "请假结束时间须晚于开始时间"),
+  )
+  .max(24);
 const entry = z.object({
+  baseBudgetDecimal: z
+    .string()
+    .max(100)
+    .regex(/^\d+(\.\d+)?$/)
+    .refine((v) => Number(v) <= 2400000000)
+    .optional(),
+  leaveDeductionCents: z
+    .number()
+    .int()
+    .nonnegative()
+    .max(Number.MAX_SAFE_INTEGER)
+    .optional(),
+  leaveMinutes: z.number().int().min(0).max(1440).optional(),
   algorithm: z.literal("normal-schedule-v1").optional(),
   date: dateSchema,
   ruleId: z.string(),
@@ -199,6 +233,7 @@ const stateBase = z.object({
   rules: z.array(ruleSchema).max(40000),
   calendar: calendarSchema,
   overrides: z.record(dateSchema, z.boolean()),
+  leaves: z.record(dateSchema, leaveSchema).default({}),
   plans: z.record(dateSchema, plansSchema).default({}),
   ledger: z.record(dateSchema, entry),
   preferences: preferencesSchema,

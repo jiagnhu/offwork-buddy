@@ -4,81 +4,6 @@
   "modelCommit": "ed1e0b714826d92469b9e51cacc3346f4e393f03",
   "files": [
     {
-      "path": "arisa/arisa_t11.4096/texture_00.png",
-      "sha256": "7ff1ac18442fcce2900a2138d136b775f1889ed1ffdede5f50309c8fe7738129",
-      "mime": "image/png"
-    },
-    {
-      "path": "arisa/arisa_t11.cdi3.json",
-      "sha256": "73a63e264250b4ae5b8c017f67d4d17413223ab6648149b935d518e25ffbc5f7",
-      "mime": "application/json"
-    },
-    {
-      "path": "arisa/arisa_t11.moc3",
-      "sha256": "c1683227e3bf0348110bcf05b17cbfeac15707cc8515d22ac9ad74713f01c04f",
-      "mime": "application/octet-stream"
-    },
-    {
-      "path": "arisa/arisa_t11.model3.json",
-      "sha256": "61ff406feab36180244559bc994e23a2391c16d9409c7f199f05980745d88e28",
-      "mime": "application/json"
-    },
-    {
-      "path": "arisa/arisa_t11.physics3.json",
-      "sha256": "c14061827771aba22b6527195f1c8b8f12909d396823e7e477abf021413158ce",
-      "mime": "application/json"
-    },
-    {
-      "path": "arisa/expressions/Angry.exp3.json",
-      "sha256": "f220b06b0a0bf7eb58c35ac75401fb4571d32877ed33e3d141c3b747fc253e27",
-      "mime": "application/json"
-    },
-    {
-      "path": "arisa/expressions/Normal.exp3.json",
-      "sha256": "7ba491089ab60382e41fee3616ce556889f3c6981da4e74211cc23af8749c07b",
-      "mime": "application/json"
-    },
-    {
-      "path": "arisa/expressions/pose1.exp3.json",
-      "sha256": "9fde417775e01c88b9faefda49c1d60b0510c5f9d3a1f689345ad85a07347719",
-      "mime": "application/json"
-    },
-    {
-      "path": "arisa/expressions/pose2.exp3.json",
-      "sha256": "1336a996abe9655268baa618ead24d075dc85a0fe67b8e10d79a92ca948f5bed",
-      "mime": "application/json"
-    },
-    {
-      "path": "arisa/expressions/pose3.exp3.json",
-      "sha256": "787c8e718ef66d8306ce29e15d83eefe24e07a7c21b6407c41adc2a39936f0f0",
-      "mime": "application/json"
-    },
-    {
-      "path": "arisa/expressions/Sad.exp3.json",
-      "sha256": "7a837b510e5a13e179ba5005c667cf64ba8f58b0326790642a8081b38aa48b7e",
-      "mime": "application/json"
-    },
-    {
-      "path": "arisa/expressions/Smile.exp3.json",
-      "sha256": "a442de24d0e8ad87459509df018738c45ce98b4358b64d3131786681892fe02d",
-      "mime": "application/json"
-    },
-    {
-      "path": "arisa/expressions/Surprised.exp3.json",
-      "sha256": "e0397b7de3e2c869471c056a89ece148f8b50cac509bc1d8cd10acd18f049bfe",
-      "mime": "application/json"
-    },
-    {
-      "path": "arisa/mtn/Idle.motion3.json",
-      "sha256": "f5269df1fd327128a95156f01667afb48f79dda61ac63734c3fd61e4dffed84c",
-      "mime": "application/json"
-    },
-    {
-      "path": "arisa/mtn/Tap@body.motion3.json",
-      "sha256": "2fbdd643392ff7917371119caf434d0764d4044c20e112d92481f797fd9f1b99",
-      "mime": "application/json"
-    },
-    {
       "path": "core/LICENSE.md",
       "sha256": "b81e37048010ef1d336106151201a0323c3309cae44aecdedf57831fe88fa991",
       "mime": "text/plain"
@@ -455,7 +380,7 @@
     },
     {
       "path": "licenses/THIRD_PARTY_NOTICES.md",
-      "sha256": "f396020942c44951738a965599da32ec200927249181ec3ecb36d87310be9ffd",
+      "sha256": "bf2aa2ba995232dbe9934ad8724ae5bd5aea774429c58097b13428f8fda45e74",
       "mime": "text/plain"
     },
     {
@@ -752,12 +677,7 @@
     {
       "url": "https://cubism.live2d.com/sample-data/bin/tororo_hijiki/tororo_hijiki_ja.zip",
       "sha256": "401cf1596180d7f4752ebac653f01b8c05ff88b56bb84706389c0c105aff1dd8",
-      "license": "See licenses/THIRD_PARTY_NOTICES.md. Arisa: personal noncommercial local use only, no redistribution."
-    },
-    {
-      "url": "https://storage.googleapis.com/nizima-docs/apps/nizima-live/archives/nizimaLive2.7.2.zip",
-      "sha256": "f9432551053e54d539047538d02738076a932d4d57c27df09b9fb594b8c8671b",
-      "license": "See licenses/THIRD_PARTY_NOTICES.md. Arisa: personal noncommercial local use only, no redistribution."
+      "license": "See licenses/THIRD_PARTY_NOTICES.md."
     }
   ],
   "modifications": [

@@ -36,6 +36,7 @@ test("v2 migration preserves money, plans, growth, accessories and roaming", () 
   const old = v2(),
     result = parseState(old);
   expect(result).toEqual({
+    leaves: {},
     ...old,
     schemaVersion: 3,
     preferences: {
@@ -61,6 +62,7 @@ test("only v3 accepts Haru and rejects unknown versions", () => {
     preferences: { ...old.preferences, character: "haru" },
   };
   expect(parseState(next)).toEqual({
+    leaves: {},
     ...next,
     preferences: {
       ...next.preferences,

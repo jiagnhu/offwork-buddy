@@ -34,6 +34,7 @@ export default function EarningsDetail({
     snapshot.state.ledger[date]?.amountCents,
     JSON.stringify(snapshot.state.rules),
     JSON.stringify(snapshot.state.overrides),
+    JSON.stringify(snapshot.state.leaves?.[date]),
   ]);
   const rule =
     detail?.kind === "day"
@@ -95,7 +96,7 @@ export default function EarningsDetail({
               {detail?.kind === "day" && (
                 <>
                   <p>
-                    每日预算：
+                    未扣请假日薪：
                     {Number(detail.detail.dailyBudgetDecimal).toFixed(4)} 元
                   </p>
                   <p>
@@ -106,7 +107,7 @@ export default function EarningsDetail({
                     {detail.detail.dayInfo.paidHoliday
                       ? `${detail.detail.dayInfo.paidHoliday}：带薪休息，按正常每日预算计入，不按工作小时累计。`
                       : detail.detail.dayInfo.workday
-                        ? "今日金额 = 未提前舍入的每日预算 × 已计工时比例。午休暂停累计。"
+                        ? "当前金额 = 未提前舍入的正常日薪 × 扣除已过请假后的工时比例。午休、请假暂停累计。"
                         : `今日休息，由${{ manual: "手动安排", official: "节假日日历", schedule: "每周排班" }[detail.detail.dayInfo.source]}确定。`}
                   </p>
                 </>
@@ -131,6 +132,22 @@ export default function EarningsDetail({
                   )}
                 </>
               )}
+              <p>
+                请假扣薪：
+                {detail?.kind === "day"
+                  ? detail.detail.leaveMinutes
+                  : detail?.kind === "historical"
+                    ? (detail.entry.leaveMinutes ?? 0)
+                    : 0}{" "}
+                分钟 · 全天扣减 ¥
+                {money(
+                  detail?.kind === "day"
+                    ? detail.detail.leaveDeductionCents
+                    : detail?.kind === "historical"
+                      ? (detail.entry.leaveDeductionCents ?? 0)
+                      : 0,
+                )}
+              </p>
               <p className="hint">
                 金额每天四舍五入到分再累计；含日历标注的法定节假日正常工资；不含税费、其他带薪假期和加班费。
               </p>

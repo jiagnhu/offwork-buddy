@@ -26,6 +26,9 @@ test("all characters preview, animate, select and load offline", async () => {
     await expect(s.page.getByText("看板娘 · 小沐")).toHaveCount(0);
     for (const kind of characterOrder) {
       const model = live2dModels[kind];
+      // Desktop models can occlude the panel; hidden canvases intentionally pause.
+      await s.page.evaluate(() => window.buddy.hideCompanion());
+      await s.page.bringToFront();
       await s.page
         .getByRole("button", { name: `预览 ${model.name}`, exact: true })
         .click();
@@ -58,6 +61,7 @@ test("all characters preview, animate, select and load offline", async () => {
       await dialog
         .getByRole("button", { name: `使用 ${model.name}`, exact: true })
         .click();
+      await s.page.evaluate(() => window.buddy.showCompanion());
       await expect(
         desktop.getByLabel(`${model.name} Live2D 角色`),
       ).toBeVisible();

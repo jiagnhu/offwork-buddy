@@ -53,7 +53,7 @@ test("all characters respond to canvas clicks using only original actions", asyn
         await s.page.waitForTimeout(400);
         await expect(dialog.getByRole("alert")).toHaveCount(0);
       }
-      if (kind === "haru" || kind === "mao" || kind === "arisa") {
+      if (kind === "haru" || kind === "mao") {
         await s.page.evaluate(() =>
           window.buddy.setPreferences({ reducedMotion: true }),
         );

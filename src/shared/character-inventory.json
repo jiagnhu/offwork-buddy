@@ -65,21 +65,5 @@
     "idle": 3,
     "tap": 6,
     "expressions": []
-  },
-  "arisa": {
-    "name": "柊亚里沙",
-    "file": "arisa_t11.model3.json",
-    "idle": 1,
-    "tap": 1,
-    "expressions": [
-      "Angry",
-      "Normal",
-      "Sad",
-      "Smile",
-      "Surprised",
-      "pose1",
-      "pose2",
-      "pose3"
-    ]
   }
 }

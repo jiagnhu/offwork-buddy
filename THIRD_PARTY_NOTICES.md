@@ -20,8 +20,7 @@ Framework modification: scripts/cubism-framework.patch adds cancellable shader l
 
 Additional bundled characters: Niziiro Mao, Hiyori Momose, Rice Glassfield (official SDK 5-r.5) and Miara (https://cubism.live2d.com/sample-data/bin/miara/miara_en.zip). All are Live2D original sample characters subject to the Free Material License and Sample Data Terms linked above. Miara original ReadMe is retained. Miara Tap/Flic groups are mapped to TapBody for the application; no audio is bundled. Model art and motion data are unchanged.
 
-## Personal local additions (2026-10-22)
+## Additional sample models (2026-10-22)
 
-Using nizima LIVE Sample Models: Hiiragi Arisa / 柊アリサ, illustration by かにビーム, Copyright Live2D Inc. This user's build is for personal noncommercial local use only. Arisa data is not to be published, redistributed, sold, or altered. Preserve original model/art/motion files. Source: https://nizimalive.com/en/download/ ; terms: https://docs.nizimalive.com/en/manual/samplemodel-terms/ . The separate arisa_v2.zip contains editor source only; runtime assets come from the official nizima LIVE portable distribution. No voice/audio is used.
 
 Tororo (white cat) and Hijiki (black cat): Copyright Live2D Inc. Official sample: https://www.live2d.com/learn/sample/tororo-hijiki/ . Free Material License and Sample Model Terms apply. Original ReadMe retained as licenses/Tororo-Hijiki-ReadMe.txt. Only runtime motion group mapping is adapted (Tap/Flick/FlickUp/FlickDown → TapBody); model artwork and animations unchanged.

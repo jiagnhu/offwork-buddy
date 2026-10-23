@@ -1,3 +1,5 @@
+import { setLeave } from "../core/ledger";
+import { leaveSchema } from "../shared/schema";
 import { mergeBundledCalendar } from "../core/calendar";
 import { startCompanionController } from "./companion-controller";
 import { registerLive2dScheme, installLive2dProtocol } from "./live2d-assets";
@@ -83,7 +85,14 @@ function snapshot(): Snapshot {
         ? ruleForDate(state, today)
         : undefined;
   const progress = rule
-    ? calculateDay(today, now, rule, state.calendar, state.overrides)
+    ? calculateDay(
+        today,
+        now,
+        rule,
+        state.calendar,
+        state.overrides,
+        state.leaves?.[today],
+      )
     : emptyProgress;
   const settledCents = Object.values(state.ledger).reduce(
     (sum, e) => sum + e.amountCents,
@@ -268,6 +277,17 @@ else {
               }),
             });
           }),
+        setLeave: (date: unknown, input: unknown) =>
+          serial(() =>
+            commit(
+              setLeave(
+                state,
+                dateSchema.parse(date),
+                leaveSchema.parse(input),
+                new Date(),
+              ),
+            ),
+          ),
         setDayOverride: (date: unknown, value: unknown) =>
           serial(() => {
             const d = dateSchema.parse(date),

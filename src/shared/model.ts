@@ -1,6 +1,14 @@
 export type DateKey = string;
 export type CharacterKind =
-  "pet" | "assistant" | "haru" | "mao" | "hiyori" | "miara" | "rice" | "arisa" | "tororo" | "hijiki";
+  | "pet"
+  | "assistant"
+  | "haru"
+  | "mao"
+  | "hiyori"
+  | "miara"
+  | "rice"
+  | "tororo"
+  | "hijiki";
 export interface RuleVersion {
   id: string;
   effectiveFrom: DateKey;
@@ -38,7 +46,14 @@ export interface DayProgress {
   fraction: number;
   calendarMissing: boolean;
 }
+export interface LeaveInterval {
+  start: number;
+  end: number;
+}
 export interface LedgerEntry {
+  baseBudgetDecimal?: string;
+  leaveDeductionCents?: number;
+  leaveMinutes?: number;
   algorithm?: "normal-schedule-v1";
   date: DateKey;
   ruleId: string;
@@ -50,7 +65,9 @@ export interface LedgerEntry {
 }
 export interface Preferences {
   haruName?: string;
-  characterNames?: Partial<Record<"mao" | "hiyori" | "miara" | "rice" | "arisa" | "tororo" | "hijiki", string>>;
+  characterNames?: Partial<
+    Record<"mao" | "hiyori" | "miara" | "rice" | "tororo" | "hijiki", string>
+  >;
   movementMode: "bottom" | "stationary";
   cardHidden: boolean;
   cardPosition?: { x: number; y: number };
@@ -103,6 +120,7 @@ export interface State {
   rules: RuleVersion[];
   calendar: CalendarData;
   overrides: Record<DateKey, boolean>;
+  leaves?: Record<DateKey, LeaveInterval[]>;
   plans: Record<DateKey, DailyPlan[]>;
   ledger: Record<DateKey, LedgerEntry>;
   preferences: Preferences;

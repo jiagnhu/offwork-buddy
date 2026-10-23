@@ -1,3 +1,4 @@
+import LeaveEditor from "../components/LeaveEditor";
 import type { PlanAction } from "../../core/plans";
 import { useState, useEffect } from "react";
 import {
@@ -169,6 +170,9 @@ export default function Calendar({
                     ? "未设置"
                     : `${d.income.kind === "estimated" ? "预计 " : ""}¥${money(d.income.amountCents)}`}
               </span>
+              {!!state.leaves?.[d.date]?.length && (
+                <small className="leave-badge">已安排请假</small>
+              )}
               {d.date === snapshot.today && <i>今天</i>}
               {!!state.plans[d.date]?.length && (
                 <span className="day-plans">
@@ -188,7 +192,7 @@ export default function Calendar({
             <i className="rest-dot" />
             休息日
           </span>
-          <span>点击日期，安排计划或调整排班</span>
+          <span>点击日期，安排计划、请假或调整排班</span>
         </div>
       </section>
       <section className="calendar-foot">
@@ -198,7 +202,7 @@ export default function Calendar({
             : "节假日数据缺失，当前按常规排班"}
           <br />
           {!rule.official ? "当前已关闭官方日历覆盖。" : ""}
-          历史日历调整不会自动修改已结算收入。
+          历史排班调整不会自动修改已结算收入；请假增删会立即更新对应收入。
           今日显示当前收入，未来显示全天预计；带薪法定节假日按正常日薪计入，入职前不计薪。
         </p>
         <button
@@ -237,6 +241,14 @@ export default function Calendar({
               <X size={18} />
             </button>
             <h2>{selected} 怎么安排？</h2>
+            <LeaveEditor
+              key={selected}
+              state={state}
+              date={selected}
+              busy={busy}
+              setBusy={setBusy}
+            />
+            <hr className="plan-divider" />
             <div className="plan-heading">
               <h3>每日工作计划</h3>
               <span className="muted">

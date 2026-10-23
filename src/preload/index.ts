@@ -18,6 +18,7 @@ const bridge: BuddyBridge = {
   getSnapshot: () => invoke("getSnapshot"),
   saveSettings: (i) => invoke("saveSettings", i),
   setPreferences: (i) => invoke("setPreferences", i),
+  setLeave: (d, v) => invoke("setLeave", d, v),
   setDayOverride: (d, v) => invoke("setDayOverride", d, v),
   updatePlan: (d, p) => invoke("updatePlan", d, p),
   interact: () => invoke("interact"),

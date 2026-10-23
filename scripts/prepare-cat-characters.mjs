@@ -1,4 +1,4 @@
-// Official models for this user's personal local build. Do not publish Arisa assets.
+// Prepare the official Tororo and Hijiki sample models.
 import { readFile, writeFile, mkdir, cp, readdir } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { createHash } from 'node:crypto';
@@ -7,11 +7,10 @@ const root = resolve('resources/live2d');
 const inventory = JSON.parse(await readFile('src/shared/character-inventory.json', 'utf8'));
 const digest = bytes => createHash('sha256').update(bytes).digest('hex');
 const inputs = ['tororo', 'hijiki'].map(kind => [kind, kind === 'tororo' ? 'Tororo' : 'Hijiki', resolve(`.cache/new-cats/${kind}/runtime`), `${kind}.model3.json`]);
-if (process.argv[2]) inputs.push(['arisa', '柊亚里沙', resolve(process.argv[2]), process.argv[3]]);
 for (const [kind, name, origin, file] of inputs) {
   const raw = await readFile(join(origin, file));
   const model = JSON.parse(raw), r = model.FileReferences;
-  if (kind !== 'arisa') {
+  {
     r.Motions.TapBody = Object.entries(r.Motions).filter(([group]) => group !== 'Idle').flatMap(([, motions]) => motions);
     r.Motions = {Idle:r.Motions.Idle, TapBody:r.Motions.TapBody};
   }
@@ -20,8 +19,8 @@ for (const [kind, name, origin, file] of inputs) {
   const dest = join(root, kind);
   await mkdir(dest, {recursive:true});
   for (const p of paths) { await mkdir(join(dest,p,'..'), {recursive:true}); await cp(join(origin,p),join(dest,p)); }
-  await writeFile(join(dest,file),kind === 'arisa' ? raw : JSON.stringify(model,null,2)+'\n');
-  inventory[kind] = {name, file, idle:r.Motions?.Idle?.length ?? 0, tap:(kind === 'arisa' ? r.Motions?.[''] : r.Motions?.TapBody)?.length ?? 0, expressions:(r.Expressions ?? []).map(e=>e.Name)};
+  await writeFile(join(dest,file),JSON.stringify(model,null,2)+'\n');
+  inventory[kind] = {name, file, idle:r.Motions?.Idle?.length ?? 0, tap:r.Motions?.TapBody?.length ?? 0, expressions:(r.Expressions ?? []).map(e=>e.Name)};
 }
 await cp('.cache/new-cats/ReadMe.txt',join(root,'licenses/Tororo-Hijiki-ReadMe.txt'));
 await cp('THIRD_PARTY_NOTICES.md',join(root,'licenses/THIRD_PARTY_NOTICES.md'));
@@ -38,10 +37,9 @@ async function walk(dir,prefix='') {
 await walk(root);lock.files.sort((a,b)=>a.path.localeCompare(b.path));
 for(const [archive,url] of [
   ['tororo_hijiki_ja.zip','https://cubism.live2d.com/sample-data/bin/tororo_hijiki/tororo_hijiki_ja.zip'],
-  ...(process.argv[2] ? [['nizimaLive2.7.2.zip','https://storage.googleapis.com/nizima-docs/apps/nizima-live/archives/nizimaLive2.7.2.zip']] : []),
 ]) {
   lock.sources=lock.sources.filter(s=>s.url!==url);
-  lock.sources.push({url,sha256:digest(await readFile('.cache/'+archive)),license:'See licenses/THIRD_PARTY_NOTICES.md. Arisa: personal noncommercial local use only, no redistribution.'});
+  lock.sources.push({url,sha256:digest(await readFile('.cache/'+archive)),license:'See licenses/THIRD_PARTY_NOTICES.md.'});
 }
 lock.modifications=[...new Set([...lock.modifications,'Tororo and Hijiki non-idle motion groups mapped to TapBody; original motion data unchanged.'])];
 await verifyAssets(root,lock);

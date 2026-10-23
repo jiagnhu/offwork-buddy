@@ -58,6 +58,7 @@ export function earningsDetail(
           rule,
           state.calendar,
           state.overrides,
+          state.leaves?.[date],
         ),
       }
     : { kind: "unconfigured", date };
