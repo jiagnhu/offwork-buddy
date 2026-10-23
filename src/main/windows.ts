@@ -3,6 +3,7 @@ import path from "node:path";
 import type { Preferences } from "../shared/model";
 import { clampBounds } from "./bounds";
 import { characterCapabilities } from "../shared/character-capabilities";
+import { initializeDesktopChat } from "./desktop-chat-window";
 export let panel: BrowserWindow,
   companion: BrowserWindow,
   desktopCard: BrowserWindow;
@@ -133,6 +134,7 @@ export function createWindows(
     width: characterCapabilities(prefs.character).baseWidth,
     height: characterCapabilities(prefs.character).baseHeight,
   });
+  initializeDesktopChat(companion);
   desktopCard = new BrowserWindow({
     ...desktopOptions,
     width: 360,

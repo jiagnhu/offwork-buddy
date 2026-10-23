@@ -4,6 +4,7 @@ import { afterPaint } from "./hooks/afterPaint";
 import { version } from "../../package.json";
 import DesktopCard from "./pages/DesktopCard";
 import Companion from "./pages/Companion";
+import DesktopChat from "./pages/DesktopChat";
 import EarningsDetail from "./components/EarningsDetail";
 import type { NavigateTarget } from "../shared/bridge";
 import { lazy, Suspense, useEffect, useState } from "react";
@@ -37,7 +38,7 @@ const navigation = [
   { id: "settings", label: "偏好设置", icon: SettingsIcon },
 ];
 export default function App() {
-  const { snapshot, error } = useSnapshot();
+  const { snapshot, error } = useSnapshot(location.hash === "#desktop-chat");
   const [page, setPage] = useState("overview");
   const [readyPage, setReadyPage] = useState("overview");
   const ready = page === readyPage;
@@ -93,6 +94,7 @@ export default function App() {
   if (location.hash === "#desktop-card")
     return <DesktopCard snapshot={snapshot} />;
   if (location.hash === "#companion") return <Companion snapshot={snapshot} />;
+  if (location.hash === "#desktop-chat") return <DesktopChat snapshot={snapshot} />;
   if (!snapshot.state.configured)
     return (
       <Suspense fallback={<PageSkeleton page="onboarding" />}>

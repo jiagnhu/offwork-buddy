@@ -14,6 +14,8 @@ export interface SettingsInput {
   startDate: string;
 }
 export interface BuddyBridge {
+  openDesktopChat(): Promise<void>;
+  closeDesktopChat(): Promise<void>;
   getAISettings(): Promise<AISettingsView>;
   saveAISettings(input: AISettingsInput): Promise<AISettingsView>;
   testAISettings(input: AISettingsInput): Promise<string>;

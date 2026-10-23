@@ -1,4 +1,5 @@
 import { AISettings } from "./ai-settings";
+import { openDesktopChat, closeDesktopChat } from "./desktop-chat-window";
 import { safeStorage } from "electron";
 import { ChatController, chatTransport } from "./chat-controller";
 import { loadChat, saveChat } from "./chat-store";
@@ -181,8 +182,14 @@ else {
         await loadChat(directory),
         (s) => saveChat(directory, s),
         (s) => {
-          if (panel && !panel.isDestroyed())
-            panel.webContents.send("buddy:chat", s);
+          for (const win of BrowserWindow.getAllWindows())
+            if (
+              !win.isDestroyed() &&
+              (win === panel ||
+                (win.isVisible() &&
+                  win.webContents.getURL().endsWith("#desktop-chat")))
+            )
+              win.webContents.send("buddy:chat", s);
         },
         (body, signal, delta) =>
           chatTransport(body, signal, delta, ai.endpoint),
@@ -268,6 +275,8 @@ else {
             return ai.save(input);
           }),
         testAISettings: (input: unknown) => serial(() => ai.test(input)),
+        openDesktopChat,
+        closeDesktopChat,
         getChat: () => chat.get(),
         sendChat: (text: unknown) =>
           serial(() =>

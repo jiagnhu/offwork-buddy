@@ -8,6 +8,8 @@ const invoke = <T>(method: string, ...args: unknown[]): Promise<T> =>
       return r.value;
     });
 const bridge: BuddyBridge = {
+  openDesktopChat: () => invoke("openDesktopChat"),
+  closeDesktopChat: () => invoke("closeDesktopChat"),
   getAISettings: () => invoke("getAISettings"),
   saveAISettings: (input) => invoke("saveAISettings", input),
   testAISettings: (input) => invoke("testAISettings", input),

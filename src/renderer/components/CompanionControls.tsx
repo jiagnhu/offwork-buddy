@@ -89,7 +89,7 @@ export default function CompanionControls({
       <button
         aria-label="和伙伴聊天"
         title="和伙伴聊天"
-        onClick={() => run(window.buddy.openPanel({ page: "chat" }))}
+        onClick={() => run(window.buddy.openDesktopChat())}
       >
         <MessageCircle size={14} />
       </button>
