@@ -3,7 +3,10 @@ import path from "node:path";
 import type { Preferences } from "../shared/model";
 import { clampBounds } from "./bounds";
 import { characterCapabilities } from "../shared/character-capabilities";
-import { initializeDesktopChat } from "./desktop-chat-window";
+import {
+  initializeDesktopChat,
+  syncDesktopChatPreferences,
+} from "./desktop-chat-window";
 export let panel: BrowserWindow,
   companion: BrowserWindow,
   desktopCard: BrowserWindow;
@@ -275,4 +278,5 @@ export function applyPreferences(prefs: Preferences) {
   else if (!cardShouldShow && desktopCard.isVisible()) desktopCard.hide();
   if (app.isPackaged && (!previous || previous.autoStart !== prefs.autoStart))
     app.setLoginItemSettings({ openAtLogin: prefs.autoStart });
+  syncDesktopChatPreferences(prefs);
 }

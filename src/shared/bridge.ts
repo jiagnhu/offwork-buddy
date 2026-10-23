@@ -14,6 +14,11 @@ export interface SettingsInput {
   startDate: string;
 }
 export interface BuddyBridge {
+  getDesktopReply(): Promise<import("./desktop-reply").DesktopReply | null>;
+  resizeDesktopReply(height: number): Promise<void>;
+  onDesktopReply(
+    listener: (reply: import("./desktop-reply").DesktopReply) => void,
+  ): () => void;
   openDesktopChat(): Promise<void>;
   closeDesktopChat(): Promise<void>;
   getAISettings(): Promise<AISettingsView>;

@@ -1,7 +1,19 @@
 import { describe, it, expect } from "vitest";
-import { desktopChatBounds } from "../src/main/desktop-chat-position";
+import {
+  desktopReplyBounds as desktopChatBounds,
+  desktopChatBounds as inputBounds,
+} from "../src/main/desktop-chat-position";
 describe("desktop chat placement", () => {
   const area = { x: 0, y: 0, width: 1920, height: 1040 };
+  it("keeps compact input below the character and inside the bottom edge", () => {
+    const anchor = { x: 300, y: 100, width: 360, height: 600 };
+    const input = inputBounds(anchor, area);
+    expect(input.y).toBeGreaterThanOrEqual(anchor.y + anchor.height);
+    expect(input.height).toBe(72);
+    const bottom = inputBounds({ ...anchor, y: 440 }, area);
+    expect(bottom.y + bottom.height).toBe(1040);
+    expect(bottom.x + bottom.width / 2).toBe(anchor.x + anchor.width / 2);
+  });
   it("places beside the character without covering it", () => {
     const b = desktopChatBounds(
       { x: 300, y: 300, width: 360, height: 600 },

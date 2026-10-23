@@ -8,6 +8,13 @@ const invoke = <T>(method: string, ...args: unknown[]): Promise<T> =>
       return r.value;
     });
 const bridge: BuddyBridge = {
+  getDesktopReply: () => invoke("getDesktopReply"),
+  resizeDesktopReply: (height) => invoke("resizeDesktopReply", height),
+  onDesktopReply: (listener) => {
+    const fn = (_: unknown, reply: any) => listener(reply);
+    ipcRenderer.on("buddy:desktop-reply", fn);
+    return () => ipcRenderer.removeListener("buddy:desktop-reply", fn);
+  },
   openDesktopChat: () => invoke("openDesktopChat"),
   closeDesktopChat: () => invoke("closeDesktopChat"),
   getAISettings: () => invoke("getAISettings"),

@@ -1,5 +1,11 @@
 import { AISettings } from "./ai-settings";
-import { openDesktopChat, closeDesktopChat } from "./desktop-chat-window";
+import {
+  openDesktopChat,
+  closeDesktopChat,
+  updateDesktopReply,
+  getDesktopReply,
+  resizeDesktopReply,
+} from "./desktop-chat-window";
 import { safeStorage } from "electron";
 import { ChatController, chatTransport } from "./chat-controller";
 import { loadChat, saveChat } from "./chat-store";
@@ -182,6 +188,7 @@ else {
         await loadChat(directory),
         (s) => saveChat(directory, s),
         (s) => {
+          updateDesktopReply(s);
           for (const win of BrowserWindow.getAllWindows())
             if (
               !win.isDestroyed() &&
@@ -277,6 +284,8 @@ else {
         testAISettings: (input: unknown) => serial(() => ai.test(input)),
         openDesktopChat,
         closeDesktopChat,
+        getDesktopReply,
+        resizeDesktopReply,
         getChat: () => chat.get(),
         sendChat: (text: unknown) =>
           serial(() =>
