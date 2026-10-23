@@ -22,7 +22,14 @@ test("comic reply is separate, expires after completion and keeps input minimal"
         ),
       1800,
     );
-    res.on("close", () => clearTimeout(timer));
+    const chunks = setInterval(
+      () => res.write('data: {"type":"delta","text":"。"}\n\n'),
+      80,
+    );
+    res.on("close", () => {
+      clearTimeout(timer);
+      clearInterval(chunks);
+    });
   });
   server.listen(0, "127.0.0.1");
   await once(server, "listening");
@@ -47,7 +54,7 @@ test("comic reply is separate, expires after completion and keeps input minimal"
       .find((w) => w.url().endsWith("#desktop-chat"))!;
     const input = chat.getByRole("textbox", { name: "桌面聊天内容" });
     await expect(input).toBeVisible();
-    await expect(chat.locator("button")).toHaveCount(1);
+    await expect(chat.locator("button")).toHaveCount(2);
     await expect(chat.locator("header")).toHaveCount(0);
     await expect(chat.locator(".comic-bubble")).toHaveCount(0);
     await input.fill("今天好累");
@@ -70,6 +77,32 @@ test("comic reply is separate, expires after completion and keeps input minimal"
       "data-status",
       "complete",
     );
+    expect(
+      await bubble
+        .getByLabel("伙伴对白")
+        .evaluate((el) => getComputedStyle(el).fontSize),
+    ).toBe("12px");
+    await s.app.evaluate(({ BrowserWindow }) => {
+      const win = BrowserWindow.getAllWindows().find((w) =>
+        w.webContents.getURL().endsWith("#desktop-reply"),
+      )!;
+      const tracked = win as typeof win & {
+        layoutCalls: number;
+        showCalls: number;
+      };
+      tracked.layoutCalls = 0;
+      tracked.showCalls = 0;
+      const setBounds = win.setBounds.bind(win),
+        show = win.showInactive.bind(win);
+      win.setBounds = (...args) => {
+        tracked.layoutCalls++;
+        return setBounds(...args);
+      };
+      win.showInactive = () => {
+        tracked.showCalls++;
+        return show();
+      };
+    });
     await bubble.screenshot({ path: "test-results/comic-reply.png" });
     await chat.screenshot({ path: "test-results/comic-input.png" });
     expect(
@@ -84,7 +117,10 @@ test("comic reply is separate, expires after completion and keeps input minimal"
       true,
     );
     await input.fill("草稿");
-    await input.press("Escape");
+    await chat.getByRole("button", { name: "收起聊天" }).click();
+    expect(await chat.evaluate(() => window.buddy.getWindowVisibility())).toBe(
+      false,
+    );
     await pet.evaluate(() => window.buddy.openDesktopChat());
     await expect(input).toHaveValue("草稿");
     expect(
@@ -134,13 +170,21 @@ test("comic reply is separate, expires after completion and keeps input minimal"
       placement.input.y,
     );
     expect(placement.bubble.x + placement.bubble.width).toBeLessThanOrEqual(
-      placement.pet.x,
+      placement.pet.x + Math.round(placement.pet.width * 0.12),
     );
     expect(placement.focusable).toBe(false);
     await expect(bubble.locator(".comic-wrap")).toHaveAttribute(
       "data-side",
       "left",
     );
+    const calls = await s.app.evaluate(({ BrowserWindow }) => {
+      const w = BrowserWindow.getAllWindows().find((w) =>
+        w.webContents.getURL().endsWith("#desktop-reply"),
+      )! as any;
+      return { layout: w.layoutCalls, show: w.showCalls };
+    });
+    expect(calls.layout).toBeLessThan(12);
+    expect(calls.show).toBeLessThanOrEqual(1);
     await chat.evaluate(() => window.buddy.setPreferences({ theme: "dark" }));
     await expect(bubble.locator("html")).toHaveAttribute("data-theme", "dark");
     await bubble.screenshot({ path: "test-results/comic-reply-dark.png" });

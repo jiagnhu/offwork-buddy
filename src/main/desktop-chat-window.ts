@@ -27,7 +27,8 @@ const lifetime = new ReplyLifetime((message) => {
   reply = { message, side: "right", theme: preferences.theme };
   ensureReplyWindow();
   positionDesktopReply();
-  if (replyReady && anchor.isVisible()) replyWindow!.showInactive();
+  if (replyReady && anchor.isVisible() && !replyWindow!.isVisible())
+    replyWindow!.showInactive();
 });
 export function updateDesktopReply(state: ChatState) {
   if (!armed || !preferences || !anchor?.isVisible()) return;
@@ -41,7 +42,9 @@ export function getDesktopReply() {
 }
 export function resizeDesktopReply(height: number) {
   if (!Number.isFinite(height)) return;
-  replyHeight = Math.max(64, Math.min(270, Math.ceil(height)));
+  const next = Math.max(64, Math.min(270, Math.ceil(height)));
+  if (next === replyHeight) return;
+  replyHeight = next;
   positionDesktopReply();
 }
 export function syncDesktopChatPreferences(prefs: Preferences) {
@@ -65,7 +68,14 @@ function positionDesktopReply() {
     screen.getDisplayMatching(b).workArea,
     replyHeight,
   );
-  replyWindow.setBounds(next);
+  const previous = replyWindow.getBounds();
+  if (
+    previous.x !== next.x ||
+    previous.y !== next.y ||
+    previous.width !== next.width ||
+    previous.height !== next.height
+  )
+    replyWindow.setBounds(next);
   if (replyWindow.isAlwaysOnTop() !== anchor.isAlwaysOnTop())
     replyWindow.setAlwaysOnTop(anchor.isAlwaysOnTop(), "floating");
   if (reply) {

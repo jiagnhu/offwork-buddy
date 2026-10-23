@@ -6,6 +6,15 @@ export default function DesktopReply() {
   const body = useRef<HTMLDivElement>(null),
     content = useRef<HTMLDivElement>(null),
     following = useRef(true);
+  const resizeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingHeight = useRef(64),
+    sentHeight = useRef(0);
+  useEffect(
+    () => () => {
+      if (resizeTimer.current) clearTimeout(resizeTimer.current);
+    },
+    [],
+  );
   useEffect(() => {
     let live = true,
       revision = 0;
@@ -30,9 +39,18 @@ export default function DesktopReply() {
   }, [reply?.message.id]);
   useEffect(() => {
     if (!content.current) return;
-    void window.buddy.resizeDesktopReply(
-      Math.min(270, Math.max(64, content.current.scrollHeight + 42)),
+    pendingHeight.current = Math.min(
+      270,
+      Math.max(64, content.current.scrollHeight + 42),
     );
+    if (pendingHeight.current !== sentHeight.current && !resizeTimer.current) {
+      resizeTimer.current = setTimeout(() => {
+        resizeTimer.current = null;
+        if (sentHeight.current === pendingHeight.current) return;
+        sentHeight.current = pendingHeight.current;
+        void window.buddy.resizeDesktopReply(sentHeight.current);
+      }, 120);
+    }
     if (following.current && body.current)
       body.current.scrollTop = body.current.scrollHeight;
   }, [reply?.message.content, reply?.message.status, reply?.message.error]);

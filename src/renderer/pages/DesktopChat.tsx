@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Send, Square, RotateCcw } from "lucide-react";
+import { Send, Square, RotateCcw, X } from "lucide-react";
 import type { Snapshot } from "../../shared/model";
 import type { ChatState } from "../../shared/chat";
 import { normalizeCharacter } from "../../shared/characters";
@@ -148,6 +148,15 @@ export default function DesktopChat({ snapshot }: { snapshot: Snapshot }) {
           <Send size={17} />
         </button>
       )}
+      <button
+        type="button"
+        className="desktop-chat-close"
+        aria-label="收起聊天"
+        title="收起聊天"
+        onClick={() => void window.buddy.closeDesktopChat()}
+      >
+        <X size={15} />
+      </button>
       {error && (
         <small className="desktop-input-error" role="alert" title={error}>
           {error}

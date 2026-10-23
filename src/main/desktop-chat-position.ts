@@ -11,8 +11,10 @@ export function desktopReplyBounds(
 ): Rect {
   const width = Math.min(340, area.width),
     height = Math.min(requestedHeight, area.height);
-  const right = anchor.x + anchor.width + 8;
-  const left = anchor.x - width - 8;
+  // Character canvases contain transparent side margins. Bring the tail closer.
+  const inset = Math.round(anchor.width * 0.12);
+  const right = anchor.x + anchor.width - inset;
+  const left = anchor.x - width + inset;
   const x = right + width <= area.x + area.width ? right : left;
   return {
     x: Math.round(Math.max(area.x, Math.min(x, area.x + area.width - width))),

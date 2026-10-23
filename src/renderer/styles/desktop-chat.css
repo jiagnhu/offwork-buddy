@@ -51,6 +51,22 @@
   text-overflow: ellipsis;
   background: var(--surface);
 }
+.desktop-chat-close {
+  width: 24px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  padding: 0;
+  background: transparent;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+.desktop-chat-close:hover {
+  background: var(--input);
+  color: var(--ink);
+}
 .comic-wrap {
   height: 100vh;
   padding: 5px 7px 5px 24px;
@@ -69,7 +85,7 @@
   background: var(--surface);
   color: var(--ink);
   font:
-    14px/1.8 "Microsoft YaHei UI",
+    12px/1.8 "Microsoft YaHei UI",
     sans-serif;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
