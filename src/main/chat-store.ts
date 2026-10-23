@@ -1,0 +1,50 @@
+import { mkdir, readFile, writeFile, rename, copyFile } from "node:fs/promises";
+import path from "node:path";
+import { z } from "zod";
+import { characterOrder } from "../shared/characters";
+import { emptyChat, messageSchema, type ChatState } from "../shared/chat";
+export async function loadChat(directory: string): Promise<ChatState> {
+  const state = emptyChat();
+  let text: string;
+  try {
+    text = await readFile(path.join(directory, "chat.json"), "utf8");
+  } catch (e) {
+    if ((e as NodeJS.ErrnoException).code === "ENOENT") return state;
+    throw new Error("聊天记录无法读取，请检查数据目录权限。");
+  }
+  try {
+    const data = z
+      .object({
+        version: z.literal(1),
+        sessions: z.record(z.array(messageSchema).max(500)),
+      })
+      .parse(JSON.parse(text));
+    for (const kind of characterOrder)
+      state.sessions[kind] = (data.sessions[kind] ?? []).map((m) =>
+        m.status === "streaming" ? { ...m, status: "stopped" } : m,
+      );
+  } catch {
+    state.notice =
+      "聊天记录损坏或版本不兼容，原文件已保留；继续聊天前会另存备份。";
+  }
+  return state;
+}
+export async function saveChat(directory: string, state: ChatState) {
+  await mkdir(directory, { recursive: true });
+  const file = path.join(directory, "chat.json");
+  if (state.notice?.includes("原文件已保留")) {
+    await copyFile(
+      file,
+      path.join(directory, `chat-preserved-${Date.now()}.json`),
+    );
+  }
+  const sessions = Object.fromEntries(
+    characterOrder.map((k) => [k, state.sessions[k].slice(-500)]),
+  );
+  await writeFile(
+    file + ".tmp",
+    JSON.stringify({ version: 1, sessions }),
+    "utf8",
+  );
+  await rename(file + ".tmp", file);
+}

@@ -1,3 +1,6 @@
+import { ChatController } from "./chat-controller";
+import { loadChat, saveChat } from "./chat-store";
+import { characterName, normalizeCharacter } from "../shared/characters";
 import { setLeave } from "../core/ledger";
 import { leaveSchema } from "../shared/schema";
 import { mergeBundledCalendar } from "../core/calendar";
@@ -166,6 +169,14 @@ else {
       );
       const loaded = await loadState(directory);
       state = loaded.state;
+      const chat = new ChatController(
+        await loadChat(directory),
+        (s) => saveChat(directory, s),
+        (s) => {
+          if (panel && !panel.isDestroyed())
+            panel.webContents.send("buddy:chat", s);
+        },
+      );
       notice = loaded.recoveryNotice ?? null;
       try {
         const bundled = calendarSchema.parse(
@@ -239,6 +250,35 @@ else {
       );
       app.on("before-quit", stopEvents);
       registerIpc({
+        getChat: () => chat.get(),
+        sendChat: (text: unknown) =>
+          serial(() =>
+            chat.send(
+              normalizeCharacter(state.preferences.character),
+              characterName(state.preferences.character, state.preferences),
+              z.string().trim().min(1).max(2000).parse(text),
+            ),
+          ),
+        retryChat: () =>
+          serial(() =>
+            chat.retry(
+              normalizeCharacter(state.preferences.character),
+              characterName(state.preferences.character, state.preferences),
+            ),
+          ),
+        stopChat: () => chat.stop(),
+        clearChat: async () => {
+          const kind = normalizeCharacter(state.preferences.character);
+          const result = await dialog.showMessageBox(panel, {
+            type: "question",
+            message: `清空 ${characterName(kind, state.preferences)} 的聊天记录？`,
+            detail: "此操作无法撤销，不影响其他角色。",
+            buttons: ["取消", "清空记录"],
+            defaultId: 0,
+            cancelId: 0,
+          });
+          return result.response === 1 ? chat.clear(kind) : chat.get();
+        },
         getSnapshot: () => snapshot(),
         saveSettings: (input: unknown) =>
           serial(async () => {
@@ -263,8 +303,10 @@ else {
             return commit(settleThrough(parseState(next), new Date()));
           }),
         setPreferences: (input: unknown) =>
-          serial(() => {
+          serial(async () => {
             const patch = preferencesSchema.partial().parse(input);
+            if (patch.character)
+              await chat.switchCharacter(normalizeCharacter(patch.character));
             return commit({
               ...state,
               preferences: preferencesSchema.parse({
@@ -391,6 +433,7 @@ else {
                 z.object({ page: z.literal("calendar"), date: dateSchema }),
                 z.object({ page: z.literal("earnings"), date: dateSchema }),
                 z.object({ page: z.literal("growth") }),
+                z.object({ page: z.literal("chat") }),
               ])
               .parse(input);
             pendingNavigation = target;
@@ -509,6 +552,7 @@ else {
         stopEvents();
         void serial(async () => {
           try {
+            await chat.flush();
             const c = companion.getBounds(),
               card = desktopCard.getBounds();
             await saveState(directory, {

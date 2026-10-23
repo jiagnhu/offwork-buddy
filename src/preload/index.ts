@@ -8,6 +8,16 @@ const invoke = <T>(method: string, ...args: unknown[]): Promise<T> =>
       return r.value;
     });
 const bridge: BuddyBridge = {
+  getChat: () => invoke("getChat"),
+  sendChat: (text) => invoke("sendChat", text),
+  retryChat: () => invoke("retryChat"),
+  stopChat: () => invoke("stopChat"),
+  clearChat: () => invoke("clearChat"),
+  onChat: (listener) => {
+    const fn = (_: unknown, state: any) => listener(state);
+    ipcRenderer.on("buddy:chat", fn);
+    return () => ipcRenderer.removeListener("buddy:chat", fn);
+  },
   dragCompanion: (input) => invoke("dragCompanion", input),
   getWindowVisibility: () => invoke("getWindowVisibility"),
   onWindowVisibility: (listener) => {

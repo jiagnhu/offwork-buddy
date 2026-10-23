@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { characterOrder, normalizeCharacter } from "../../shared/characters";
 import {
+  MessageCircle,
   GripHorizontal,
   Shuffle,
   Pin,
@@ -85,6 +86,13 @@ export default function CompanionControls({
       >
         <GripHorizontal size={17} />
       </span>
+      <button
+        aria-label="和伙伴聊天"
+        title="和伙伴聊天"
+        onClick={() => run(window.buddy.openPanel({ page: "chat" }))}
+      >
+        <MessageCircle size={14} />
+      </button>
       <button
         aria-label="切换伙伴"
         onClick={() =>

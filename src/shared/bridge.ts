@@ -1,3 +1,4 @@
+import type { ChatState } from "./chat";
 import type { Snapshot, RuleInput, Preferences, DailyPlan } from "./model";
 import type { EarningsDetail } from "../core/earnings-detail";
 import type { PlanAction } from "../core/plans";
@@ -5,12 +6,19 @@ import type { CompanionEvent } from "./model";
 export type NavigateTarget =
   | { page: "calendar"; date: string }
   | { page: "earnings"; date: string }
-  | { page: "growth" };
+  | { page: "growth" }
+  | { page: "chat" };
 export interface SettingsInput {
   rule: RuleInput;
   startDate: string;
 }
 export interface BuddyBridge {
+  getChat(): Promise<ChatState>;
+  sendChat(text: string): Promise<ChatState>;
+  retryChat(): Promise<ChatState>;
+  stopChat(): Promise<ChatState>;
+  clearChat(): Promise<ChatState>;
+  onChat(listener: (state: ChatState) => void): () => void;
   dragCompanion(input: {
     phase: "start" | "move" | "end";
     x: number;

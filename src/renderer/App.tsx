@@ -8,6 +8,7 @@ import EarningsDetail from "./components/EarningsDetail";
 import type { NavigateTarget } from "../shared/bridge";
 import { lazy, Suspense, useEffect, useState } from "react";
 import {
+  MessageCircle,
   LayoutDashboard,
   CalendarDays,
   Wallet,
@@ -20,6 +21,7 @@ import {
 } from "lucide-react";
 import { useSnapshot } from "./hooks/useSnapshot";
 import Overview from "./pages/Overview";
+const Chat = lazy(() => import("./pages/Chat"));
 const Calendar = lazy(() => import("./pages/Calendar"));
 const Ledger = lazy(() => import("./pages/Ledger"));
 const Settings = lazy(() => import("./pages/Settings"));
@@ -30,6 +32,7 @@ const navigation = [
   { id: "overview", label: "今日概览", icon: LayoutDashboard },
   { id: "calendar", label: "工作日历", icon: CalendarDays },
   { id: "ledger", label: "收入记录", icon: Wallet },
+  { id: "chat", label: "伙伴聊天", icon: MessageCircle },
   { id: "growth", label: "角色空间", icon: Sparkles },
   { id: "settings", label: "偏好设置", icon: SettingsIcon },
 ];
@@ -105,7 +108,9 @@ export default function App() {
           ? "每一份努力，都算数。"
           : page === "growth"
             ? "让每一天的陪伴，都有温度。"
-            : "你的节奏，你来定义。";
+            : page === "chat"
+              ? "想说的话，我在听。"
+              : "你的节奏，你来定义。";
   return (
     <SharedCharacterProvider snapshot={snapshot}>
       <div className="app-shell">
@@ -220,6 +225,8 @@ export default function App() {
                 snapshot={snapshot}
                 initialDate={calendarDate}
               />
+            ) : page === "chat" ? (
+              <Chat snapshot={snapshot} />
             ) : page === "ledger" ? (
               <Ledger snapshot={snapshot} />
             ) : page === "growth" ? (
