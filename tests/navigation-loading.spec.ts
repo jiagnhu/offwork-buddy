@@ -9,6 +9,9 @@ test("navigation paints a loading shell first and fast clicks show only the late
   const s = await launchDesktop();
   try {
     await s.page.evaluate(() => window.buddy.hideCompanion());
+    // Measure navigation after startup has finished loading its initial model.
+    // First model initialization is a separate cost from repeated page switches.
+    await expect(s.page.locator('.overview-character .haru-character')).toHaveAttribute('data-loaded', 'true', {timeout:30000});
     const firstFrame = await s.page.evaluate(async () => {
       (
         Array.from(document.querySelectorAll("nav button")).find(

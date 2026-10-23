@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { characterName } from "../../shared/characters";
-import Character from "../characters/Character";
+import { SharedCharacterSlot } from "../components/SharedCharacter";
 import {
   ArrowUpRight,
   Clock3,
@@ -82,18 +82,7 @@ function Overview({
             <span className="tiny-pill">陪伴中</span>
           </div>
           <div className="overview-character" id="character-preview">
-            <Character
-              active={active}
-              retainWhenInactive
-              displayName={characterName(
-                state.preferences.character,
-                state.preferences,
-              )}
-              kind={state.preferences.character}
-              status={progress.status}
-              reducedMotion={state.preferences.reducedMotion}
-              onInteract={() => window.buddy.showCompanion()}
-            />
+            <SharedCharacterSlot active={active} overview />
           </div>
           <div className="buddy-copy">
             <h2>
@@ -220,7 +209,7 @@ function Overview({
   );
 }
 
-// Hidden overview retains its paused canvas without processing every clock tick.
+// Hidden overview does not process every clock tick; the shared provider owns its canvas.
 export default memo(
   Overview,
   (previous, next) => previous.active === false && next.active === false,

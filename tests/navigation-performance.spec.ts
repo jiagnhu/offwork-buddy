@@ -65,7 +65,7 @@ test("menu switching stays responsive with monthly payroll and a live character"
     expect(Math.max(...timings.map((t) => t.ms))).toBeLessThan(500);
     await s.page.getByRole("button", { name: "工作日历", exact: true }).click();
     await expect(
-      s.page.locator(".overview-character .haru-character"),
+      s.page.locator("[data-character-parking] .haru-character"),
     ).toHaveAttribute("data-loaded", "false");
     await s.app.evaluate(({ BrowserWindow }) =>
       BrowserWindow.getAllWindows()

@@ -31,8 +31,12 @@ export default function HaruCharacter({
   const motion = useRef(reducedMotion);
   motion.current = reducedMotion;
   const enabled = active && visible;
-  // Retain only an already-loaded preview; never start a hidden model load.
-  const resident = visible && (active || (retainWhenInactive && loaded));
+  // Keep an in-flight load when navigating, but release it when the window hides.
+  const started = useRef(false);
+  if (!visible) started.current = false;
+  if (enabled) started.current = true;
+  const resident =
+    visible && (active || (retainWhenInactive && started.current));
   const activeRef = useRef(enabled);
   activeRef.current = enabled;
   useEffect(() => {

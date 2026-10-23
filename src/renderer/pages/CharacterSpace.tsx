@@ -8,7 +8,7 @@ import {
   live2dModels,
   type Live2dKind,
 } from "../../shared/characters";
-import HaruCharacter from "../characters/live2d/HaruCharacter";
+import { SharedCharacterSlot } from "../components/SharedCharacter";
 import HaruPreview from "../components/HaruPreview";
 import { CompanionNameSetting } from "../components/CompanionSettings";
 
@@ -63,14 +63,7 @@ export default function CharacterSpace({ snapshot }: { snapshot: Snapshot }) {
           正在陪伴
         </span>
         <div className="character-space-stage">
-          <HaruCharacter
-            key={current}
-            kind={current}
-            displayName={name}
-            active={!preview}
-            reducedMotion={p.reducedMotion}
-            onInteract={() => {}}
-          />
+          <SharedCharacterSlot paused={!!preview} />
         </div>
         <h2>{name}</h2>
         {name !== live2dModels[current].name && (
