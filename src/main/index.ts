@@ -1,3 +1,4 @@
+import { InteractionReply } from "./interaction-reply";
 import { AISettings } from "./ai-settings";
 import {
   openDesktopChat,
@@ -188,6 +189,16 @@ else {
         safeStorage,
       );
       await ai.load();
+      let transportQueue: Promise<void> = Promise.resolve();
+      const transport: typeof chatTransport = (body, signal, delta) => {
+        if (body.purpose !== "interaction") interaction.cancel();
+        const run = transportQueue.then(async () => {
+          signal.throwIfAborted();
+          await chatTransport(body, signal, delta, ai.endpoint);
+        });
+        transportQueue = run.catch(() => {});
+        return run;
+      };
       const chat = new ChatController(
         await loadChat(directory),
         (s) => saveChat(directory, s),
@@ -202,8 +213,20 @@ else {
             )
               win.webContents.send("buddy:chat", s);
         },
-        (body, signal, delta) =>
-          chatTransport(body, signal, delta, ai.endpoint),
+        transport,
+      );
+      const interaction = new InteractionReply(
+        transport,
+        (text) => {
+          showCompanionReply({
+            id: crypto.randomUUID(),
+            kind: "interaction",
+            text,
+            createdAt: Date.now(),
+            durationMs: 4000,
+          });
+        },
+        () => chat.idle(),
       );
       notice = loaded.recoveryNotice ?? null;
       try {
@@ -266,12 +289,15 @@ else {
         });
       });
       onDesktopVisibility(() => {
-        if (!isDesktopVisible()) stopEvents();
+        if (!isDesktopVisible()) {
+          stopEvents();
+          interaction.cancel();
+        }
         broadcast();
       });
       configureEvents(
         (e) => {
-          showCompanionReply(e);
+          if (e.text) showCompanionReply(e);
           for (const w of BrowserWindow.getAllWindows())
             w.webContents.send("buddy:companion-event", e);
         },
@@ -349,6 +375,8 @@ else {
         setPreferences: (input: unknown) =>
           serial(async () => {
             const patch = preferencesSchema.partial().parse(input);
+            if (patch.character || patch.haruName || patch.characterNames)
+              interaction.cancel();
             if (patch.character)
               await chat.switchCharacter(normalizeCharacter(patch.character));
             return commit({
@@ -408,7 +436,12 @@ else {
               next.growth.points !== state.growth.points
                 ? await commit(next)
                 : snapshot();
-            emitCompanionEvent("interaction", "我在这里陪着你，慢慢来就好。");
+            emitCompanionEvent("interaction", "");
+            if (isDesktopVisible())
+              void interaction.request(
+                normalizeCharacter(state.preferences.character),
+                characterName(state.preferences.character, state.preferences),
+              );
             return result;
           }),
         recalculate: (from: unknown, to: unknown) =>
@@ -596,7 +629,9 @@ else {
         stopEvents();
         void serial(async () => {
           try {
+            interaction.cancel();
             await chat.flush();
+            await transportQueue;
             await ai.close();
             const c = companion.getBounds(),
               card = desktopCard.getBounds();

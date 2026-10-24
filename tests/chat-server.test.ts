@@ -73,3 +73,53 @@ test("local service reports missing credentials and rejects browser origins", as
     s.close();
   }
 });
+
+test("interaction requests select each persona and a short response budget", async () => {
+  let sent: any;
+  const server = createChatServer({
+    key: "test",
+    baseURL: "https://example.com/v1",
+    model: "managed",
+    fetch: (async (_url, options) => {
+      sent = JSON.parse(String(options?.body));
+      return new Response("data: [DONE]\n\n");
+    }) as typeof fetch,
+  });
+  server.listen(0, "127.0.0.1");
+  await once(server, "listening");
+  const traits = {
+    haru: "温柔细腻",
+    mao: "俏皮活泼",
+    hiyori: "亲切自然",
+    miara: "轻盈安静",
+    rice: "喜欢阅读",
+    tororo: "白猫",
+    hijiki: "黑猫",
+  };
+  try {
+    for (const [kind, trait] of Object.entries(traits)) {
+      const response = await fetch(
+        "http://127.0.0.1:" + (server.address() as any).port + "/chat",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            kind,
+            name: "自定义名称",
+            purpose: "interaction",
+            messages: [{ role: "user", content: "点一下" }],
+          }),
+        },
+      );
+      await response.text();
+      expect(response.status).toBe(200);
+      expect(sent.messages[0].content).toContain(trait);
+      expect(sent.messages[0].content).toContain("自定义名称");
+      expect(sent.messages[0].content).toContain("用户刚刚点击");
+      expect(sent.max_tokens).toBe(160);
+    }
+  } finally {
+    server.closeAllConnections();
+    server.close();
+  }
+});

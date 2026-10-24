@@ -22,10 +22,12 @@ let visualHeight = 100;
 let targetReplyHeight = 100;
 let inputDetached = false;
 let reply: DesktopReply | null = null;
+let replyEventKind: CompanionEvent["kind"] | null = null;
 let pendingEvents: CompanionEvent[] = [];
 const lifetime = new ReplyLifetime((message) => {
   if (!message) {
     reply = null;
+    replyEventKind = null;
     if (replyWindow && !replyWindow.isDestroyed()) replyWindow.hide();
     const next = pendingEvents.shift();
     if (next) queueMicrotask(() => showCompanionReply(next));
@@ -58,10 +60,16 @@ export function updateDesktopReply(state: ChatState) {
 export function showCompanionReply(event: CompanionEvent) {
   if (!preferences || !anchor?.isVisible()) return;
   // Preserve an AI reply while it is being generated or read.
-  if (reply && !reply.message.id.startsWith("event:")) {
+  if (
+    reply &&
+    (!reply.message.id.startsWith("event:") ||
+      (event.kind === "interaction" && replyEventKind !== "interaction"))
+  ) {
     // Reminders must remain readable after the AI reply, even if it is hovered.
     pendingEvents = pendingEvents.filter(
-      (item) => item.kind !== event.kind || item.text !== event.text,
+      (item) =>
+        item.kind !== event.kind ||
+        (event.kind !== "interaction" && item.text !== event.text),
     );
     pendingEvents.push(event);
     return;
@@ -73,6 +81,7 @@ export function showCompanionReply(event: CompanionEvent) {
     at: event.createdAt,
     status: "streaming" as const,
   };
+  replyEventKind = event.kind;
   lifetime.update(message);
   lifetime.update({ ...message, status: "complete" });
 }

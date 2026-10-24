@@ -80,7 +80,7 @@ export function createChatServer(config: {
         json(400, "聊天内容格式不正确");
         return;
       }
-      const { kind, name, messages } = parsed.data;
+      const { kind, name, messages, purpose } = parsed.data;
       const upstream = await (config.fetch ?? fetch)(
         config.baseURL.replace(/\/$/, "") + "/chat/completions",
         {
@@ -95,11 +95,11 @@ export function createChatServer(config: {
             model: config.model,
             stream: true,
             enable_thinking: false,
-            max_tokens: 1024,
+            max_tokens: purpose === "interaction" ? 160 : 1024,
             messages: [
               {
                 role: "system",
-                content: `你是桌面伙伴 ${JSON.stringify(name)}。${personas[kind]} 默认用简体中文自然简短地聊天，通常回复一到三句话。不要无故列清单。诚实说明自己是 AI，不声称能看到桌面或知道未提供的工资、日程。以下为对话。`,
+                content: `你是桌面伙伴 ${JSON.stringify(name)}。${personas[kind]} 默认用简体中文自然简短地聊天，通常回复一到三句话。不要无故列清单。诚实说明自己是 AI，不声称能看到桌面或知道未提供的工资、日程。${purpose === "interaction" ? "用户刚刚点击了你的角色。请按你的性格自然回应这次轻触，只输出一句约15至45字的台词，不要引号、旁白、动作说明或Markdown。变化语气和话题，避免复述最近的台词，不要每次自我介绍。不编造用户的工作状态。" : "以下为对话。"}`,
               },
               ...messages,
             ],

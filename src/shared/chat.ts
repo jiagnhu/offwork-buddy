@@ -44,6 +44,7 @@ export const chatRequestSchema = z
   .object({
     kind: chatKindSchema,
     name: z.string().trim().min(1).max(40),
+    purpose: z.enum(["chat", "interaction"]).optional(),
     messages: z
       .array(
         z.object({
