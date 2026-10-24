@@ -29,6 +29,8 @@ const Settings = lazy(() => import("./pages/Settings"));
 const CharacterSpace = lazy(() => import("./pages/CharacterSpace"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 import "./styles/theme.css";
+import "./styles/offwork-theme.css";
+import brandLogo from "./assets/theme/logo.webp";
 const navigation = [
   { id: "overview", label: "今日概览", icon: LayoutDashboard },
   { id: "calendar", label: "工作日历", icon: CalendarDays },
@@ -94,7 +96,8 @@ export default function App() {
   if (location.hash === "#desktop-card")
     return <DesktopCard snapshot={snapshot} />;
   if (location.hash === "#companion") return <Companion snapshot={snapshot} />;
-  if (location.hash === "#desktop-chat") return <DesktopChat snapshot={snapshot} />;
+  if (location.hash === "#desktop-chat")
+    return <DesktopChat snapshot={snapshot} />;
   if (!snapshot.state.configured)
     return (
       <Suspense fallback={<PageSkeleton page="onboarding" />}>
@@ -115,11 +118,11 @@ export default function App() {
               : "你的节奏，你来定义。";
   return (
     <SharedCharacterProvider snapshot={snapshot}>
-      <div className="app-shell">
+      <div className="app-shell" data-page={page}>
         <aside className="sidebar">
           <div className="brand">
             <div className="brandmark">
-              <Sparkles size={24} />
+              <img src={brandLogo} width="42" height="42" alt="" />
             </div>
             <div>
               <strong>下班搭子</strong>

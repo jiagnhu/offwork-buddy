@@ -115,6 +115,7 @@ test("every character has an independent nickname across UI, desktop and restart
         .getByRole("dialog")
         .getByRole("button", { name: `使用 ${original}`, exact: true })
         .click();
+      await expect(s.page.getByRole("textbox", { name: "看板娘名称" })).toHaveValue(original);
       await s.page.getByRole("textbox", { name: "看板娘名称" }).fill(nickname);
       await s.page
         .getByRole("button", { name: "保存名称", exact: true })
