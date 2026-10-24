@@ -81,8 +81,7 @@ export default function CharacterSpace({ snapshot }: { snapshot: Snapshot }) {
       <section className="character-library" aria-label="选择角色">
         <div className="section-title">
           <div>
-            <h2>今天，想和谁一起？</h2>
-            <p className="muted">先看看角色的动作，再邀请到桌面。</p>
+            <h2>选择角色</h2>
           </div>
         </div>
         <div className="character-library-grid">
@@ -126,9 +125,6 @@ export default function CharacterSpace({ snapshot }: { snapshot: Snapshot }) {
             );
           })}
         </div>
-        <p className="character-space-note">
-          点击回应 · 完成计划时庆祝 · 休息时轻轻提醒
-        </p>
       </section>
       {preview && (
         <HaruPreview

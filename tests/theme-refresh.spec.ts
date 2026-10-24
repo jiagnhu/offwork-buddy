@@ -11,6 +11,14 @@ test("blue orange theme preserves six pages in both themes without horizontal ov
       w.setSize(1280, 900);
       w.show();
     });
+    await expect(s.page.locator(".page-header")).toHaveCount(0);
+    await expect(
+      s.page.locator(".sidebar").getByRole("button", { name: "切换主题" }),
+    ).toBeVisible();
+    await expect(
+      s.page.locator(".sidebar").getByRole("button", { name: "桌面模式" }),
+    ).toBeVisible();
+    const scenes = new Set<string>();
     const pages = [
       "今日概览",
       "工作日历",
@@ -29,6 +37,11 @@ test("blue orange theme preserves six pages in both themes without horizontal ov
         await expect(s.page.locator(".page-skeleton")).toHaveCount(0);
         await expect(s.page.locator(".sidebar button.active")).toHaveText(name);
         await s.page.waitForTimeout(350);
+        const scene = await s.page
+          .locator(".app-shell")
+          .evaluate((el) => getComputedStyle(el, "::before").backgroundImage);
+        expect(scene).toContain(".webp");
+        scenes.add(scene);
         expect(
           await s.page.evaluate(
             () => document.documentElement.scrollWidth <= innerWidth,
@@ -40,6 +53,7 @@ test("blue orange theme preserves six pages in both themes without horizontal ov
         });
       }
     }
+    expect(scenes.size).toBeGreaterThanOrEqual(6);
     await expect(
       s.page.getByRole("button", { name: "保存工作设置" }),
     ).toBeVisible();

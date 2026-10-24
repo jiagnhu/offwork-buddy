@@ -30,6 +30,7 @@ const CharacterSpace = lazy(() => import("./pages/CharacterSpace"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 import "./styles/theme.css";
 import "./styles/offwork-theme.css";
+import "./styles/scene-theme.css";
 import brandLogo from "./assets/theme/logo.webp";
 const navigation = [
   { id: "overview", label: "今日概览", icon: LayoutDashboard },
@@ -104,18 +105,6 @@ export default function App() {
         <Onboarding snapshot={snapshot} />
       </Suspense>
     );
-  const title =
-    page === "overview"
-      ? "今天，也在慢慢变富。"
-      : page === "calendar"
-        ? "工作有节奏，生活有盼头。"
-        : page === "ledger"
-          ? "每一份努力，都算数。"
-          : page === "growth"
-            ? "让每一天的陪伴，都有温度。"
-            : page === "chat"
-              ? "想说的话，我在听。"
-              : "你的节奏，你来定义。";
   return (
     <SharedCharacterProvider snapshot={snapshot}>
       <div className="app-shell" data-page={page}>
@@ -142,14 +131,35 @@ export default function App() {
               </button>
             ))}
           </nav>
-          <div className="sidebar-note">
-            <span>✳</span>
-            <strong>
-              上班认真，
-              <br />
-              下班快乐。
-            </strong>
-            <p>日子不只是进度条。</p>
+          <div className="header-actions">
+            <button
+              aria-label="切换主题"
+              className="icon-button"
+              onClick={() =>
+                window.buddy
+                  .setPreferences({
+                    theme:
+                      snapshot.state.preferences.theme === "light"
+                        ? "dark"
+                        : "light",
+                  })
+                  .then(() => setActionError(""))
+                  .catch((e) => setActionError(e.message))
+              }
+            >
+              {snapshot.state.preferences.theme === "light" ? (
+                <Moon size={19} />
+              ) : (
+                <Sun size={19} />
+              )}
+            </button>
+            <button
+              className="secondary"
+              onClick={() => window.buddy.showCompanion()}
+            >
+              桌面模式
+              <ArrowUpRight size={16} />
+            </button>
           </div>
           <div className="sidebar-bottom">
             <ShieldCheck size={15} />
@@ -158,52 +168,9 @@ export default function App() {
           </div>
         </aside>
         <main className="main-content">
-          <header className="page-header">
-            <div>
-              <h1>{title}</h1>
-              <p>
-                {page === "overview"
-                  ? new Intl.DateTimeFormat("zh-CN", {
-                      timeZone: "Asia/Shanghai",
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                      weekday: "long",
-                    }).format(new Date())
-                  : "把工作安排好，把生活留给自己。"}
-              </p>
-            </div>
-            <div className="header-actions">
-              <button
-                aria-label="切换主题"
-                className="icon-button"
-                onClick={() =>
-                  window.buddy
-                    .setPreferences({
-                      theme:
-                        snapshot.state.preferences.theme === "light"
-                          ? "dark"
-                          : "light",
-                    })
-                    .then(() => setActionError(""))
-                    .catch((e) => setActionError(e.message))
-                }
-              >
-                {snapshot.state.preferences.theme === "light" ? (
-                  <Moon size={19} />
-                ) : (
-                  <Sun size={19} />
-                )}
-              </button>
-              <button
-                className="secondary"
-                onClick={() => window.buddy.showCompanion()}
-              >
-                桌面模式
-                <ArrowUpRight size={16} />
-              </button>
-            </div>
-          </header>
+          <h1 className="visually-hidden">
+            {navigation.find((item) => item.id === page)?.label}
+          </h1>
           {(snapshot.notice || actionError) && (
             <div className="notice" role="alert">
               {snapshot.notice || actionError}

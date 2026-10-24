@@ -87,9 +87,7 @@ function Overview({
           <div className="buddy-copy">
             <h2>
               {characterName(state.preferences.character, state.preferences)}
-              陪你，慢慢来。
             </h2>
-            <p>认真生活，也要记得休息。</p>
           </div>
           <button
             className="secondary full"
@@ -167,7 +165,7 @@ function Overview({
       <section className="card week-card">
         <div className="section-title">
           <div>
-            <h2>这一周，张弛有度。</h2>
+            <h2>本周安排</h2>
           </div>
           <button className="text-button" onClick={() => navigate("calendar")}>
             查看日历
@@ -203,7 +201,7 @@ function Overview({
       </section>
       <footer className="soft-footer">
         <Sparkles size={15} />
-        今天的努力，是明天的小确幸。<span>收入为排班估算，不代表实际到账</span>
+        <span>收入为排班估算，不代表实际到账</span>
       </footer>
     </>
   );

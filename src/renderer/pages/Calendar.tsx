@@ -98,7 +98,6 @@ export default function Calendar({
             <strong>{days.length - workdays}</strong> 天休息
           </span>
         </div>
-        <p>给努力留位置，也给生活留空白。</p>
       </section>
       <section className="card calendar-card">
         <div className="section-title">

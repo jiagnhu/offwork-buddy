@@ -320,7 +320,7 @@ export default function Chat({ snapshot }: { snapshot: Snapshot }) {
         <img src={portraits[`../assets/characters/${kind}.png`]} alt="" />
         <div className="chat-rail-copy">
           <strong className="chat-rail-name">{name}</strong>
-          <p>下班后，也要好好照顾自己。</p>
+
           <button
             className="secondary"
             onClick={() =>

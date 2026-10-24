@@ -28,7 +28,7 @@ test("calendar edits, dialog cancel, bad import and responsive layouts", async (
       rule,
     );
     await expect(
-      page.getByRole("heading", { name: "今天，也在慢慢变富。" }),
+      page.getByRole("heading", { name: "今日概览", exact: true }),
     ).toBeVisible();
     await page.evaluate(() =>
       window.buddy.setPreferences({ reducedMotion: true }),

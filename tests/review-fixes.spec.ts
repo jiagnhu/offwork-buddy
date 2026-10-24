@@ -94,7 +94,7 @@ test("failed header preference save is visible and keeps old preference", async 
       rule,
     );
     await expect(
-      page.getByRole("heading", { name: "今天，也在慢慢变富。" }),
+      page.getByRole("heading", { name: "今日概览", exact: true }),
     ).toBeVisible();
     await mkdir(path.join(data, "state.tmp"));
     await page.getByRole("button", { name: "切换主题", exact: true }).click();

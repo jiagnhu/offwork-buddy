@@ -26,7 +26,7 @@ test("onboarding, navigation, appearance and character survive restart", async (
     await page.getByLabel("工资金额").fill("12000");
     await page.getByRole("button", { name: "开启我的桌面搭子" }).click();
     await expect(
-      page.getByRole("heading", { name: "今天，也在慢慢变富。" }),
+      page.getByRole("heading", { name: "今日概览", exact: true }),
     ).toBeVisible();
     await page.getByRole("button", { name: "偏好设置", exact: true }).click();
     await page.getByLabel("午休开始").fill("08:00");

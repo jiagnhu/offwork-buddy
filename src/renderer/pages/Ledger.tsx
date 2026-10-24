@@ -15,10 +15,8 @@ export default function Ledger({ snapshot }: { snapshot: Snapshot }) {
     <>
       <div className="ledger-hero card">
         <div>
-          <h2>努力，都有迹可循。</h2>
-          <p className="muted">
-            从 {snapshot.state.startDate} 开始，记录属于你的积累。
-          </p>
+          <h2>收入累计</h2>
+          <p className="muted">从 {snapshot.state.startDate} 起累计</p>
         </div>
         <div>
           <span className="muted">已结算累计</span>
