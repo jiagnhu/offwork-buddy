@@ -27,19 +27,19 @@
 
 Files: src/shared/narrative.ts, src/shared/chat.ts, src/core/memory.ts, src/main/chat-store.ts; tests/memory.test.ts, tests/chat-store.test.ts.
 Interfaces: NarrativeState; emptyNarrative(); remember(state, kind, candidate, sources); forgetMemory(); recallMemories(); migrate old chat version 1 to version 2.
-- [ ] Write failing tests for source validation, third-party/hypothetical rejection, correction/suppression, isolation and old file migration.
-- [ ] Run focused tests and observe missing behavior.
-- [ ] Implement bounded schemas, local matching, verified citations, sensitive/credential filtering, deletion exclusions and atomic serialization.
-- [ ] Run focused tests/typecheck, inspect results, commit scoped changes.
+- [x] Write failing tests for source validation, third-party/hypothetical rejection, correction/suppression, isolation and old file migration.
+- [x] Run focused tests and observe missing behavior.
+- [x] Implement bounded schemas, local matching, verified citations, sensitive/credential filtering, deletion exclusions and atomic serialization.
+- [x] Run focused tests/typecheck, inspect results, commit scoped changes.
 
 ## Task 2: Authored graph and deterministic worlds
 
 Files: src/shared/story-catalog.ts, src/core/story-engine.ts; tests/story-engine.test.ts.
 Interfaces: storyCatalog, createWorld(), enterStory(), chooseStory(), shareEvidence(), forkWorld(), storyContext(); all mutations check expected revision and operation IDs.
-- [ ] Write failing reachability, endings, evidence guard, idempotency, branch fork and knowledge tests.
-- [ ] Author distinct scenes/choices/ending consequences for seven roles and joint story; implement reducer and source-aware knowledge views.
-- [ ] Run graph exploration proving each ending and no missing targets; test Miara evidence and absence constraints.
-- [ ] Commit content plus verified engine.
+- [x] Write failing reachability, endings, evidence guard, idempotency, branch fork and knowledge tests.
+- [x] Author distinct scenes/choices/ending consequences for seven roles and joint story; implement reducer and source-aware knowledge views.
+- [x] Run graph exploration proving each ending and no missing targets; test Miara evidence and absence constraints.
+- [x] Commit content plus verified engine.
 
 ## Task 3: Chat, AI and background memory integration
 
@@ -71,3 +71,8 @@ Interfaces: getNarrative/onChat state; narrativeAction({operation, expectedRevis
 Base: 2115cbb. Current checkout is the established codex/desktop-companion development branch; reuse it as authorized instead of adding a new checkout. No implementation delegation; final independent review only.
 Ruling: Use this tracked plan as the progress ledger on Windows; no shell-specific scratch helper is needed. One atomic chat payload owns narrative state so a choice and its receipt cannot diverge.
 Pre-flight: Tasks 1/2 produce shared typed state for 3; 3 exposes controller actions for 4; IPC only accepts schema-validated operations. UI never sets flags or arbitrary memory facts.
+
+Task 1 complete: 78e492d; migration red (version 1 != 2), memory module absent, then 6 focused tests green and typecheck green.
+Task 2 complete: graph module absent red; 5 graph tests green, covering all 63 personal nodes/21 endings and 12 joint nodes/4 endings through real acquired evidence. Typecheck green after fixing fixture share-policy fields.
+Ruling: Split streaming session ownership into chat-session.ts while retaining transport exports in chat-controller.ts — keeps protocol and durable state manageable; external constructor/API remains compatible.
+Task 3 in progress: explicit memory / story integration red then 7 controller tests green. Full suite at this checkpoint 181 passed, typecheck green.

@@ -29,6 +29,7 @@ export const evidenceSchema = z.object({
   id, title: z.string().max(100), text: z.string().max(1200),
   type: z.enum(["clue", "claim", "confirmed"]), owner: actorSchema,
   knownBy: z.array(actorSchema).max(7), public: z.boolean(), eventId: id,
+  sharePolicy: z.enum(["public", "limited", "private"]).default("public"),
 });
 export type Evidence = z.infer<typeof evidenceSchema>;
 export const storyEventSchema = z.object({
