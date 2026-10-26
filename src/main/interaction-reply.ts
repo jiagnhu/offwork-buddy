@@ -31,7 +31,7 @@ export class InteractionReply {
           messages: [
             {
               role: "user",
-              content: `我轻轻点了你一下，回应我吧。当前本地时间：${new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" })}。最近说过的台词（仅供避免重复）：${JSON.stringify(recent)}`,
+              content: `我轻轻点了你一下，回应我吧。最近说过的台词（仅供避免重复）：${JSON.stringify(recent)}`,
             },
           ],
         },

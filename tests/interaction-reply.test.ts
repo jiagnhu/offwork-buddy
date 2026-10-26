@@ -19,6 +19,8 @@ test("click replies use character identity and separate recent lines without cha
     name: "小猫",
     purpose: "interaction",
   });
+  expect(bodies[0].messages[0].content).not.toContain("当前本地时间");
+  expect(bodies[0].messages[0].content).not.toMatch(/\d{1,2}:\d{2}/);
   expect(bodies[1].messages[0].content).toContain("魔法准备好啦");
   expect(bodies[2].messages[0].content).not.toContain("魔法准备好啦");
   expect(publish).toHaveBeenCalledTimes(3);
