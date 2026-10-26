@@ -4,19 +4,46 @@ import { z } from "zod";
 import { characterOrder } from "../shared/characters";
 import { emptyChat, messageSchema, type ChatState } from "../shared/chat";
 import { emptyNarrative, narrativeSchema } from "../shared/narrative";
+import { validateWorld } from "../core/story-engine";
 export function parseChat(input: unknown): ChatState {
-  const data = z.object({ version: z.union([z.literal(1), z.literal(2)]), sessions: z.record(z.array(messageSchema).max(500)), narrative: narrativeSchema.optional() }).parse(input);
+  const data = z
+    .object({
+      version: z.union([z.literal(1), z.literal(2)]),
+      sessions: z.record(z.array(messageSchema).max(500)),
+      narrative: narrativeSchema.optional(),
+    })
+    .parse(input);
   if (data.version === 2 && !data.narrative) throw Error("缺少故事和记忆数据");
   const state = emptyChat();
   state.narrative = data.narrative ?? emptyNarrative();
   for (const kind of characterOrder) {
-    state.sessions[kind] = (data.sessions[kind] ?? []).map(m => m.status === "streaming" ? {...m, status: "stopped"} : m);
+    state.sessions[kind] = (data.sessions[kind] ?? []).map((m) =>
+      m.status === "streaming" ? { ...m, status: "stopped" } : m,
+    );
     state.narrative.memories[kind] ??= [];
     state.narrative.excluded[kind] ??= [];
     state.narrative.processed[kind] ??= [];
+    if (data.version === 1)
+      state.narrative.processed[kind] = state.sessions[kind].map((m) => m.id);
   }
-  for (const world of state.narrative.worlds)
-    world.messages = world.messages.map(m => m.status === "streaming" ? {...m, status: "stopped"} : m);
+  if (
+    new Set(state.narrative.worlds.map((w) => w.id)).size !==
+    state.narrative.worlds.length
+  )
+    throw Error("存档重复");
+  if (
+    state.narrative.selectedWorldId &&
+    !state.narrative.worlds.some(
+      (w) => w.id === state.narrative.selectedWorldId,
+    )
+  )
+    throw Error("当前存档不存在");
+  for (const world of state.narrative.worlds) {
+    validateWorld(world);
+    world.messages = world.messages.map((m) =>
+      m.status === "streaming" ? { ...m, status: "stopped" } : m,
+    );
+  }
   return state;
 }
 export async function loadChat(directory: string): Promise<ChatState> {
@@ -50,7 +77,11 @@ export async function saveChat(directory: string, state: ChatState) {
   );
   await writeFile(
     file + ".tmp",
-    JSON.stringify({ version: 2, sessions, narrative: narrativeSchema.parse(state.narrative) }),
+    JSON.stringify({
+      version: 2,
+      sessions,
+      narrative: narrativeSchema.parse(state.narrative),
+    }),
     "utf8",
   );
   await rename(file + ".tmp", file);

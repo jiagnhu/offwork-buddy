@@ -72,7 +72,7 @@ export function createChatServer(config: {
         json(400, "聊天内容格式不正确");
         return;
       }
-      const { kind, name, messages, purpose } = parsed.data;
+      const { kind, name, messages, purpose, context } = parsed.data;
       const upstream = await (config.fetch ?? fetch)(
         config.baseURL.replace(/\/$/, "") + "/chat/completions",
         {
@@ -87,11 +87,16 @@ export function createChatServer(config: {
             model: config.model,
             stream: true,
             enable_thinking: false,
-            max_tokens: purpose === "interaction" ? 160 : 1024,
+            max_tokens:
+              purpose === "interaction"
+                ? 160
+                : purpose === "intent"
+                  ? 128
+                  : 1024,
             messages: [
               {
                 role: "system",
-                content: buildCharacterPrompt(kind, name, purpose),
+                content: buildCharacterPrompt(kind, name, purpose, context),
               },
               ...messages,
             ],

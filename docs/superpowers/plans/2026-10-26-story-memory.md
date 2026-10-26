@@ -45,10 +45,10 @@ Interfaces: storyCatalog, createWorld(), enterStory(), chooseStory(), shareEvide
 
 Files: src/main/chat-controller.ts, src/main/narrative-ai.ts, src/server/chat-server.ts, src/server/character-prompt.ts, src/shared/chat.ts, src/main/interaction-reply.ts; tests/narrative-chat.test.ts, tests/chat-server.test.ts.
 Interfaces: bounded analysis tasks use existing transport with purpose; narrative context validated before prompt inclusion. ChatController owns narrativeAction(), background cancellation and scene-aware messages.
-- [ ] Write failing integration tests for >20-message recall, explicit remember/forget acknowledgement, pause, story input, cancellation, stale jobs and save failure.
-- [ ] Add separate structured analysis prompt/response validation; scheduled extraction never blocks foreground; explicit commands commit before confirming.
-- [ ] Add scene/world context, actor attribution, choice proposals for ambiguous input, no story facts from prose, retry without choice replay.
-- [ ] Run focused integration tests and complete unit suite/typecheck; commit.
+- [x] Write failing integration tests for >20-message recall, explicit remember/forget acknowledgement, pause, story input, cancellation, stale jobs and save failure.
+- [x] Add separate structured analysis prompt/response validation; scheduled extraction never blocks foreground; explicit commands commit before confirming.
+- [x] Add scene/world context, actor attribution, choice proposals for ambiguous input, no story facts from prose, retry without choice replay.
+- [x] Run focused integration tests and complete unit suite/typecheck; commit.
 
 ## Task 4: UI, IPC and backup
 
@@ -76,3 +76,5 @@ Task 1 complete: 78e492d; migration red (version 1 != 2), memory module absent, 
 Task 2 complete: graph module absent red; 5 graph tests green, covering all 63 personal nodes/21 endings and 12 joint nodes/4 endings through real acquired evidence. Typecheck green after fixing fixture share-policy fields.
 Ruling: Split streaming session ownership into chat-session.ts while retaining transport exports in chat-controller.ts — keeps protocol and durable state manageable; external constructor/API remains compatible.
 Task 3 in progress: explicit memory / story integration red then 7 controller tests green. Full suite at this checkpoint 181 passed, typecheck green.
+
+Task 3 complete: 187 unit tests / 46 files and typecheck passed. Tests cover durable recall after 22 additional turns, real forget suppression, save rollback, late extraction after clearing, stale actor rejection, world isolation and story history cleanup. Real-service smoke classified a paraphrased choice as verify and emitted one first-person candidate, excluding the hypothetical friend statement.

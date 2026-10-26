@@ -1,6 +1,13 @@
 import { z } from "zod";
 import { characterOrder, type Live2dKind } from "./characters";
-import { emptyNarrative, messageSchema, narrativeContextSchema, type NarrativeState } from "./narrative";
+import {
+  emptyNarrative,
+  messageSchema,
+  narrativeContextSchema,
+  selectedWorld,
+  type ArcId,
+  type NarrativeState,
+} from "./narrative";
 export { messageSchema } from "./narrative";
 export const chatKindSchema = z.enum(
   characterOrder as [Live2dKind, ...Live2dKind[]],
@@ -12,6 +19,15 @@ export type ChatState = {
   sessions: Record<Live2dKind, ChatMessage[]>;
   active: { kind: Live2dKind; id: string } | null;
   notice?: string;
+  memoryNotice?: string;
+  offer?: {
+    kind: Live2dKind;
+    arc: ArcId;
+    worldId?: string;
+    choiceId?: string;
+    revision: number;
+    label: string;
+  };
 };
 export function emptyChat(): ChatState {
   return {
@@ -40,7 +56,7 @@ export const chatRequestSchema = z
   .object({
     kind: chatKindSchema,
     name: z.string().trim().min(1).max(40),
-    purpose: z.enum(["chat", "interaction"]).optional(),
+    purpose: z.enum(["chat", "interaction", "memory", "intent"]).optional(),
     context: narrativeContextSchema.optional(),
     messages: z
       .array(
@@ -53,3 +69,14 @@ export const chatRequestSchema = z
       .max(20),
   })
   .refine((v) => v.messages.reduce((n, m) => n + m.content.length, 0) <= 16000);
+
+export function conversationMessages(state: ChatState, kind: Live2dKind) {
+  const world = selectedWorld(state.narrative);
+  if (
+    world &&
+    !world.paused &&
+    (world.activeArc === kind || world.activeArc === "joint")
+  )
+    return world.messages.filter((m) => m.actor === kind);
+  return state.sessions[kind].filter((m) => !m.arc);
+}

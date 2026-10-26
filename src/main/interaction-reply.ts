@@ -1,5 +1,6 @@
 import type { chatTransport } from "./chat-controller";
 import type { Live2dKind } from "../shared/characters";
+import type { NarrativeContext } from "../shared/narrative";
 
 /** Ephemeral click replies never become user messages or persisted chat history. */
 export class InteractionReply {
@@ -9,6 +10,8 @@ export class InteractionReply {
     private transport: typeof chatTransport,
     private publish: (text: string) => void,
     private ready: () => Promise<void>,
+    private context: (kind: Live2dKind) => NarrativeContext | undefined = () =>
+      undefined,
   ) {}
   cancel() {
     this.current?.abort();
@@ -28,6 +31,7 @@ export class InteractionReply {
           kind,
           name,
           purpose: "interaction",
+          context: this.context(kind),
           messages: [
             {
               role: "user",
