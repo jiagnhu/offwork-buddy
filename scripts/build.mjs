@@ -1,3 +1,4 @@
+await import("./build-character-cards.mjs");
 import { execFileSync } from 'node:child_process';
 execFileSync(process.execPath,['node_modules/typescript/bin/tsc','-p','vendor/cubism-framework/tsconfig.json'],{stdio:'inherit'});
 import { build } from "esbuild";

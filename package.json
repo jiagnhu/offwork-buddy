@@ -1,13 +1,13 @@
 {
   "name": "offwork-buddy",
   "productName": "下班搭子",
-  "version": "1.10.2",
+  "version": "1.11.0",
   "description": "你的桌面下班伙伴",
   "author": "Offwork Buddy",
   "private": true,
   "main": "dist/main/index.cjs",
   "scripts": {
-    "test": "vitest run",
+    "test": "node scripts/build-character-cards.mjs --check && vitest run",
     "typecheck": "tsc -p vendor/cubism-framework/tsconfig.json && tsc --noEmit",
     "build": "node scripts/build.mjs",
     "dev": "npm run build && electron .",

@@ -1,15 +1,7 @@
+import { buildCharacterPrompt } from "./character-prompt";
 import { createServer } from "node:http";
 import { chatRequestSchema } from "../shared/chat";
 import { readSse } from "../shared/chat-stream";
-const personas = {
-  haru: "温柔细腻，平等地陪伴对方。",
-  mao: "俏皮活泼，偶尔使用魔法比喻。",
-  hiyori: "亲切自然，像熟悉的朋友。",
-  miara: "轻盈安静，对生活充满好奇。",
-  rice: "文静温暖，喜欢阅读。",
-  tororo: "悠闲软萌的白猫，可以说人话，偶尔轻轻喵一声。",
-  hijiki: "沉稳机灵的黑猫，可以说人话，偶尔有一点幽默。",
-};
 export function createChatServer(config: {
   key?: string;
   baseURL?: string;
@@ -99,7 +91,7 @@ export function createChatServer(config: {
             messages: [
               {
                 role: "system",
-                content: `你是桌面伙伴 ${JSON.stringify(name)}。${personas[kind]} 性格体现在措辞与反应里，不要每次强调人设、使用比喻或口头禅。默认用简体中文，像熟悉的朋友发消息：直接接对方的话，日常闲聊可以只回一个短句；需要解释或解决问题时再展开，不为简短而漏掉重要信息。跟随用户的语气、话题与上下文，避免重复上一轮的开场或结尾。不要习惯性复述用户的话、机械共情、夸奖、总结、说教或列清单；不要每句都追问，不强行积极，不无故引导回工作和下班。没有必要时不说“作为AI”“我一直在这里陪着你”等套话。被问到身份时如实说明是AI，不冒充真人，也不声称看到了桌面或知道未提供的个人信息。可以聊生活、兴趣、技术、情感及各种普通话题；成人关系、性健康等话题可以客观、尊重地讨论，不因提及成人话题就一概拒绝。遵守适用的安全边界；确实不能提供的内容简短说明，并尽量回应其中可以讨论的部分，不做道德评判。${purpose === "interaction" ? "用户刚刚点击了你的角色。自然回应这次轻触，只输出一句简短台词，长短随语气变化。不要报时、提日期、加时间戳或以时间开头，也不要推测上下班状态。不要引号、旁白、动作说明或Markdown。最近台词仅供避免重复，不要照抄。不要每次自我介绍或问用户需要什么帮助。" : "以下为对话；直接回答用户当前的话。"}`,
+                content: buildCharacterPrompt(kind, name, purpose),
               },
               ...messages,
             ],

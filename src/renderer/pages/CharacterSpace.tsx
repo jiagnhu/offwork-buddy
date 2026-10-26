@@ -1,3 +1,4 @@
+import cards from "../../shared/character-profiles.generated.json";
 import { useState } from "react";
 import { Check, Sparkles } from "lucide-react";
 import type { Snapshot } from "../../shared/model";
@@ -15,37 +16,30 @@ import { CompanionNameSetting } from "../components/CompanionSettings";
 const profiles = {
   tororo: {
     portrait: new URL("../assets/characters/tororo.png", import.meta.url).href,
-    description: "软萌白猫，悠闲相伴",
     tone: "honey",
   },
   hijiki: {
     portrait: new URL("../assets/characters/hijiki.png", import.meta.url).href,
-    description: "乖巧黑猫，自在陪伴",
     tone: "blue",
   },
   haru: {
     portrait: new URL("../assets/characters/haru.png", import.meta.url).href,
-    description: "温柔回应，细腻表情",
     tone: "rose",
   },
   hiyori: {
     portrait: new URL("../assets/characters/hiyori.png", import.meta.url).href,
-    description: "日常陪伴，自然神态",
     tone: "honey",
   },
   mao: {
     portrait: new URL("../assets/characters/mao.png", import.meta.url).href,
-    description: "俏皮灵动，魔法庆祝",
     tone: "violet",
   },
   miara: {
     portrait: new URL("../assets/characters/miara.png", import.meta.url).href,
-    description: "轻盈舒展，精灵相伴",
     tone: "mint",
   },
   rice: {
     portrait: new URL("../assets/characters/rice.png", import.meta.url).href,
-    description: "安静倾听，书页与魔法",
     tone: "blue",
   },
 } as const;
@@ -69,10 +63,10 @@ export default function CharacterSpace({ snapshot }: { snapshot: Snapshot }) {
         {name !== live2dModels[current].name && (
           <small className="muted">模型 · {live2dModels[current].name}</small>
         )}
-        <p className="muted">{profiles[current].description}</p>
+        <p className="muted">{cards.profiles[current].description}</p>
         <button className="primary" onClick={() => setPreview(current)}>
           <Sparkles size={16} />
-          试试动作
+          了解 TA
         </button>
         <div className="character-name-setting">
           <CompanionNameSetting key={current} preferences={p} />
@@ -116,7 +110,7 @@ export default function CharacterSpace({ snapshot }: { snapshot: Snapshot }) {
                   </small>
                 )}
                 <span className="character-description">
-                  {profiles[kind].description}
+                  {cards.profiles[kind].traits.join(" · ")}
                 </span>
                 <span className="character-preview-link">
                   认识一下 <span aria-hidden="true">↗</span>

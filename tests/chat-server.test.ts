@@ -88,13 +88,13 @@ test("interaction requests select each persona and a short response budget", asy
   server.listen(0, "127.0.0.1");
   await once(server, "listening");
   const traits = {
-    haru: "温柔细腻",
-    mao: "俏皮活泼",
-    hiyori: "亲切自然",
-    miara: "轻盈安静",
-    rice: "喜欢阅读",
-    tororo: "白猫",
-    hijiki: "黑猫",
+    haru: "现实主义者",
+    mao: "魅力型反派",
+    hiyori: "生存者",
+    miara: "族群优先主义者",
+    rice: "秩序型反派",
+    tororo: "消极共犯",
+    hijiki: "交易型反英雄",
   };
   try {
     for (const [kind, trait] of Object.entries(traits)) {

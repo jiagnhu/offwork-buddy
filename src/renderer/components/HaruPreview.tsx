@@ -1,7 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import cards from "../../shared/character-profiles.generated.json";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import HaruCharacter from "../characters/live2d/HaruCharacter";
 import { live2dModels, type Live2dKind } from "../../shared/characters";
 import type { HaruAction } from "../characters/live2d/types";
+const CharacterBiography = lazy(() => import("./CharacterBiography"));
 export default function HaruPreview({
   kind = "haru",
   displayName = "Haru",
@@ -14,6 +16,8 @@ export default function HaruPreview({
   onClose: () => void;
 }) {
   const info = live2dModels[kind];
+  const profile = cards.profiles[kind];
+  const [biographyOpen, setBiographyOpen] = useState(false);
   const haruActions = {
     idle: Array.from({ length: info.idle }, (_, index): HaruAction => ({
       kind: "idle",
@@ -58,7 +62,7 @@ export default function HaruPreview({
       <div className="haru-preview-heading">
         <div>
           <h2>认识 {displayName}</h2>
-          <p className="muted">轻轻眨眼，安静陪你。原地陪伴 · 全程无声</p>
+          <p className="muted">{profile.traits.join(" · ")}</p>
         </div>
         <button aria-label="关闭预览" onClick={onClose}>
           ×
@@ -75,6 +79,19 @@ export default function HaruPreview({
           />
         </div>
         <div className="haru-preview-options">
+          <section className="character-profile" aria-label="人物简介">
+            <p>{profile.description}</p>
+            <details
+              onToggle={(event) => setBiographyOpen(event.currentTarget.open)}
+            >
+              <summary>完整人物档案（含剧透）</summary>
+              {biographyOpen && (
+                <Suspense fallback={<p role="status">正在展开档案…</p>}>
+                  <CharacterBiography kind={kind} />
+                </Suspense>
+              )}
+            </details>
+          </section>
           <h3>自然待机</h3>
           <div className="haru-action-grid">
             {haruActions.idle.map((a, i) => (

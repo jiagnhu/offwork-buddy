@@ -1,3 +1,4 @@
+await import("./build-character-cards.mjs");
 import {build} from 'esbuild';
 import {spawn} from 'node:child_process';
 await build({entryPoints:['src/server/index.ts'],bundle:true,platform:'node',format:'cjs',outfile:'.cache/chat-server.cjs'});
