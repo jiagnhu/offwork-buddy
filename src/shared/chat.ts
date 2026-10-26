@@ -1,26 +1,22 @@
 import { z } from "zod";
 import { characterOrder, type Live2dKind } from "./characters";
+import { emptyNarrative, messageSchema, narrativeContextSchema, type NarrativeState } from "./narrative";
+export { messageSchema } from "./narrative";
 export const chatKindSchema = z.enum(
   characterOrder as [Live2dKind, ...Live2dKind[]],
 );
-export const messageSchema = z.object({
-  id: z.string().max(100),
-  role: z.enum(["user", "assistant"]),
-  content: z.string().max(16000),
-  at: z.number().finite(),
-  status: z.enum(["complete", "streaming", "stopped", "error"]),
-  error: z.string().max(300).optional(),
-});
 export type ChatMessage = z.infer<typeof messageSchema>;
 export type ChatState = {
-  version: 1;
+  version: 2;
+  narrative: NarrativeState;
   sessions: Record<Live2dKind, ChatMessage[]>;
   active: { kind: Live2dKind; id: string } | null;
   notice?: string;
 };
 export function emptyChat(): ChatState {
   return {
-    version: 1,
+    version: 2,
+    narrative: emptyNarrative(),
     sessions: Object.fromEntries(
       characterOrder.map((k) => [k, [] as ChatMessage[]]),
     ) as ChatState["sessions"],
@@ -45,6 +41,7 @@ export const chatRequestSchema = z
     kind: chatKindSchema,
     name: z.string().trim().min(1).max(40),
     purpose: z.enum(["chat", "interaction"]).optional(),
+    context: narrativeContextSchema.optional(),
     messages: z
       .array(
         z.object({

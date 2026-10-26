@@ -4,6 +4,18 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { loadChat, saveChat } from "../src/main/chat-store";
 import { emptyChat, contextMessages } from "../src/shared/chat";
+test("version one histories migrate without losing messages and narrative survives restart", async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), "buddy-migration-"));
+  try {
+    await writeFile(path.join(dir, "chat.json"), JSON.stringify({ version: 1, sessions: { haru: [{id:"u", role:"user", content:"旧记录", at:1, status:"complete"}] } }));
+    const state = await loadChat(dir);
+    expect(state.version).toBe(2);
+    expect(state.sessions.haru[0].content).toBe("旧记录");
+    state.narrative.autoMemory = false;
+    await saveChat(dir, state);
+    expect((await loadChat(dir)).narrative.autoMemory).toBe(false);
+  } finally { await rm(dir, {recursive:true, force:true}); }
+});
 test("chat survives restart, interrupts unfinished responses and bounds context", async () => {
   const dir = await mkdtemp(path.join(tmpdir(), "buddy-chat-"));
   try {
