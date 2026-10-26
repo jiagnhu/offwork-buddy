@@ -1,9 +1,11 @@
+import { raiseDesktopWindows } from "./desktop-topmost";
 import { app, BrowserWindow, Menu, Tray, screen, nativeImage } from "electron";
 import path from "node:path";
 import type { Preferences } from "../shared/model";
 import { clampBounds } from "./bounds";
 import { characterCapabilities } from "../shared/character-capabilities";
 import {
+  raiseDesktopChat,
   initializeDesktopChat,
   syncDesktopChatPreferences,
 } from "./desktop-chat-window";
@@ -243,7 +245,17 @@ export function createWindows(
   screen.on("display-metrics-changed", () =>
     applyPreferences(currentPreferences),
   );
+  const maintainTop = () => {
+    if (quitting || !desktopVisible || !currentPreferences?.alwaysOnTop) return;
+    raiseDesktopWindows([companion, desktopCard], true);
+    raiseDesktopChat(true);
+  };
+  companion.on("show", maintainTop);
+  companion.on("restore", maintainTop);
+  const topTimer = setInterval(maintainTop, 1500);
+  app.on("before-quit", () => clearInterval(topTimer));
   applyPreferences(prefs);
+  maintainTop();
 }
 export function applyPreferences(prefs: Preferences) {
   const previous = currentPreferences;
@@ -254,7 +266,7 @@ export function applyPreferences(prefs: Preferences) {
     [desktopCard, 440],
   ] as const) {
     if (win.isAlwaysOnTop() !== prefs.alwaysOnTop)
-      win.setAlwaysOnTop(prefs.alwaysOnTop, "floating");
+      win.setAlwaysOnTop(prefs.alwaysOnTop, "screen-saver");
     const bounds = win.getBounds(),
       target = clampBounds(
         {

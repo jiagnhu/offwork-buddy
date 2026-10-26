@@ -1,3 +1,4 @@
+import { raiseDesktopWindows } from "./desktop-topmost";
 import { BrowserWindow, screen, app } from "electron";
 import path from "node:path";
 import { desktopChatBounds, desktopReplyBounds } from "./desktop-chat-position";
@@ -165,7 +166,7 @@ function positionDesktopReply() {
     applyReplyShape();
   }
   if (replyWindow.isAlwaysOnTop() !== anchor.isAlwaysOnTop())
-    replyWindow.setAlwaysOnTop(anchor.isAlwaysOnTop(), "floating");
+    replyWindow.setAlwaysOnTop(anchor.isAlwaysOnTop(), "screen-saver");
   if (reply) {
     reply.maxHeight = screen.getDisplayMatching(b).workArea.height - 20;
     reply.side = next.x < b.x ? "left" : "right";
@@ -241,7 +242,7 @@ export function positionDesktopChat() {
     old.height !== next.height
   )
     chatWindow.setBounds(next);
-  chatWindow.setAlwaysOnTop(anchor.isAlwaysOnTop(), "floating");
+  chatWindow.setAlwaysOnTop(anchor.isAlwaysOnTop(), "screen-saver");
 }
 export function closeDesktopChat() {
   wanted = false;
@@ -326,4 +327,8 @@ export function openDesktopChat() {
     chatWindow.show();
     chatWindow.focus();
   }
+}
+
+export function raiseDesktopChat(enabled: boolean) {
+  raiseDesktopWindows([chatWindow, replyWindow], enabled);
 }
