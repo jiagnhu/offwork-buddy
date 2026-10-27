@@ -1,5 +1,13 @@
 import { useEffect, useRef, useState } from "react";
-import { Send, Square, RotateCcw, X, GripVertical } from "lucide-react";
+import {
+  Send,
+  Square,
+  RotateCcw,
+  X,
+  GripVertical,
+  BookOpen,
+  Check,
+} from "lucide-react";
 import type { Snapshot } from "../../shared/model";
 import type { ChatState } from "../../shared/chat";
 import { normalizeCharacter } from "../../shared/characters";
@@ -164,6 +172,40 @@ export default function DesktopChat({ snapshot }: { snapshot: Snapshot }) {
       >
         <X size={15} />
       </button>
+      {chat?.offer?.kind === kind && chat.offer.choiceId ? (
+        <button
+          type="button"
+          className="desktop-chat-send"
+          aria-label="确认剧情行动"
+          title={chat.offer.label}
+          disabled={busy || active}
+          onClick={() =>
+            void action(() =>
+              window.buddy.narrativeAction({
+                actor: kind,
+                type: "choose",
+                revision: chat.offer!.revision,
+                opId: crypto.randomUUID(),
+                worldId: chat.offer!.worldId,
+                arc: chat.offer!.arc,
+                choiceId: chat.offer!.choiceId,
+              }),
+            )
+          }
+        >
+          <Check size={16} />
+        </button>
+      ) : (
+        <button
+          type="button"
+          className="desktop-chat-send"
+          aria-label="查看故事"
+          title="打开伙伴聊天查看故事与记忆"
+          onClick={() => void window.buddy.openPanel({ page: "chat" })}
+        >
+          <BookOpen size={16} />
+        </button>
+      )}
       {error && (
         <small className="desktop-input-error" role="alert" title={error}>
           {error}

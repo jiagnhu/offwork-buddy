@@ -28,6 +28,11 @@ export interface BuddyBridge {
   saveAISettings(input: AISettingsInput): Promise<AISettingsView>;
   testAISettings(input: AISettingsInput): Promise<string>;
   getChat(): Promise<ChatState>;
+  narrativeAction(
+    input: import("./narrative").NarrativeAction & {
+      actor: import("./characters").Live2dKind;
+    },
+  ): Promise<ChatState>;
   sendChat(text: string): Promise<ChatState>;
   retryChat(): Promise<ChatState>;
   stopChat(): Promise<ChatState>;

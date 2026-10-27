@@ -4,6 +4,7 @@ import HaruCharacter from "../characters/live2d/HaruCharacter";
 import { live2dModels, type Live2dKind } from "../../shared/characters";
 import type { HaruAction } from "../characters/live2d/types";
 const CharacterBiography = lazy(() => import("./CharacterBiography"));
+const NarrativeDrawer = lazy(() => import("./NarrativeDrawer"));
 export default function HaruPreview({
   kind = "haru",
   displayName = "Haru",
@@ -18,6 +19,7 @@ export default function HaruPreview({
   const info = live2dModels[kind];
   const profile = cards.profiles[kind];
   const [biographyOpen, setBiographyOpen] = useState(false);
+  const [storyTab, setStoryTab] = useState<"story" | "known" | null>(null);
   const haruActions = {
     idle: Array.from({ length: info.idle }, (_, index): HaruAction => ({
       kind: "idle",
@@ -59,6 +61,16 @@ export default function HaruPreview({
       aria-label={`${displayName} 角色预览`}
       onCancel={onClose}
     >
+      {storyTab && (
+        <Suspense fallback={<p role="status">正在展开故事…</p>}>
+          <NarrativeDrawer
+            kind={kind}
+            name={displayName}
+            initialTab={storyTab}
+            onClose={() => setStoryTab(null)}
+          />
+        </Suspense>
+      )}
       <div className="haru-preview-heading">
         <div>
           <h2>认识 {displayName}</h2>
@@ -81,6 +93,20 @@ export default function HaruPreview({
         <div className="haru-preview-options">
           <section className="character-profile" aria-label="人物简介">
             <p>{profile.description}</p>
+            <div className="narrative-controls">
+              <button
+                className="secondary"
+                onClick={() => setStoryTab("story")}
+              >
+                一起经历
+              </button>
+              <button
+                className="text-button"
+                onClick={() => setStoryTab("known")}
+              >
+                已知故事
+              </button>
+            </div>
             <details
               onToggle={(event) => setBiographyOpen(event.currentTarget.open)}
             >

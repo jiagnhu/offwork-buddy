@@ -1,5 +1,5 @@
 /// <reference types="vite/client" />
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import {
   Settings,
   MessageCircle,
@@ -8,9 +8,13 @@ import {
   Trash2,
   ArrowDown,
   RotateCcw,
+  BookOpen,
 } from "lucide-react";
 import type { Snapshot } from "../../shared/model";
-import type { ChatState } from "../../shared/chat";
+import { conversationMessages, type ChatState } from "../../shared/chat";
+import { selectedWorld } from "../../shared/narrative";
+import StoryScene from "../components/StoryScene";
+const NarrativeDrawer = lazy(() => import("../components/NarrativeDrawer"));
 import {
   characterName,
   characterOrder,
@@ -34,6 +38,7 @@ export default function Chat({ snapshot }: { snapshot: Snapshot }) {
     [away, setAway] = useState(false);
   const [aiEnabled, setAiEnabled] = useState(false),
     [settingsOpen, setSettingsOpen] = useState(false);
+  const [narrativeOpen, setNarrativeOpen] = useState(false);
   useEffect(() => {
     let live = true;
     void window.buddy
@@ -70,7 +75,7 @@ export default function Chat({ snapshot }: { snapshot: Snapshot }) {
       off();
     };
   }, []);
-  const messages = chat?.sessions[kind] ?? [],
+  const messages = chat ? conversationMessages(chat, kind) : [],
     draft = drafts[kind] ?? "",
     active = !!chat?.active;
   useEffect(() => {
@@ -109,12 +114,29 @@ export default function Chat({ snapshot }: { snapshot: Snapshot }) {
         {settingsOpen && (
           <AISettingsDialog onClose={() => setSettingsOpen(false)} />
         )}
+        {narrativeOpen && (
+          <Suspense fallback={<span role="status">正在展开故事…</span>}>
+            <NarrativeDrawer
+              kind={kind}
+              name={name}
+              onClose={() => setNarrativeOpen(false)}
+            />
+          </Suspense>
+        )}
         <header className="chat-heading">
           <img src={portraits[`../assets/characters/${kind}.png`]} alt="" />
           <div>
             <h2>{name}</h2>
             <p>{active ? "正在回复…" : "留一点时间，说说今天。"}</p>
           </div>
+          <button
+            className="icon-button"
+            aria-label="故事与记忆"
+            title="故事与记忆"
+            onClick={() => setNarrativeOpen(true)}
+          >
+            <BookOpen size={19} />
+          </button>
           {aiEnabled && (
             <button
               className="icon-button"
@@ -164,12 +186,32 @@ export default function Chat({ snapshot }: { snapshot: Snapshot }) {
         <p className="chat-privacy">
           聊天内容会发送至 AI
           服务生成回复；工资和工作计划不会自动发送。每位伙伴在本机保留最近 500
-          条记录。
+          条记录，长期记忆与故事保存在本机；相关记忆会用于 AI 回复。
         </p>
         {(error || chat?.notice) && (
           <div className="notice" role="alert">
             {error || chat?.notice}
           </div>
+        )}
+        {chat?.memoryNotice && (
+          <button
+            className="text-button"
+            onClick={() => setNarrativeOpen(true)}
+          >
+            {chat.memoryNotice}
+          </button>
+        )}
+        {chat && (
+          <StoryScene
+            chat={chat}
+            kind={kind}
+            busy={busy || active}
+            onAction={(input) =>
+              action(() =>
+                window.buddy.narrativeAction({ ...input, actor: kind }),
+              )
+            }
+          />
         )}
         <div
           className="chat-messages"
@@ -211,7 +253,12 @@ export default function Chat({ snapshot }: { snapshot: Snapshot }) {
                 key={m.id}
                 data-status={m.status}
               >
-                <small>{m.role === "user" ? "我" : name}</small>
+                <small>
+                  {m.role === "user" ? "我" : characterName(m.actor ?? kind, p)}
+                  {m.worldId && m.worldId !== selectedWorld(chat!.narrative)?.id
+                    ? " · 来自另一段故事"
+                    : ""}
+                </small>
                 <div className="chat-bubble">
                   {m.content ||
                     (m.status === "streaming" ? (

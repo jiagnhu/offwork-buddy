@@ -24,6 +24,7 @@ const bridge: BuddyBridge = {
   saveAISettings: (input) => invoke("saveAISettings", input),
   testAISettings: (input) => invoke("testAISettings", input),
   getChat: () => invoke("getChat"),
+  narrativeAction: (input) => invoke("narrativeAction", input),
   sendChat: (text) => invoke("sendChat", text),
   retryChat: () => invoke("retryChat"),
   stopChat: () => invoke("stopChat"),

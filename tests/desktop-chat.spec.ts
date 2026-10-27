@@ -6,7 +6,12 @@ test("comic reply is separate, expires after completion and keeps input minimal"
   test.setTimeout(120000);
   let requests = 0;
   const server = createServer(async (req, res) => {
-    for await (const _ of req) {
+    let raw = "";
+    for await (const chunk of req) raw += chunk;
+    if (JSON.parse(raw).purpose === "memory") {
+      res.writeHead(200, { "Content-Type": "text/event-stream" });
+      res.end('data: {"type":"delta","text":"{\\"memories\\":[]}"}\n\ndata: {"type":"done"}\n\n');
+      return;
     }
     const n = ++requests;
     res.writeHead(200, { "Content-Type": "text/event-stream" });
@@ -54,7 +59,8 @@ test("comic reply is separate, expires after completion and keeps input minimal"
       .find((w) => w.url().endsWith("#desktop-chat"))!;
     const input = chat.getByRole("textbox", { name: "桌面聊天内容" });
     await expect(input).toBeVisible();
-    await expect(chat.locator("button")).toHaveCount(2);
+    await expect(chat.locator("button")).toHaveCount(3);
+    await expect(chat.getByRole("button", { name: "查看故事" })).toBeVisible();
     await expect(chat.locator("header")).toHaveCount(0);
     await expect(chat.locator(".comic-bubble")).toHaveCount(0);
     await input.fill("今天好累");

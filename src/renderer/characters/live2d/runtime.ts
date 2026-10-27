@@ -69,7 +69,10 @@ export async function createHaruRuntime(
     renderer.startUp(gl);
     const shader = CubismShaderManager_WebGL.getInstance().getShader(gl);
     shader.setShaderPath("buddy-live2d://assets/haru/shaders/");
-    await shader.prepare(controller.signal);
+    await shader.prepare(
+      controller.signal,
+      model.getModel().isBlendModeEnabled(),
+    );
     for (let i = 0; i < textureFiles.length; i++) {
       const r = await fetch(
         `buddy-live2d://assets/${kind}/` + textureFiles[i],

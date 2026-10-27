@@ -1073,13 +1073,15 @@ export class CubismShader_WebGL {
    * @param fragShaderSrc フラグメントシェーダのソース
    */
   // Offwork Buddy: awaitable, cancellable initialization before the first draw.
-  public async prepare(signal?: AbortSignal): Promise<void> {
+  public async prepare(signal?: AbortSignal, blendModeEnabled = true): Promise<void> {
     this._isShaderLoading = true;
     await this.loadShaders(signal);
     signal?.throwIfAborted();
     this._shaderSets = Array.from({length:this._shaderCount},()=>new CubismShaderSet());
     this.registerShader();
-    this.registerBlendShader();
+    // Offwork Buddy: older models never use Cubism 5.3 blend programs. Compiling
+    // every combination here stalls the UI on a cold graphics-driver cache.
+    if (blendModeEnabled) this.registerBlendShader();
     this._isShaderLoading = false;
     this._isShaderLoaded = true;
   }

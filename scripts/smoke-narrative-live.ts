@@ -1,7 +1,7 @@
 // Opt-in developer smoke. Reads an existing encrypted configuration through the app;
 // never prints credentials or reads the user's conversations/settings.
 import { app, safeStorage } from "electron";
-import { writeFile } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import { AISettings } from "../src/main/ai-settings";
 import { chatTransport } from "../src/main/chat-controller";
 import { extractMemories, suggestChoice } from "../src/main/narrative-ai";
@@ -96,8 +96,9 @@ async function main() {
       AbortSignal.timeout(60000),
       (text) => (recall += text),
     );
+    await mkdir(".cache", { recursive: true });
     await writeFile(
-      "test-results/narrative-live.json",
+      ".cache/narrative-live.json",
       JSON.stringify(
         { replies, candidates, choice: choice?.id ?? null, recall },
         null,

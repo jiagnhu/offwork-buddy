@@ -54,10 +54,10 @@ Interfaces: bounded analysis tasks use existing transport with purpose; narrativ
 
 Files: src/shared/bridge.ts, src/preload/index.ts, src/main/index.ts, src/main/backup.ts, src/renderer/components/NarrativeDrawer.tsx, StoryScene.tsx, src/renderer/pages/Chat.tsx, DesktopChat.tsx, src/renderer/components/HaruPreview.tsx, new narrative CSS.
 Interfaces: getNarrative/onChat state; narrativeAction({operation, expectedRevision,...}); existing backup envelope gains validated chat/narrative state.
-- [ ] Add behavior tests for backup migration/rollback and desktop story-memory interactions before implementation.
-- [ ] Implement lazy drawer with stories, saves/forks, evidence, memory/source management, delete confirmations and auto-memory toggle; shared scene card and entry proposals.
-- [ ] Include narrative in export/import, preserving it on legacy imports; stop generation/jobs before replacement.
-- [ ] Verify UI with Electron and screenshot; no model reload or navigation regressions; commit.
+- [x] Add behavior tests for backup migration/rollback and desktop story-memory interactions before implementation.
+- [x] Implement lazy drawer with stories, saves/forks, evidence, memory/source management, delete confirmations and auto-memory toggle; shared scene card and entry proposals.
+- [x] Include narrative in export/import, preserving it on legacy imports; stop generation/jobs before replacement.
+- [x] Verify UI with Electron and screenshot; no model reload or navigation regressions; commit.
 
 ## Task 5: Review and release
 
@@ -78,3 +78,5 @@ Ruling: Split streaming session ownership into chat-session.ts while retaining t
 Task 3 in progress: explicit memory / story integration red then 7 controller tests green. Full suite at this checkpoint 181 passed, typecheck green.
 
 Task 3 complete: 187 unit tests / 46 files and typecheck passed. Tests cover durable recall after 22 additional turns, real forget suppression, save rollback, late extraction after clearing, stale actor rejection, world isolation and story history cleanup. Real-service smoke classified a paraphrased choice as verify and emitted one first-person candidate, excluding the hypothetical friend statement.
+
+Task 4 complete: full backup migration/journal recovery tests pass; Electron story/memory/fork/restart test passes. Character cards and navigation pass (20–52 ms warm switching). Desktop bubble/input regression passes after updating the test mock to route new background memory requests separately. Profiling exposed pre-existing cold shader compilation (5.6 s in GPU shader/program status calls); capability-gated Cubism 5.3 blend programs, then original 5-second character-card check passed without loosening its timeout. Removed the speculative afterPaint workaround and diagnostic-only test.

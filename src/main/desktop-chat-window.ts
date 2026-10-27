@@ -3,7 +3,8 @@ import { BrowserWindow, screen, app } from "electron";
 import path from "node:path";
 import { desktopChatBounds, desktopReplyBounds } from "./desktop-chat-position";
 import { ReplyLifetime } from "./desktop-reply-lifetime";
-import type { ChatState } from "../shared/chat";
+import { conversationMessages, type ChatState } from "../shared/chat";
+import { selectedWorld } from "../shared/narrative";
 import type { CompanionEvent, Preferences } from "../shared/model";
 import type { DesktopReply } from "../shared/desktop-reply";
 import { normalizeCharacter } from "../shared/characters";
@@ -53,8 +54,14 @@ const lifetime = new ReplyLifetime((message) => {
 });
 export function updateDesktopReply(state: ChatState) {
   if (!armed || !preferences || !anchor?.isVisible()) return;
-  const message =
-    state.sessions[normalizeCharacter(preferences.character)].at(-1);
+  const message = conversationMessages(
+    state,
+    normalizeCharacter(preferences.character),
+  )
+    .filter(
+      (m) => !m.worldId || m.worldId === selectedWorld(state.narrative)?.id,
+    )
+    .at(-1);
   if (message?.role === "assistant") lifetime.update(message);
   else lifetime.dismiss();
 }

@@ -37,7 +37,12 @@ import { readFile, writeFile, stat } from "node:fs/promises";
 import path from "node:path";
 import { z } from "zod";
 import { loadState, saveState } from "./store";
-import { importBackup, validateBackup } from "./backup";
+import {
+  exportFullBackup,
+  importFullBackup,
+  validateFullBackup,
+  recoverFullBackup,
+} from "./backup";
 import {
   dragCompanion,
   createWindows,
@@ -181,6 +186,7 @@ else {
         path.join(__dirname, "../resources/live2d"),
         live2dLock,
       );
+      await recoverFullBackup(directory);
       const loaded = await loadState(directory);
       state = loaded.state;
       const ai = new AISettings(
@@ -227,6 +233,7 @@ else {
           });
         },
         () => chat.idle(),
+        (kind) => chat.clickContext(kind),
       );
       notice = loaded.recoveryNotice ?? null;
       try {
@@ -321,6 +328,20 @@ else {
         keepDesktopReply,
         hoverDesktopReply,
         getChat: () => chat.get(),
+        narrativeAction: (
+          input: import("../shared/narrative").NarrativeAction,
+        ) =>
+          serial(() => {
+            const kind = normalizeCharacter(state.preferences.character);
+            if (!input || input.actor !== kind)
+              throw Error("请先切换到要操作的伙伴。");
+            interaction.cancel();
+            return chat.narrativeAction(
+              kind,
+              input,
+              characterName(kind, state.preferences),
+            );
+          }),
         sendChat: (text: unknown) =>
           serial(() =>
             chat.send(
@@ -342,7 +363,8 @@ else {
           const result = await dialog.showMessageBox(panel, {
             type: "question",
             message: `清空 ${characterName(kind, state.preferences)} 的聊天记录？`,
-            detail: "此操作无法撤销，不影响其他角色。",
+            detail:
+              "同时清除这个角色的长期记忆和剧情对话。故事进度保留；不影响其他角色。此操作无法撤销。",
             buttons: ["取消", "清空记录"],
             defaultId: 0,
             cancelId: 0,
@@ -466,7 +488,12 @@ else {
               filters: [{ name: "JSON 备份", extensions: ["json"] }],
             });
             if (r.canceled || !r.filePath) return null;
-            await writeFile(r.filePath, JSON.stringify(state, null, 2), "utf8");
+            await chat.flush();
+            await writeFile(
+              r.filePath,
+              JSON.stringify(exportFullBackup(state, chat.get()), null, 2),
+              "utf8",
+            );
             return r.filePath;
           }),
         importBackup: () =>
@@ -474,18 +501,24 @@ else {
             const file = await selectJson();
             if (!file) return false;
             const raw = await readJson(file);
-            validateBackup(raw);
+            const checked = validateFullBackup(raw);
             const r = await dialog.showMessageBox({
               type: "warning",
               message: "用这个备份替换当前所有记录？",
-              detail: "导入前会自动保留当前数据备份。",
+              detail: checked.chat
+                ? "包含私人聊天、记忆与故事存档；将一并替换。导入前会保留当前数据备份。"
+                : "旧版备份仅替换工资、日历和设置，聊天、记忆与故事存档保留。",
               buttons: ["取消", "导入并替换"],
               defaultId: 0,
               cancelId: 0,
             });
             if (r.response !== 1) return false;
-            state = await importBackup(directory, raw);
-            await commit(settleThrough(state, new Date()));
+            await chat.flush();
+            const restored = await importFullBackup(directory, raw);
+            state = restored.state;
+            if (restored.chat) await chat.replace(restored.chat, false);
+            applyPreferences(state.preferences);
+            broadcast();
             return true;
           }),
         importCalendar: () =>
