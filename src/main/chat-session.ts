@@ -81,6 +81,20 @@ export class ChatController {
   }
   private async persist() {
     try {
+      // Exclusions only need to outlive retained messages/sources. Do not let
+      // repeated deletions grow this index forever.
+      for (const kind of characterOrder) {
+        const n = this.state.narrative;
+        if (n.excluded[kind].length > 10000) {
+          const retained = new Set([
+            ...this.retainedMessages(kind).map((m) => m.id),
+            ...n.memories[kind].map((m) => m.sourceId),
+          ]);
+          n.excluded[kind] = [...new Set(n.excluded[kind])].filter((id) =>
+            retained.has(id),
+          );
+        }
+      }
       await this.save(this.get());
       if (this.state.notice?.includes("原文件已保留")) delete this.state.notice;
     } catch {
@@ -148,18 +162,31 @@ export class ChatController {
     this.emit();
     return this.get();
   }
+  private retainedMessages(kind: Live2dKind) {
+    return [
+      ...this.state.sessions[kind],
+      ...this.state.narrative.worlds.flatMap((w) =>
+        w.messages.filter((m) => m.actor === kind),
+      ),
+    ];
+  }
   private derived(kind: Live2dKind, ids: string[]) {
-    // Suppress all known continuations after the source: an old assistant may have paraphrased it.
-    const list = this.state.sessions[kind],
-      sources = this.state.narrative.memories[kind]
-        .filter((m) => ids.includes(m.id))
-        .map((m) => m.sourceId);
-    const first = list.findIndex((m) => sources.includes(m.id));
-    return list
+    // World dialogue survives beyond the session window. Follow every retained
+    // continuation, including untagged paraphrases after its original source.
+    const memories = this.state.narrative.memories[kind];
+    const topics = new Set(
+      memories.filter((m) => ids.includes(m.id)).map((m) => m.topic),
+    );
+    const related = memories.filter(
+      (m) =>
+        ids.includes(m.id) ||
+        (m.status === "superseded" && topics.has(m.topic)),
+    );
+    const linked = new Set(related.map((m) => m.id));
+    const earliest = Math.min(...related.map((m) => m.at));
+    return this.retainedMessages(kind)
       .filter(
-        (m, i) =>
-          (first >= 0 && i >= first) ||
-          (m.memoryIds ?? []).some((id) => ids.includes(id)),
+        (m) => m.at >= earliest || m.memoryIds?.some((id) => linked.has(id)),
       )
       .map((m) => m.id);
   }
@@ -228,7 +255,7 @@ export class ChatController {
             },
             [user],
           );
-          n.processed[kind].push(user.id);
+          n.processed[kind] = [...n.processed[kind], user.id].slice(-2000);
           n.revision++;
           return this.local(
             kind,
@@ -648,9 +675,7 @@ export class ChatController {
             n.excluded[kind] = [
               ...new Set([
                 ...n.excluded[kind],
-                ...this.state.sessions[kind]
-                  .filter((m) => !m.arc)
-                  .map((m) => m.id),
+                ...this.retainedMessages(kind).map((m) => m.id),
                 ...n.memories[kind].map((m) => m.sourceId),
               ]),
             ];

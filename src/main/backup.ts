@@ -100,6 +100,15 @@ export async function importFullBackup(directory: string, input: unknown) {
     state: await readOptional(path.join(directory, "state.json")),
     chat: await readOptional(path.join(directory, "chat.json")),
   };
+  let previousRevision = 0;
+  try {
+    if (old.chat)
+      previousRevision = parseChat(JSON.parse(old.chat)).narrative.revision;
+  } catch {
+    /* A corrupt old file is preserved in the journal and snapshot. */
+  }
+  checked.chat.narrative.revision =
+    Math.max(previousRevision, checked.chat.narrative.revision) + 1;
   const journal = path.join(directory, "import-transaction.json");
   await writeFile(journal + ".tmp", JSON.stringify(old), "utf8");
   await rename(journal + ".tmp", journal);

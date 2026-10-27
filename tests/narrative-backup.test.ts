@@ -4,6 +4,7 @@ import path from "node:path";
 import { tmpdir } from "node:os";
 import { fixture } from "./fixtures";
 import { emptyChat } from "../src/shared/chat";
+import { ChatController } from "../src/main/chat-controller";
 import {
   exportFullBackup,
   importFullBackup,
@@ -49,6 +50,37 @@ test("interrupted whole-backup transaction restores both original files before l
     expect(await readFile(path.join(dir, "chat.json"), "utf8")).toBe(
       "old-chat",
     );
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test("import advances the durable revision so pre-import UI operations cannot match the restored state", async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), "buddy-import-revision-"));
+  try {
+    const old = emptyChat();
+    old.narrative.revision = 42;
+    await writeFile(path.join(dir, "chat.json"), JSON.stringify(old));
+    const restored = await importFullBackup(
+      dir,
+      exportFullBackup(fixture(), old),
+    );
+    const chat = new ChatController(
+      restored.chat!,
+      async () => {},
+      () => {},
+    );
+    await expect(
+      chat.narrativeAction("haru", {
+        type: "clearMemory",
+        revision: 42,
+        opId: "old-ui",
+      }),
+    ).rejects.toThrow("内容已经变化");
+    expect(
+      JSON.parse(await readFile(path.join(dir, "chat.json"), "utf8")).narrative
+        .revision,
+    ).toBeGreaterThan(42);
   } finally {
     await rm(dir, { recursive: true, force: true });
   }

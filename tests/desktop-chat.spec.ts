@@ -10,7 +10,9 @@ test("comic reply is separate, expires after completion and keeps input minimal"
     for await (const chunk of req) raw += chunk;
     if (JSON.parse(raw).purpose === "memory") {
       res.writeHead(200, { "Content-Type": "text/event-stream" });
-      res.end('data: {"type":"delta","text":"{\\"memories\\":[]}"}\n\ndata: {"type":"done"}\n\n');
+      res.end(
+        'data: {"type":"delta","text":"{\\"memories\\":[]}"}\n\ndata: {"type":"done"}\n\n',
+      );
       return;
     }
     const n = ++requests;

@@ -5,6 +5,7 @@ import {
   type NarrativeState,
   type StoryWorld,
   type StoryEvent,
+  type Evidence,
 } from "../shared/narrative";
 
 export function createWorld(state: NarrativeState, name = "零号站 · 初次相遇") {
@@ -167,11 +168,8 @@ export function shareEvidence(
   const unique = [...new Set(audience)];
   if (!unique.length || unique.some((k) => !characterOrder.includes(k)))
     throw Error("请选择要展示给谁。");
-  if (
-    e.sharePolicy === "private" ||
-    (e.sharePolicy === "limited" && unique.length > 2)
-  )
-    throw Error("这份材料仅允许有限查验，不能向全体公开。");
+  if (!canShareEvidence(e, unique))
+    throw Error("这份材料仅允许有限查验，累计最多展示给两位其他角色。");
   const arc = world.activeArc ?? e.owner;
   const beforePaused = world.paused,
     beforeArc = world.activeArc;
@@ -191,6 +189,13 @@ export function shareEvidence(
   });
   world.paused = beforePaused;
   world.activeArc = beforeArc;
+}
+export function canShareEvidence(evidence: Evidence, audience: Live2dKind[]) {
+  if (evidence.sharePolicy === "private") return false;
+  const readers = new Set(
+    [...evidence.knownBy, ...audience].filter((k) => k !== evidence.owner),
+  );
+  return evidence.sharePolicy !== "limited" || readers.size <= 2;
 }
 export function forkWorld(
   state: NarrativeState,
@@ -299,8 +304,7 @@ export function validateWorld(world: StoryWorld) {
         !evidence ||
         !e.audience.length ||
         new Set(e.audience).size !== e.audience.length ||
-        evidence.sharePolicy === "private" ||
-        (evidence.sharePolicy === "limited" && e.audience.length > 2)
+        !canShareEvidence(evidence, e.audience)
       )
         throw Error("证据分享记录无效");
       expected = {

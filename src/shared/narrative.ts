@@ -98,7 +98,7 @@ export const narrativeSchema = z.object({
   selectedWorldId: id.nullable(),
   worlds: z.array(worldSchema).max(20),
   memories: z.record(z.array(memorySchema).max(500)),
-  excluded: z.record(z.array(id).max(20000)),
+  excluded: z.record(z.array(id).max(40000)),
   processed: z.record(z.array(id).max(2000)),
 });
 export type NarrativeState = z.infer<typeof narrativeSchema>;

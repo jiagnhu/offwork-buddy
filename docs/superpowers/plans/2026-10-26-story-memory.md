@@ -61,9 +61,9 @@ Interfaces: getNarrative/onChat state; narrativeAction({operation, expectedRevis
 
 ## Task 5: Review and release
 
-- [ ] Run full unit suite, typecheck, build and focused desktop regressions.
-- [ ] Dispatch one fresh whole-change reviewer per executing-plans; fix material findings with regression evidence.
-- [ ] Run available live-model smoke without exposing keys; if unavailable document exact limitation rather than fabricate validation.
+- [x] Run full unit suite, typecheck, build and focused desktop regressions.
+- [x] Dispatch one fresh whole-change reviewer per executing-plans; fix material findings with regression evidence.
+- [x] Run available live-model smoke without exposing keys; if unavailable document exact limitation rather than fabricate validation.
 - [ ] Bump 1.12.0, build installer, run packaged smoke, record evidence/hash and commit release documentation.
 
 ## Execution ledger
@@ -80,3 +80,13 @@ Task 3 in progress: explicit memory / story integration red then 7 controller te
 Task 3 complete: 187 unit tests / 46 files and typecheck passed. Tests cover durable recall after 22 additional turns, real forget suppression, save rollback, late extraction after clearing, stale actor rejection, world isolation and story history cleanup. Real-service smoke classified a paraphrased choice as verify and emitted one first-person candidate, excluding the hypothetical friend statement.
 
 Task 4 complete: full backup migration/journal recovery tests pass; Electron story/memory/fork/restart test passes. Character cards and navigation pass (20–52 ms warm switching). Desktop bubble/input regression passes after updating the test mock to route new background memory requests separately. Profiling exposed pre-existing cold shader compilation (5.6 s in GPU shader/program status calls); capability-gated Cubism 5.3 blend programs, then original 5-second character-card check passed without loosening its timeout. Removed the speculative afterPaint workaround and diagnostic-only test.
+
+Final review: one fresh read-only gpt-6-astra reviewer, base 2115cbb..1cd23b6. Three Important findings, no Critical or Minor findings.
+Final: fixed negation/attribution fragments becoming facts — transport-produced candidate regression RED→GREEN, suite 192/192.
+Final: fixed individual/bulk forgetting missing world-only derived replies — two retention + restart regressions RED→GREEN, suite 192/192. Exclusions now cover all retained actor dialogue and compact obsolete IDs.
+Final: fixed cumulative limited evidence disclosure — cumulative recipients and import replay regression RED→GREEN, suite 192/192. Limited means owner plus at most two other readers.
+Final: Ruling: Import revisions and preview-role handling considered by reviewer without a proven finding — executor reproduced import revision collision and fixed durable revision advancement (RED→GREEN); preview actions retain explicit actor checks and switch before story entry. Cost if wrong: rejected stale preview action, not another role mutation.
+Final: Ruling: Literary quality — keep seven authored, canon-aligned arcs and consequential evidence gates, with all nodes/endings exercised; subjective prose quality remains editorial judgement. Cost if wrong: later content revision, not altered saved facts.
+Final: Ruling: Live model behavior — synthetic live smoke covers three voices, extraction, intent and recall; no claim of perfect semantic understanding or hallucination-free dialogue. Cost if wrong: a response or memory candidate can still need user correction.
+Final: Ruling: Packaged behavior — release remains gated on installer build and packaged Electron smoke. Cost if wrong: no delivery until the gate passes.
+Final: Ruling: GPU coverage — all seven models preview/animate/select offline and shared-canvas preservation tests passed after capability-gated compilation; hardware beyond this machine remains unmeasured. Cost if wrong: device-specific rendering fallback/error, no change to salary or narrative data.

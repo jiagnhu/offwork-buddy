@@ -22,6 +22,31 @@ const hypothetical =
   /如果|假如|假设|要是|比如|举例|剧本|扮演|故事里|剧情里|梦见|小说里|引用|他说|她说|朋友说|朋友.*[我他她]|“|「|"/;
 const correction =
   /更正|纠正|改为|改喝|不再|以前.{0,30}现在|现在.{0,20}(不|改)|记错|不是.{0,30}而是/;
+// A contained fragment is not necessarily the speaker's assertion. Keep sentence
+// boundaries and reject metalinguistic/denied statements before trusting a quote.
+function ownsAssertion(source: string, quote: string) {
+  const strip = (value: string) =>
+    value
+      .trim()
+      .replace(/^(请)?(帮我)?(记住|记一下|记得)[：:，,\s]*/, "")
+      .replace(/^(更正|纠正)(一下)?[：:，,\s]*/, "");
+  const full = strip(source),
+    text = strip(quote);
+  if (
+    /不是说|没(?:有)?说|有人说|别人说|听说|传言|不是真的|开玩笑|反话|[?？]/.test(
+      full,
+    )
+  )
+    return false;
+  const offset = full.indexOf(text);
+  if (offset < 0) return false;
+  const before = full.slice(0, offset).trimEnd(),
+    after = full.slice(offset + text.length).trimStart();
+  return (
+    (!before || /[。！？；;\n]$/.test(before)) &&
+    (!after || /^[，,。！？；;\n]/.test(after))
+  );
+}
 export function explicitRemember(text: string) {
   return /^(请)?(帮我)?(记住|记一下|记得)[：:，,\s]*/.test(text.trim());
 }
@@ -54,6 +79,7 @@ export function remember(
     return false;
   if (
     hypothetical.test(source.content) ||
+    !ownsAssertion(source.content, text) ||
     !/^(更正一下[，,：:]?\s*)?(请)?(帮我)?(记住|记一下|记得)?[：:，,\s]*(我|本人)/.test(
       text,
     )

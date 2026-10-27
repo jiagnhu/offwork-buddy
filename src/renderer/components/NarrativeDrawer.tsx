@@ -23,6 +23,7 @@ import {
 } from "../../shared/narrative";
 import { storyCatalog } from "../../shared/story-catalog";
 import StoryScene from "./StoryScene";
+import { canShareEvidence } from "../../core/story-engine";
 import "../styles/narrative.css";
 const portraits = import.meta.glob("../assets/characters/*.png", {
   eager: true,
@@ -329,7 +330,7 @@ export default function NarrativeDrawer({
                           : `已知情：${e.knownBy.map(label).join("、")}`}{" "}
                         ·{" "}
                         {e.sharePolicy === "limited"
-                          ? "有限查验"
+                          ? "有限查验 · 最多两位其他角色"
                           : "可公开引用"}
                       </small>
                       <div className="narrative-controls">
@@ -351,7 +352,11 @@ export default function NarrativeDrawer({
                         </select>
                         <button
                           className="secondary"
-                          disabled={busy || !!chat.active}
+                          disabled={
+                            busy ||
+                            !!chat.active ||
+                            !canShareEvidence(e, [audiences[e.id] ?? kind])
+                          }
                           onClick={() =>
                             void run(() =>
                               act("share", {
