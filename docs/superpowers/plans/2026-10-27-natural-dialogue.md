@@ -12,19 +12,19 @@ Default direct short conversational replies, with depth for questions that need 
 
 ## Task 1: Runtime projection and regression coverage
 
-- [ ] Replace tests requiring full biography injection with seven-role secret-exclusion/public-trait assertions; retain nickname/click/memory/intent contracts. Watch failures.
-- [ ] Add curated dialogue cards and update prompt assembly. Include relevant ordinary background only as optional conversational material; clicks receive identity/voice/daily details only.
-- [ ] Exercise real story-engine disclosure before/after evidence sharing and paused states; service forwarding must preserve request schemas and budgets.
-- [ ] Run targeted tests, full unit suite and typecheck. Commit implementation.
+- [x] Replace tests requiring full biography injection with seven-role secret-exclusion/public-trait assertions; retain nickname/click/memory/intent contracts. Watch failures.
+- [x] Add curated dialogue cards and update prompt assembly. Include relevant ordinary background only as optional conversational material; clicks receive identity/voice/daily details only.
+- [x] Exercise real story-engine disclosure before/after evidence sharing and paused states; service forwarding must preserve request schemas and budgets.
+- [x] Run targeted tests, full unit suite and typecheck. Commit implementation.
 
 Verification: `npm test` and `npm run typecheck`.
 
 ## Task 2: Live acceptance and local release
 
-- [ ] Run synthetic live conversations through the existing encrypted local AI configuration; do not read user chat or log credentials. Inspect all seven introductions, repeated Miara introductions, ordinary follow-ups, practical help, secret bait, active/paused story, memory and clicks.
-- [ ] Adjust wording if live output reveals a defect, record sampled outputs/limits. Do not claim deterministic guarantees from live samples.
-- [ ] Bump patch to 1.12.1, build developer installer and test packaged chat/story/character cards. Record results and installer checksum.
-- [ ] One fresh-context read-only final review, address substantive findings with regression tests, commit and deliver locally without auto-installing or publishing.
+- [x] Run synthetic live conversations through the existing encrypted local AI configuration; do not read user chat or log credentials. Inspect all seven introductions, repeated Miara introductions, ordinary follow-ups, practical help, secret bait, active/paused story, memory and clicks.
+- [x] Adjust wording if live output reveals a defect, record sampled outputs/limits. Do not claim deterministic guarantees from live samples.
+- [x] Bump patch to 1.12.1, build developer installer and test packaged chat/story/character cards. Record results and installer checksum.
+- [x] One fresh-context read-only final review, address substantive findings with regression tests, commit and deliver locally without auto-installing or publishing.
 
 ## Review Focus
 
