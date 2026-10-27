@@ -64,7 +64,7 @@ Interfaces: getNarrative/onChat state; narrativeAction({operation, expectedRevis
 - [x] Run full unit suite, typecheck, build and focused desktop regressions.
 - [x] Dispatch one fresh whole-change reviewer per executing-plans; fix material findings with regression evidence.
 - [x] Run available live-model smoke without exposing keys; if unavailable document exact limitation rather than fabricate validation.
-- [ ] Bump 1.12.0, build installer, run packaged smoke, record evidence/hash and commit release documentation.
+- [x] Bump 1.12.0, build installer, run packaged smoke, record evidence/hash and commit release documentation.
 
 ## Execution ledger
 
@@ -90,3 +90,5 @@ Final: Ruling: Literary quality — keep seven authored, canon-aligned arcs and 
 Final: Ruling: Live model behavior — synthetic live smoke covers three voices, extraction, intent and recall; no claim of perfect semantic understanding or hallucination-free dialogue. Cost if wrong: a response or memory candidate can still need user correction.
 Final: Ruling: Packaged behavior — release remains gated on installer build and packaged Electron smoke. Cost if wrong: no delivery until the gate passes.
 Final: Ruling: GPU coverage — all seven models preview/animate/select offline and shared-canvas preservation tests passed after capability-gated compilation; hardware beyond this machine remains unmeasured. Cost if wrong: device-specific rendering fallback/error, no change to salary or narrative data.
+
+Task 5 complete: 192/192 unit tests, typecheck, developer build/NSIS installer and 9/9 packaged Electron regressions passed. Package SHA-256 and UI evidence recorded in docs/verification-1.12.0.md. Existing branch retained for local delivery, no new worktree or scratch workspace created; unrelated user files left untouched.

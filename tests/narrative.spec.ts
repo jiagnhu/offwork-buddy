@@ -51,6 +51,29 @@ test("memory controls and a full personal story survive restart with a separate 
     await r.page.getByRole("button", { name: "记忆", exact: true }).click();
     await expect(r.page.getByText("我不喝咖啡", { exact: true })).toBeVisible();
     await r.page.screenshot({ path: "test-results/story-memory.png" });
+    await r.page.evaluate(() => window.buddy.setPreferences({ theme: "dark" }));
+    await expect(r.page.locator("html")).toHaveAttribute("data-theme", "dark");
+    await r.page.getByRole("button", { name: "故事", exact: true }).click();
+    await expect(
+      r.page
+        .getByRole("dialog", { name: "故事与记忆" })
+        .getByRole("button", { name: "继续 缺页的站务单" }),
+    ).toBeVisible();
+    await r.page.screenshot({ path: "test-results/story-branches-dark.png" });
+    await r.page.getByRole("button", { name: "记忆", exact: true }).click();
+    await r.page
+      .getByRole("button", { name: "忘记 我不喝咖啡", exact: true })
+      .click();
+    await r.page
+      .getByRole("alertdialog", { name: "确认操作" })
+      .getByRole("button", { name: "确认", exact: true })
+      .click();
+    await expect(
+      r.page.getByText("还没有长期记忆。", { exact: false }),
+    ).toBeVisible();
+    const final = await r.page.evaluate(() => window.buddy.getChat());
+    expect(final.narrative.worlds).toHaveLength(2);
+    expect(final.narrative.memories.haru).toHaveLength(0);
   } finally {
     await s.cleanup();
   }

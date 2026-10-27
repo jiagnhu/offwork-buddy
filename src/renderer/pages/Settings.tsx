@@ -365,7 +365,7 @@ export default function Settings({ snapshot }: { snapshot: Snapshot }) {
           <Heart size={20} className="lavender-text" />
           <h2>好好保存每一份努力</h2>
           <p className="muted">
-            数据只保存在这台电脑。导出一份备份，换电脑也可以继续累计。
+            备份包含工资、计划、私人聊天、角色记忆和故事存档，请妥善保存。
           </p>
           <div className="button-row">
             <button

@@ -1,5 +1,5 @@
 // Opt-in developer smoke. Reads an existing encrypted configuration through the app;
-// never prints credentials or reads the user's conversations/settings.
+// never prints credentials or reads the user's conversations, salary or calendar.
 import { app, safeStorage } from "electron";
 import { mkdir, writeFile } from "node:fs/promises";
 import { AISettings } from "../src/main/ai-settings";
