@@ -39,6 +39,7 @@ test("service pins model, disables thinking and detects unfinished upstream stre
       expect(events.at(-1).type).toBe(value ? "done" : "error");
       expect(sent.model).toBe("managed-model");
       expect(sent.enable_thinking).toBe(false);
+      expect(sent.temperature).toBe(0.6);
       expect(JSON.stringify(events)).not.toContain("private-test-key");
     }
   } finally {
@@ -117,6 +118,7 @@ test("interaction requests select each persona and a short response budget", asy
       expect(sent.messages[0].content).toContain("自定义名称");
       expect(sent.messages[0].content).toContain("用户刚刚点击");
       expect(sent.max_tokens).toBe(160);
+      expect(sent.temperature).toBe(0.8);
     }
   } finally {
     server.closeAllConnections();

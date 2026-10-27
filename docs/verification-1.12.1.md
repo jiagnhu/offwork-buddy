@@ -1,0 +1,17 @@
+# 1.12.1 — conversational character prompts
+
+Scope: replace full biography/core injection in chat and clicks with a curated public projection of seven V2 cards. Keep complete author dossiers in Character Space, nickname semantics, memory/intent extraction, stored history and scene/evidence routing. No data migration, new UI or extra inference pass per reply.
+
+Public identities, manner, interests and ordinary history are separate from saved story facts. Ordinary history is topic-driven, not message-count/affinity gated. Instructions favor direct speech, short everyday replies, practical detail when needed, no automatic question endings or secret teasers. Story context still comes from actor-scoped persisted evidence; it is not a guarantee that a generative model will obey every fact boundary.
+
+Tests: initial new regression run failed 4/7 tests against biography injection; world hard-limit regression failed before restoring compact world rules; sampling regression failed before adding temperatures. Final pre-review suite: **196 passed / 47 files** (`npm test -- --maxWorkers=1`), typecheck passed. Tests cover public-secret exclusion across all seven roles, click size/traits, aliases, full dossier availability, actual story-engine disclosure/sharing/pause, JSON extraction contracts and service parameters. These prove context assembly, not prose quality.
+
+Live acceptance used only synthetic conversations and the existing encrypted developer configuration (configured model identifier `qwen-plus`). No user chats, salary or calendar were read. `.cache/dialogue-live-initial.json` holds 29 baseline-candidate samples; `.cache/dialogue-live-refined.json` and subsequent sampling runs retain follow-up observations. A transport diagnostic confirmed the updated system prompt and sampling reach the upstream request; a minimal control instruction was followed. An experimental short/few-shot prompt was evaluated locally but not shipped: it copied sample phrasing and did not resolve factual confabulation.
+
+Observed improvement: introductions are direct and much shorter, with no unsolicited original plot-secret dump; short clicks and everyday topic changes generally work. Practical JavaScript questions still receive code and explanation. Miara's explicit group-first stance remains different from other characters. The response content is generated, not replaced by fixed canned lines.
+
+Known model limitations observed, **not passed away by unit tests**: some responses still add metaphors, stage directions or follow-up questions; Rice sometimes infers a new job from her background (the final projection clarifies current status as a resident); prompted secret accusations can produce unsupported denials; active plot replies can invent document details and paused chat can add imaginary scene action. Prompt changes and lower ordinary-chat temperature reduce incentives but do not ensure factual grounding. UI/state facts remain controlled by the story engine; generated dialogue does not write new story events. No claim of hallucination-free roleplay or complete elimination of AI mannerisms is made.
+
+Sampling decision: ordinary chat temperature 0.6, click interactions 0.8; memory/intent retain provider defaults. This favors steadier replies without selecting another model or adding a rewrite delay. Possible tradeoff: more conservative or repeated phrasing.
+
+Installer, packaged checks and final review: pending below.

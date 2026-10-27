@@ -87,6 +87,11 @@ export function createChatServer(config: {
             model: config.model,
             stream: true,
             enable_thinking: false,
+            ...(!purpose || purpose === "chat"
+              ? { temperature: 0.6 }
+              : purpose === "interaction"
+                ? { temperature: 0.8 }
+                : {}),
             max_tokens:
               purpose === "interaction"
                 ? 160
