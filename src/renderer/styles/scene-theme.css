@@ -1,6 +1,5 @@
 /* Full-window scenes are confined to the main application, never desktop overlays. */
 .app-shell {
-  --scene: url("../assets/theme/overview.webp");
   --glass: rgb(247 251 255 / 68%);
   --glass-strong: rgb(248 251 255 / 86%);
   --glass-soft: rgb(244 249 255 / 38%);
@@ -18,30 +17,38 @@
   --scene-tint: rgb(5 15 32 / 16%);
   --muted: #c1cee2;
 }
-.app-shell[data-page="calendar"] {
-  --scene: url("../assets/theme/calendar.webp");
-}
-.app-shell[data-page="ledger"] {
-  --scene: url("../assets/theme/ledger.webp");
-}
-.app-shell[data-page="growth"] {
-  --scene: url("../assets/theme/terrace.webp");
-}
-.app-shell[data-page="chat"] {
-  --scene: url("../assets/theme/chat.webp");
-}
-.app-shell[data-page="settings"] {
-  --scene: url("../assets/theme/settings.webp");
-}
-.app-shell::before {
-  content: "";
+.app-scene {
   position: fixed;
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  background:
-    linear-gradient(var(--scene-tint), var(--scene-tint)),
-    var(--scene) center / cover no-repeat;
+  overflow: hidden;
+  background: #13243b;
+}
+.app-scene img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 1;
+}
+.app-scene .scene-incoming {
+  animation: scene-reveal 480ms ease-in-out both;
+}
+.app-scene::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--scene-tint);
+}
+@keyframes scene-reveal {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 .visually-hidden {
   position: absolute;
@@ -100,6 +107,7 @@
   min-width: 0;
 }
 .app-shell .card,
+.app-shell .page-skeleton,
 .app-shell .countdown-hero,
 .app-shell .character-choice,
 .app-shell .chat-companion-rail,
@@ -110,6 +118,15 @@
   border: 1px solid var(--glass-border);
   backdrop-filter: blur(4px);
   box-shadow: 0 6px 24px #07172c14;
+}
+.app-shell .skeleton-line,
+.app-shell .skeleton-tile {
+  background-image: linear-gradient(
+    100deg,
+    color-mix(in srgb, var(--ink) 6%, transparent) 25%,
+    color-mix(in srgb, var(--ink) 10%, transparent) 45%,
+    color-mix(in srgb, var(--ink) 6%, transparent) 65%
+  );
 }
 .app-shell .card {
   border-radius: 15px;

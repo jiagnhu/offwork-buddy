@@ -1,5 +1,6 @@
 import { SharedCharacterProvider } from "./components/SharedCharacter";
 import PageSkeleton from "./components/PageSkeleton";
+import SceneBackground from "./components/SceneBackground";
 import { afterPaint } from "./hooks/afterPaint";
 import { version } from "../../package.json";
 import DesktopCard from "./pages/DesktopCard";
@@ -108,6 +109,10 @@ export default function App() {
   return (
     <SharedCharacterProvider snapshot={snapshot}>
       <div className="app-shell" data-page={page}>
+        <SceneBackground
+          page={page}
+          reducedMotion={snapshot.state.preferences.reducedMotion}
+        />
         <aside className="sidebar">
           <div className="brand">
             <div className="brandmark">

@@ -1,0 +1,17 @@
+# 1.12.2 — smoother menu backgrounds (2026-11-11)
+
+The main window previously replaced a single CSS background URL immediately on every menu click. First visits could expose the underlying color while decoding, and every page transition briefly displayed a solid, opaque loading panel over the glass theme.
+
+The background now stays mounted independently of page content. Bundled scene images are decoded before use and warmed during idle time. A new scene fades over an opaque previous scene for 480 ms; the old image is never faded out to the window color. The incoming image keeps its DOM identity when it becomes the base. Rapid clicks finish the current blend then use the latest decoded destination; stale loads are ignored, failed images leave the last background visible and can retry on a later visit. Only two image layers are painted at once. The six decoded scenes are retained for responsive revisits, with some additional image memory use.
+
+Navigation and skeleton rendering remain immediate. Loading panels now use the same glass background as page cards and a lower-contrast shimmer. All six page-specific backgrounds, sidebar artwork and desktop overlay behavior are retained. Both the app's reduced-motion setting and OS reduced-motion preference bypass fades, including a preference change during a transition.
+
+Validation: the new scene regression failed against the old build before implementation; all three targeted Electron tests pass after the change (opaque base / partial-opacity incoming frame / latest rapid-click destination; delayed and failed decode with stale-result protection; app and OS reduced-motion handling). Screenshot inspection of the midpoint and final page confirmed no exposed blank layer, and both themes render all six scenes without horizontal overflow. Development navigation timings were 26–97 ms in the existing warmed-page performance test, with the shared character retained.
+
+An existing sticky-position assertion also failed unchanged against the previous packaged 1.12.1. Geometry showed its second scroll reached the bottom of the grid: the card correctly moved from y=24 to y=19.75 to remain inside its parent. The test now compares positions before that boundary rather than treating normal sticky containment as a defect. The original strict position tolerance is retained; product scrolling code was not changed. The same navigation test verifies the loading panel and cards have matching background colors.
+
+Final unit suite: **196 passed / 47 files**. Typecheck passed. Development checks: three new transition tests, six-page light/dark theme coverage, menu-performance coverage, and both loading/sticky/setup tests passed.
+
+Packaged verification: **7 passed in 44.6 seconds**, using `BUDDY_EXECUTABLE=release/win-unpacked/下班搭子.exe` and isolated temporary data. This repeats all three transition regressions, initial setup/loading/sticky checks, menu-performance and light/dark six-page checks against the built app. Packaged navigation samples were 17–113 ms; no model reload was introduced by switching pages. Screenshots are in `.cache/scene-transition` and `.cache/theme-preview`.
+
+Developer NSIS installer: `release/OffworkBuddy-Developer-Setup-1.12.2.exe`, 150,018,486 bytes. SHA-256: `EEFB74FD2A28261EA745FBA729581C04E54A1BF8C5A4AEFE725DCB68A37A9D3D`. Build succeeded. The user's installed app and data were not replaced automatically; this is a local installer delivery.

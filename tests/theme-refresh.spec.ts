@@ -36,12 +36,16 @@ test("blue orange theme preserves six pages in both themes without horizontal ov
         await s.page.getByRole("button", { name, exact: true }).click();
         await expect(s.page.locator(".page-skeleton")).toHaveCount(0);
         await expect(s.page.locator(".sidebar button.active")).toHaveText(name);
-        await s.page.waitForTimeout(350);
+        await expect(s.page.locator(".app-scene img")).toHaveCount(1);
+        await expect(s.page.locator(".app-scene img")).toHaveAttribute(
+          "data-scene",
+          ["overview", "calendar", "ledger", "growth", "chat", "settings"][i],
+        );
         const scene = await s.page
-          .locator(".app-shell")
-          .evaluate((el) => getComputedStyle(el, "::before").backgroundImage);
+          .locator(".app-scene img")
+          .getAttribute("src");
         expect(scene).toContain(".webp");
-        scenes.add(scene);
+        scenes.add(scene!);
         expect(
           await s.page.evaluate(
             () => document.documentElement.scrollWidth <= innerWidth,

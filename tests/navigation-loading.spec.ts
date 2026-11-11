@@ -27,12 +27,16 @@ test("navigation paints a loading shell first and fast clicks show only the late
           ?.textContent?.trim(),
         loading: !!document.querySelector('[aria-label="正在加载页面"]'),
         calendar: !!document.querySelector(".calendar-grid"),
+        // Navigation must not insert a brighter opaque slab over the scene.
+        glassMatches: getComputedStyle(document.querySelector(".page-skeleton")!).backgroundColor ===
+          getComputedStyle(document.querySelector(".card")!).backgroundColor,
       };
     });
     expect(firstFrame).toEqual({
       active: "工作日历",
       loading: true,
       calendar: false,
+      glassMatches: true,
     });
     await expect(s.page.locator(".calendar-grid")).toBeVisible();
     await s.page.evaluate(async () => {
@@ -55,9 +59,11 @@ test("navigation paints a loading shell first and fast clicks show only the late
     await s.page.getByRole("button", { name: "角色空间", exact: true }).click();
     await expect(s.page.locator(".character-current")).toBeVisible();
     await expect(s.page.locator('.character-current .haru-character')).toHaveAttribute('data-loaded','true',{timeout:30000});
-    await s.page.evaluate(() => window.scrollTo(0, 400));
+    // Check sticky positioning before reaching the grid's bottom boundary,
+    // where CSS correctly moves the card up to keep it inside its parent.
+    await s.page.evaluate(() => window.scrollTo(0, 150));
     const before = await s.page.locator(".character-current").boundingBox();
-    await s.page.evaluate(() => window.scrollBy(0, 200));
+    await s.page.evaluate(() => window.scrollBy(0, 150));
     const after = await s.page.locator(".character-current").boundingBox();
     expect(before).not.toBeNull();
     expect(after).not.toBeNull();
