@@ -1,53 +1,42 @@
-import { useEffect, useState } from "react";
-import type { EarningsDetail as Detail } from "../../core/earnings-detail";
+import { useState } from "react";
+import { earningsDetail } from "../../core/earnings-detail";
+import { jobState, listJobs, primaryJob } from "../../core/jobs";
+import { combinedDayIncome, jobDayIncome } from "../../core/work-income";
 import type { Snapshot } from "../../shared/model";
-import { money, time } from "./format";
+import { combinedMoney, money, nativeMoney, time } from "./format";
 export default function EarningsDetail({
   date,
+  jobId,
   snapshot,
   onClose,
   onLedger,
 }: {
   date: string;
+  jobId?: string;
   snapshot: Snapshot;
   onClose: () => void;
   onLedger: () => void;
 }) {
-  const [detail, setDetail] = useState<Detail | null>(null),
-    [error, setError] = useState("");
-  useEffect(() => {
-    let live = true;
-    window.buddy
-      .getEarningsDetail(date)
-      .then((d) => {
-        if (live) setDetail(d);
-      })
-      .catch((e) => {
-        if (live) setError(e.message);
-      });
-    return () => {
-      live = false;
-    };
-  }, [
-    date,
-    snapshot.progress.earnedCents,
-    snapshot.state.ledger[date]?.amountCents,
-    JSON.stringify(snapshot.state.rules),
-    JSON.stringify(snapshot.state.overrides),
-    JSON.stringify(snapshot.state.leaves?.[date]),
-  ]);
+  const { state } = snapshot,
+    jobs = listJobs(state);
+  const [selection, setSelection] = useState(
+    jobId ?? (jobs.length === 1 ? primaryJob(state).id : "all"),
+  );
+  const job = jobs.find((j) => j.id === selection);
+  const now = new Date();
+  const scoped = job ? jobState(state, job.id) : null;
+  const detail = scoped ? earningsDetail(scoped, date, now) : null;
+  const income = job ? jobDayIncome(state, job.id, date, now) : null;
+  const total = combinedDayIncome(state, date, now);
+  const currency = job?.currency ?? "CNY";
+  const unit = currency === "USD" ? "美元" : "元";
   const rule =
     detail?.kind === "day"
       ? detail.rule
       : detail?.kind === "historical"
         ? detail.entry.rule
         : null;
-  const amount =
-    detail?.kind === "day"
-      ? detail.detail.progress.earnedCents
-      : detail?.kind === "historical"
-        ? detail.entry.amountCents
-        : 0;
+  const amount = income?.nativeCents ?? 0;
   const denominator =
     detail?.kind === "day"
       ? detail.detail.denominator
@@ -66,26 +55,81 @@ export default function EarningsDetail({
           ×
         </button>
         <h2>{date} 工资明细</h2>
-        {error && (
-          <p className="error" role="alert">
-            {error}
-          </p>
+        {jobs.length > 1 && (
+          <label>
+            查看工作{" "}
+            <select
+              value={selection}
+              onChange={(e) => setSelection(e.target.value)}
+            >
+              <option value="all">全部工作</option>
+              {jobs.map((j) => (
+                <option key={j.id} value={j.id}>
+                  {j.name}
+                </option>
+              ))}
+            </select>
+          </label>
         )}
-        {!detail && !error && <p>正在读取记录…</p>}
+        {!job && (
+          <>
+            <strong className="stat-value">
+              {combinedMoney(total.cnyCents, total.pendingUsdCents)}
+            </strong>
+            {jobs.map((j) => {
+              const row = jobDayIncome(state, j.id, date, now);
+              return (
+                <button
+                  className="work-income-row"
+                  key={j.id}
+                  onClick={() => setSelection(j.id)}
+                >
+                  <span>
+                    <i className="work-dot" style={{ background: j.color }} />
+                    {j.name}
+                  </span>
+                  <span>
+                    {nativeMoney(row.nativeCents, j.currency)}{" "}
+                    {j.currency === "USD" && (
+                      <small>
+                        {row.cnyCents === null
+                          ? "待折算"
+                          : "≈ ¥" + money(row.cnyCents)}
+                      </small>
+                    )}
+                  </span>
+                </button>
+              );
+            })}
+          </>
+        )}
         {detail?.kind === "unconfigured" ? (
-          <p>该日期尚未开始计薪，请检查累计开始日期和工资设置。</p>
+          <p>
+            该日期没有适用的工资规则，可在偏好设置中查看这份工作的起止日期。
+          </p>
         ) : (
           rule && (
             <>
-              <strong className="stat-value">¥ {money(amount)}</strong>
+              <strong className="stat-value">
+                {nativeMoney(amount, currency)}
+              </strong>
+              {currency === "USD" && income && (
+                <p>
+                  {income.rate && income.cnyCents !== null
+                    ? `约 ¥${money(income.cnyCents)} · 1 美元 = ${income.rate} 元（${income.rateDate} 中间价${income.provisional ? "，暂估" : ""}）· 来源：国家外汇管理局`
+                    : "待获取当日汇率"}
+                </p>
+              )}
               <p>
                 {rule.mode === "monthly"
                   ? denominator === null
                     ? "休息日不计预计收入"
-                    : `月薪 ${rule.amount} 元 ÷ ${denominator} 天`
-                  : rule.mode === "daily"
-                    ? `日薪 ${rule.amount} 元`
-                    : `时薪 ${rule.amount} 元 × 有效工作小时`}
+                    : `月薪 ${rule.amount} ${unit} ÷ ${denominator} 天`
+                  : rule.mode === "biweekly"
+                    ? `每两周 ${rule.amount} ${unit}，按本期计薪日分摊${denominator ? "（" + denominator + " 天）" : ""}`
+                    : rule.mode === "daily"
+                      ? `日薪 ${rule.amount} ${unit}`
+                      : `时薪 ${rule.amount} ${unit} × 有效工作小时`}
               </p>
               <p className="muted">
                 作息 {time(rule.start)}–{time(rule.end)} · 午休{" "}
@@ -97,7 +141,7 @@ export default function EarningsDetail({
                 <>
                   <p>
                     未扣请假日薪：
-                    {Number(detail.detail.dailyBudgetDecimal).toFixed(4)} 元
+                    {Number(detail.detail.dailyBudgetDecimal).toFixed(4)} {unit}
                   </p>
                   <p>
                     已计工时 {(detail.detail.elapsedSeconds / 3600).toFixed(4)}{" "}
@@ -117,7 +161,9 @@ export default function EarningsDetail({
                   <p>
                     {detail.explanation.algorithm === "historical"
                       ? "历史结算（未记录算法版本）"
-                      : "正常周排班算法"}
+                      : rule.mode === "biweekly"
+                        ? "按双周计薪日分摊"
+                        : "正常周排班算法"}
                   </p>
                   <p>
                     当天{detail.entry.workday ? "工作" : "休息"} ·
@@ -139,7 +185,7 @@ export default function EarningsDetail({
                   : detail?.kind === "historical"
                     ? (detail.entry.leaveMinutes ?? 0)
                     : 0}{" "}
-                分钟 · 全天扣减 ¥
+                分钟 · 全天扣减 {currency === "USD" ? "US$" : "¥"}
                 {money(
                   detail?.kind === "day"
                     ? detail.detail.leaveDeductionCents
@@ -157,11 +203,25 @@ export default function EarningsDetail({
         <hr className="plan-divider" />
         <h3>累计拆分</h3>
         <p>
-          已结算 ¥ {money(snapshot.settledCents)} + 今日 ¥{" "}
-          {money(snapshot.totalCents - snapshot.settledCents)} = ¥{" "}
-          {money(snapshot.totalCents)}
+          已结算{" "}
+          {combinedMoney(
+            snapshot.settledCents,
+            snapshot.incomeTotals?.settledPendingUsd ?? 0,
+          )}{" "}
+          · 今日{" "}
+          {combinedMoney(
+            snapshot.totalCents - snapshot.settledCents,
+            snapshot.incomeTotals?.todayPendingUsd ?? 0,
+          )}
         </p>
-        <p className="muted">从 {snapshot.state.startDate} 开始</p>
+        <p className="muted">
+          全部工作合计{" "}
+          {combinedMoney(
+            snapshot.totalCents,
+            (snapshot.incomeTotals?.settledPendingUsd ?? 0) +
+              (snapshot.incomeTotals?.todayPendingUsd ?? 0),
+          )}
+        </p>
         <button className="secondary" onClick={onLedger}>
           查看每日记录 / 重算
         </button>

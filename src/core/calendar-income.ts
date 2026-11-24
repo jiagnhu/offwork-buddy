@@ -17,6 +17,7 @@ export function calendarIncome(state: State, date: string, now: Date) {
     state.calendar,
     state.overrides,
     state.leaves?.[date],
+    state.ledger,
   );
   return date === dateKey(now)
     ? { kind: "today" as const, amountCents: progress.earnedCents }

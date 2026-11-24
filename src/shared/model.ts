@@ -12,7 +12,9 @@ export type CharacterKind =
 export interface RuleVersion {
   id: string;
   effectiveFrom: DateKey;
-  mode: "monthly" | "daily" | "hourly";
+  mode: "monthly" | "daily" | "hourly" | "biweekly";
+  periodStart?: DateKey;
+  payDate?: DateKey;
   amount: string;
   start: number;
   end: number;
@@ -51,6 +53,7 @@ export interface LeaveInterval {
   end: number;
 }
 export interface LedgerEntry {
+  fxQuote?: { rate: number; rateDate: DateKey; estimated: boolean };
   baseBudgetDecimal?: string;
   leaveDeductionCents?: number;
   leaveMinutes?: number;
@@ -101,8 +104,40 @@ export interface CompanionEvent {
   createdAt: number;
   durationMs: number;
 }
+export interface JobMeta {
+  id: string;
+  name: string;
+  color: string;
+  currency: "USD" | "CNY";
+  endDate?: DateKey;
+  receivedPaydays: Record<DateKey, boolean>;
+}
+export interface JobProfile extends JobMeta {
+  startDate: DateKey;
+}
+export interface JobData extends JobProfile {
+  configured: boolean;
+  rules: RuleVersion[];
+  overrides: Record<DateKey, boolean>;
+  leaves?: Record<DateKey, LeaveInterval[]>;
+  plans: Record<DateKey, DailyPlan[]>;
+  ledger: Record<DateKey, LedgerEntry>;
+}
+export interface JobInput {
+  id?: string;
+  name: string;
+  color: string;
+  currency: JobMeta["currency"];
+  startDate: DateKey;
+  endDate?: DateKey;
+  rule: RuleInput;
+}
 export interface State {
-  schemaVersion: 3;
+  schemaVersion: 4;
+  primaryJob: JobMeta;
+  otherJobs: JobData[];
+  personalPlans: Record<DateKey, DailyPlan[]>;
+  fxBook?: import("../core/fx").FxBook;
   growth: {
     points: number;
     days: Record<
@@ -128,7 +163,13 @@ export interface State {
 export type PreferencesV2 = Omit<Preferences, "character"> & {
   character: "pet" | "assistant";
 };
-export type StateV2 = Omit<State, "schemaVersion" | "preferences"> & {
+export type StateV3 = Omit<
+  State,
+  "schemaVersion" | "primaryJob" | "otherJobs" | "personalPlans" | "fxBook"
+> & {
+  schemaVersion: 3;
+};
+export type StateV2 = Omit<StateV3, "schemaVersion" | "preferences"> & {
   schemaVersion: 2;
   preferences: PreferencesV2;
 };
@@ -148,6 +189,13 @@ export type LegacyState = Omit<
   >;
 };
 export interface Snapshot {
+  incomeTotals?: {
+    todayCny: number;
+    todayPendingUsd: number;
+    settledCny: number;
+    settledPendingUsd: number;
+    days: number;
+  };
   behavior: {
     phase: "idle" | "walking" | "resting" | "reacting" | "dragging" | "paused";
     direction: "left" | "right";

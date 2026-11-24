@@ -1,8 +1,16 @@
-export const money = (cents: number) =>
-  new Intl.NumberFormat("zh-CN", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(cents / 100);
+const amounts = new Intl.NumberFormat("zh-CN", {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+export const money = (cents: number) => amounts.format(cents / 100);
+export function nativeMoney(cents: number, currency: "CNY" | "USD") {
+  return (currency === "USD" ? "US$" : "¥") + money(cents);
+}
+export function combinedMoney(cnyCents: number, pendingUsdCents: number) {
+  return pendingUsdCents
+    ? `¥${money(cnyCents)} + US$${money(pendingUsdCents)} 待折算`
+    : `¥${money(cnyCents)}`;
+}
 export const time = (minutes: number) =>
   `${String(Math.floor(minutes / 60)).padStart(2, "0")}:${String(minutes % 60).padStart(2, "0")}`;
 export const toMinutes = (value: string) => {

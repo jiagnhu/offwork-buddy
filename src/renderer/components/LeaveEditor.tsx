@@ -1,17 +1,21 @@
 import { useState } from "react";
 import type { State, LeaveInterval } from "../../shared/model";
 import { earningsDetail } from "../../core/earnings-detail";
-import { money, time } from "./format";
+import { nativeMoney, time } from "./format";
 export default function LeaveEditor({
   state,
   date,
   busy,
   setBusy,
+  jobId,
+  currency,
 }: {
   state: State;
   date: string;
   busy: boolean;
   setBusy: (value: boolean) => void;
+  jobId: string;
+  currency: "CNY" | "USD";
 }) {
   const [start, setStart] = useState("09:00"),
     [end, setEnd] = useState("12:00"),
@@ -36,7 +40,7 @@ export default function LeaveEditor({
     setBusy(true);
     setError("");
     try {
-      await window.buddy.setLeave(date, next);
+      await window.buddy.setLeave(date, next, jobId);
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -109,7 +113,7 @@ export default function LeaveEditor({
       </ul>
       {periods.length > 0 && (
         <p className="leave-summary">
-          扣薪时长 {minutes} 分钟 · 全天扣减 ¥{money(deduction)}
+          扣薪时长 {minutes} 分钟 · 全天扣减 {nativeMoney(deduction, currency)}
         </p>
       )}
       {detail.kind === "unconfigured" && (

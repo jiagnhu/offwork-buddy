@@ -413,3 +413,24 @@
   color: #fff;
   text-shadow: none;
 }
+.work-income-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 0;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+.work-income-row:last-child { border-bottom: 0; }
+.work-income-row small, .ledger-fx { color: var(--muted); font-size: .8rem; }
+.ledger-fx { display: block; }
+.work-dot { display: inline-block; width: .6em; height: .6em; border-radius: 50%; margin-right: .5em; }
+.work-summary { margin-bottom: 16px; }

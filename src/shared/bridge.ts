@@ -5,8 +5,8 @@ import type { EarningsDetail } from "../core/earnings-detail";
 import type { PlanAction } from "../core/plans";
 import type { CompanionEvent } from "./model";
 export type NavigateTarget =
-  | { page: "calendar"; date: string }
-  | { page: "earnings"; date: string }
+  | { page: "calendar"; date: string; jobId?: string }
+  | { page: "earnings"; date: string; jobId?: string }
   | { page: "growth" }
   | { page: "chat" };
 export interface SettingsInput {
@@ -47,20 +47,37 @@ export interface BuddyBridge {
   onWindowVisibility(listener: (visible: boolean) => void): () => void;
   getSnapshot(): Promise<Snapshot>;
   saveSettings(input: SettingsInput): Promise<Snapshot>;
+  saveJob(input: import("./model").JobInput): Promise<Snapshot>;
+  archiveJob(id: string, endDate: string): Promise<Snapshot>;
+  setPrimaryJob(id: string): Promise<Snapshot>;
+  setPaydayReceived(
+    id: string,
+    date: string,
+    received: boolean,
+  ): Promise<Snapshot>;
   setPreferences(input: Partial<Preferences>): Promise<Snapshot>;
   setLeave(
     date: string,
     intervals: import("./model").LeaveInterval[],
+    jobId?: string,
   ): Promise<Snapshot>;
-  setDayOverride(date: string, value: boolean | null): Promise<Snapshot>;
-  updatePlan(date: string, action: PlanAction): Promise<Snapshot>;
+  setDayOverride(
+    date: string,
+    value: boolean | null,
+    jobId?: string,
+  ): Promise<Snapshot>;
+  updatePlan(
+    date: string,
+    action: PlanAction,
+    jobId?: string,
+  ): Promise<Snapshot>;
   interact(): Promise<Snapshot>;
   onCompanionEvent(listener: (event: CompanionEvent) => void): () => void;
-  recalculate(from: string, to: string): Promise<Snapshot>;
+  recalculate(from: string, to: string, jobId?: string): Promise<Snapshot>;
   exportBackup(): Promise<string | null>;
   importBackup(): Promise<boolean>;
   importCalendar(): Promise<boolean>;
-  getEarningsDetail(date: string): Promise<EarningsDetail>;
+  getEarningsDetail(date: string, jobId?: string): Promise<EarningsDetail>;
   openPanel(target?: NavigateTarget): Promise<void>;
   takeNavigation(): Promise<NavigateTarget | null>;
   onNavigate(listener: (target: NavigateTarget) => void): () => void;

@@ -1,4 +1,5 @@
 import type { State, RuleInput } from "./model";
+import { defaultJob } from "./migration";
 import { dateKey, addDays, weekday } from "../core/date";
 export function defaultRule(now = new Date()): RuleInput {
   const today = dateKey(now);
@@ -17,7 +18,10 @@ export function defaultRule(now = new Date()): RuleInput {
 }
 export function initialState(now = new Date()): State {
   return {
-    schemaVersion: 3,
+    schemaVersion: 4,
+    primaryJob: defaultJob(),
+    otherJobs: [],
+    personalPlans: {},
     growth: { points: 0, days: {} },
     reminderHistory: {},
     configured: false,

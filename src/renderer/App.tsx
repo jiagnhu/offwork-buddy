@@ -53,16 +53,20 @@ export default function App() {
   }, [page, readyPage]);
   const [calendarNavigation, setCalendarNavigation] = useState(0);
   const [actionError, setActionError] = useState("");
-  const [detailDate, setDetailDate] = useState<string | null>(null),
-    [calendarDate, setCalendarDate] = useState<string | undefined>();
+  const [detailTarget, setDetailTarget] = useState<Extract<
+    NavigateTarget,
+    { page: "earnings" }
+  > | null>(null);
+  const [calendarTarget, setCalendarTarget] =
+    useState<Extract<NavigateTarget, { page: "calendar" }>>();
   useEffect(() => {
     if (location.hash) return;
     const navigate = (target: NavigateTarget) => {
-      if (target.page === "earnings") setDetailDate(target.date);
+      if (target.page === "earnings") setDetailTarget(target);
       else {
         setPage(target.page);
         if (target.page === "calendar") {
-          setCalendarDate(target.date);
+          setCalendarTarget(target);
           setCalendarNavigation((n) => n + 1);
         }
       }
@@ -200,7 +204,8 @@ export default function App() {
               <Calendar
                 key={calendarNavigation}
                 snapshot={snapshot}
-                initialDate={calendarDate}
+                initialDate={calendarTarget?.date}
+                initialJobId={calendarTarget?.jobId}
               />
             ) : page === "chat" ? (
               <Chat snapshot={snapshot} />
@@ -213,13 +218,15 @@ export default function App() {
             )}
           </Suspense>
         </main>
-        {detailDate && (
+        {detailTarget && (
           <EarningsDetail
-            date={detailDate}
+            key={detailTarget.date + (detailTarget.jobId ?? "all")}
+            date={detailTarget.date}
+            jobId={detailTarget.jobId}
             snapshot={snapshot}
-            onClose={() => setDetailDate(null)}
+            onClose={() => setDetailTarget(null)}
             onLedger={() => {
-              setDetailDate(null);
+              setDetailTarget(null);
               setPage("ledger");
             }}
           />

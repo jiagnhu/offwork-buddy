@@ -43,21 +43,26 @@ const bridge: BuddyBridge = {
   },
   getSnapshot: () => invoke("getSnapshot"),
   saveSettings: (i) => invoke("saveSettings", i),
+  saveJob: (input) => invoke("saveJob", input),
+  archiveJob: (id, endDate) => invoke("archiveJob", id, endDate),
+  setPrimaryJob: (id) => invoke("setPrimaryJob", id),
+  setPaydayReceived: (id, date, received) =>
+    invoke("setPaydayReceived", id, date, received),
   setPreferences: (i) => invoke("setPreferences", i),
-  setLeave: (d, v) => invoke("setLeave", d, v),
-  setDayOverride: (d, v) => invoke("setDayOverride", d, v),
-  updatePlan: (d, p) => invoke("updatePlan", d, p),
+  setLeave: (d, v, jobId) => invoke("setLeave", d, v, jobId),
+  setDayOverride: (d, v, jobId) => invoke("setDayOverride", d, v, jobId),
+  updatePlan: (d, p, jobId) => invoke("updatePlan", d, p, jobId),
   interact: () => invoke("interact"),
   onCompanionEvent: (listener) => {
     const fn = (_: unknown, e: any) => listener(e);
     ipcRenderer.on("buddy:companion-event", fn);
     return () => ipcRenderer.removeListener("buddy:companion-event", fn);
   },
-  recalculate: (f, t) => invoke("recalculate", f, t),
+  recalculate: (f, t, jobId) => invoke("recalculate", f, t, jobId),
   exportBackup: () => invoke("exportBackup"),
   importBackup: () => invoke("importBackup"),
   importCalendar: () => invoke("importCalendar"),
-  getEarningsDetail: (d) => invoke("getEarningsDetail", d),
+  getEarningsDetail: (d, jobId) => invoke("getEarningsDetail", d, jobId),
   openPanel: (target) => invoke("openPanel", target),
   takeNavigation: () => invoke("takeNavigation"),
   onNavigate: (listener) => {

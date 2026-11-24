@@ -2,13 +2,15 @@ import { unlocks } from "../core/growth";
 import { z } from "zod";
 import { validDate, weekday } from "../core/date";
 import type { State } from "./model";
-import { migrateV1, migrateV2 } from "./migration";
+import { migrateV1, migrateV2, migrateV3 } from "./migration";
 export const dateSchema = z
   .string()
   .refine(validDate, "请输入有效日期（2000–2099）");
 const minute = z.number().int().min(0).max(1439);
 export const ruleInputSchema = z.object({
-  mode: z.enum(["monthly", "daily", "hourly"]),
+  mode: z.enum(["monthly", "daily", "hourly", "biweekly"]),
+  periodStart: dateSchema.optional(),
+  payDate: dateSchema.optional(),
   amount: z
     .string()
     .regex(/^\d+(\.\d{1,2})?$/, "金额最多两位小数")
@@ -25,6 +27,15 @@ export const ruleInputSchema = z.object({
 export const ruleSchema = ruleInputSchema
   .extend({ id: z.string().min(1), effectiveFrom: dateSchema })
   .superRefine((r, ctx) => {
+    if (
+      r.mode === "biweekly" &&
+      (!r.periodStart || !r.payDate || r.payDate < r.periodStart)
+    )
+      ctx.addIssue({
+        code: "custom",
+        message:
+          "双周工资须填写计薪周期起始日及对应发薪日，发薪日不能早于周期开始",
+      });
     if (r.end <= r.start)
       ctx.addIssue({
         code: "custom",
@@ -154,6 +165,13 @@ export const leaveSchema = z
   )
   .max(24);
 const entry = z.object({
+  fxQuote: z
+    .object({
+      rate: z.number().finite().positive(),
+      rateDate: dateSchema,
+      estimated: z.literal(false),
+    })
+    .optional(),
   baseBudgetDecimal: z
     .string()
     .max(100)
@@ -175,7 +193,7 @@ const entry = z.object({
   rule: ruleSchema,
   calendarSnapshot: dayInfo,
   workdayCount: z.number().int().min(0).max(31),
-});
+}).refine(e => !e.fxQuote || e.fxQuote.rateDate <= e.date, "锁定汇率日期不能晚于收入日期");
 export const planSchema = z.object({
   rewardClaimed: z.boolean().optional(),
   id: z.string().min(1).max(100),
@@ -207,6 +225,46 @@ export const plansSchema = z
     (items) => new Set(items.map((item) => item.id)).size === items.length,
     "计划编号重复",
   );
+const jobId = z
+  .string()
+  .regex(/^[a-zA-Z0-9_-]{1,100}$/)
+  .refine(
+    (id) =>
+      !["personal", "all", "__proto__", "constructor", "prototype"].includes(
+        id,
+      ),
+    "工作编号无效",
+  );
+const jobFields = {
+  name: z
+    .string()
+    .trim()
+    .min(1, "请输入工作名称")
+    .max(40, "工作名称最多40个字"),
+  color: z.string().regex(/^#[\da-f]{6}$/i, "请选择有效的工作颜色"),
+  currency: z.enum(["CNY", "USD"]),
+  endDate: dateSchema.optional(),
+};
+const jobMeta = z.object({
+  ...jobFields,
+  id: jobId,
+  receivedPaydays: z.record(dateSchema, z.boolean()),
+});
+export const jobInputSchema = z.object({
+  ...jobFields,
+  id: jobId.optional(),
+  startDate: dateSchema,
+  rule: ruleInputSchema,
+});
+const jobContents = {
+  configured: z.boolean(),
+  startDate: dateSchema,
+  rules: z.array(ruleSchema).max(40000),
+  overrides: z.record(dateSchema, z.boolean()),
+  leaves: z.record(dateSchema, leaveSchema).default({}),
+  plans: z.record(dateSchema, plansSchema).default({}),
+  ledger: z.record(dateSchema, entry),
+};
 const stateBase = z.object({
   schemaVersion: z.literal(3),
   growth: z.object({
@@ -228,14 +286,8 @@ const stateBase = z.object({
     ),
   }),
   reminderHistory: z.record(z.string().max(160), z.number().finite()),
-  configured: z.boolean(),
-  startDate: dateSchema,
-  rules: z.array(ruleSchema).max(40000),
+  ...jobContents,
   calendar: calendarSchema,
-  overrides: z.record(dateSchema, z.boolean()),
-  leaves: z.record(dateSchema, leaveSchema).default({}),
-  plans: z.record(dateSchema, plansSchema).default({}),
-  ledger: z.record(dateSchema, entry),
   preferences: preferencesSchema,
 });
 const stateV2Schema = stateBase.extend({
@@ -248,38 +300,75 @@ const legacySchema = stateBase
     schemaVersion: z.literal(1),
     preferences: legacyPreferencesSchema,
   });
-export const stateSchema = stateBase.superRefine((s, ctx) => {
-  const issue = (message: string) => ctx.addIssue({ code: "custom", message });
-  if (
-    s.preferences.accessory !== "none" &&
-    !unlocks(s.growth.points)[s.preferences.accessory]
-  )
-    issue("这个配饰尚未解锁");
-  if (s.configured && !s.rules.some((r) => r.effectiveFrom <= s.startDate))
-    issue("累计起始日期缺少工资规则");
-  if (
-    new Set(s.rules.map((r) => r.effectiveFrom)).size !== s.rules.length ||
-    new Set(s.rules.map((r) => r.id)).size !== s.rules.length
-  )
-    issue("工资规则版本重复");
-  let total = 0;
-  for (const [d, e] of Object.entries(s.ledger)) {
-    if (d !== e.date || e.ruleId !== e.rule.id || d < s.startDate)
-      issue("收入记录日期或版本不一致");
-    total += e.amountCents;
-  }
-  if (!Number.isSafeInteger(total)) issue("累计金额超出支持范围");
-});
+export const stateSchema = stateBase
+  .extend({
+    schemaVersion: z.literal(4),
+    primaryJob: jobMeta,
+    otherJobs: z.array(jobMeta.extend(jobContents)),
+    personalPlans: z.record(dateSchema, plansSchema),
+    fxBook: z
+      .object({
+        rates: z.record(dateSchema, z.number().finite().positive()),
+        coverage: z.record(dateSchema, dateSchema).refine(
+          ranges => Object.entries(ranges).every(([start, end]) => start <= end),
+          "汇率覆盖区间无效",
+        ),
+      })
+      .optional(),
+  })
+  .superRefine((s, ctx) => {
+    const issue = (message: string) =>
+      ctx.addIssue({ code: "custom", message });
+    if (
+      s.preferences.accessory !== "none" &&
+      !unlocks(s.growth.points)[s.preferences.accessory]
+    )
+      issue("这个配饰尚未解锁");
+    const jobs = [{ ...s, ...s.primaryJob }, ...s.otherJobs];
+    if (new Set(jobs.map((j) => j.id)).size !== jobs.length)
+      issue("工作编号重复");
+    for (const job of jobs) {
+      if (job.endDate && job.endDate < job.startDate)
+        issue("工作结束日期不能早于开始日期");
+      if (
+        job.configured &&
+        !job.rules.some((r) => r.effectiveFrom <= job.startDate)
+      )
+        issue("累计起始日期缺少工资规则");
+      if (
+        new Set(job.rules.map((r) => r.effectiveFrom)).size !==
+          job.rules.length ||
+        new Set(job.rules.map((r) => r.id)).size !== job.rules.length
+      )
+        issue("工资规则版本重复");
+      let total = 0;
+      for (const [d, e] of Object.entries(job.ledger)) {
+        if (
+          d !== e.date ||
+          e.ruleId !== e.rule.id ||
+          d < job.startDate ||
+          (job.endDate && d > job.endDate)
+        )
+          issue("收入记录日期或版本不一致");
+        total += e.amountCents;
+      }
+      if (!Number.isSafeInteger(total)) issue("累计金额超出支持范围");
+    }
+  });
 export function parseState(input: unknown): State {
   const version = (input as { schemaVersion?: unknown } | null)?.schemaVersion;
   const state = stateSchema.parse(
     version === 1
-      ? migrateV2(migrateV1(legacySchema.parse(input)))
+      ? migrateV3(migrateV2(migrateV1(legacySchema.parse(input))))
       : version === 2
-        ? migrateV2(stateV2Schema.parse(input))
-        : input,
+        ? migrateV3(migrateV2(stateV2Schema.parse(input)))
+        : version === 3
+          ? migrateV3(stateBase.parse(input))
+          : input,
   );
   state.rules.sort((a, b) => a.effectiveFrom.localeCompare(b.effectiveFrom));
+  for (const job of state.otherJobs)
+    job.rules.sort((a, b) => a.effectiveFrom.localeCompare(b.effectiveFrom));
   // The map also marks the one-time upgrade from the old default name.
   if (!state.preferences.characterNames) {
     if (state.preferences.haruName === "丝袜妹")

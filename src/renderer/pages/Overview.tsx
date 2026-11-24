@@ -22,6 +22,9 @@ import {
 import { ruleForDate } from "../../core/ledger";
 import { addDays, weekday } from "../../core/date";
 import { resolveDay } from "../../core/calendar";
+import { listJobs, primaryJob, inJobPeriod, jobState } from "../../core/jobs";
+import { jobDayIncome } from "../../core/work-income";
+import { combinedMoney, nativeMoney } from "../components/format";
 function Overview({
   snapshot,
   navigate,
@@ -32,6 +35,9 @@ function Overview({
   active?: boolean;
 }) {
   const { state, progress } = snapshot;
+  const jobs = listJobs(state);
+  const showJobs = jobs.length > 1 || jobs.some((j) => j.currency === "USD");
+  const totals = snapshot.incomeTotals;
   const rule = ruleForDate(state, snapshot.today) ?? state.rules.at(-1)!;
   const digits = countdown(progress.countdownSeconds);
   const monday = addDays(snapshot.today, -((weekday(snapshot.today) + 6) % 7));
@@ -43,6 +49,7 @@ function Overview({
           <div className="hero-top">
             <span className="pill">
               <i className="live-dot" />
+              {showJobs && primaryJob(state).name + " · "}
               {statusLabels[progress.status]}
             </span>
             <Clock3 size={22} />
@@ -117,7 +124,10 @@ function Overview({
                 })
               }
             >
-              <small>¥</small> {money(progress.earnedCents)}
+              {combinedMoney(
+                totals?.todayCny ?? progress.earnedCents,
+                totals?.todayPendingUsd ?? 0,
+              )}
             </button>
           </strong>
           <p>
@@ -143,11 +153,21 @@ function Overview({
                 })
               }
             >
-              <small>¥</small> {money(snapshot.totalCents)}
+              {combinedMoney(
+                snapshot.totalCents,
+                (totals?.settledPendingUsd ?? 0) +
+                  (totals?.todayPendingUsd ?? 0),
+              )}
             </button>
           </strong>
           <p>
-            包含今日进度 · 从 {state.startDate.slice(5).replace("-", "/")} 开始
+            包含今日进度 · 从{" "}
+            {jobs
+              .map((j) => j.startDate)
+              .sort()[0]
+              ?.slice(5)
+              .replace("-", "/")}{" "}
+            开始
           </p>
         </section>
         <section className="card stat-card">
@@ -156,12 +176,56 @@ function Overview({
           </span>
           <span className="muted">已记录的工作日</span>
           <strong className="stat-value">
-            {Object.values(state.ledger).filter((e) => e.workday).length}
+            {totals?.days ??
+              Object.values(state.ledger).filter((e) => e.workday).length}
             <small> 天</small>
           </strong>
           <p>每一份努力，都会被记住</p>
         </section>
       </div>
+      {showJobs && (
+        <section className="card work-summary">
+          <h2>今日收入明细</h2>
+          {jobs
+            .filter((j) => inJobPeriod(j, snapshot.today))
+            .map((job) => {
+              const day = jobDayIncome(
+                state,
+                job.id,
+                snapshot.today,
+                new Date(),
+              );
+              return (
+                <button
+                  key={job.id}
+                  className="work-income-row"
+                  onClick={() =>
+                    window.buddy.openPanel({
+                      page: "earnings",
+                      date: snapshot.today,
+                      jobId: job.id,
+                    })
+                  }
+                >
+                  <span>
+                    <i className="work-dot" style={{ background: job.color }} />
+                    {job.name}
+                  </span>
+                  <span>
+                    {nativeMoney(day.nativeCents, job.currency)}{" "}
+                    {job.currency === "USD" && (
+                      <small>
+                        {day.cnyCents === null
+                          ? "待获取汇率"
+                          : "≈ ¥" + money(day.cnyCents)}
+                      </small>
+                    )}
+                  </span>
+                </button>
+              );
+            })}
+        </section>
+      )}
       <section className="card week-card">
         <div className="section-title">
           <div>
@@ -174,24 +238,30 @@ function Overview({
         </div>
         <div className="week-strip">
           {week.map((d, i) => {
-            const info = resolveDay(
-              d,
-              ruleForDate(state, d) ?? rule,
-              state.calendar,
-              state.overrides,
-            );
+            const scheduled = jobs.filter((j) => {
+              if (!inJobPeriod(j, d)) return false;
+              const scoped = jobState(state, j.id);
+              const dayRule = ruleForDate(scoped, d);
+              return (
+                dayRule &&
+                resolveDay(d, dayRule, state.calendar, scoped.overrides).workday
+              );
+            });
             return (
               <div
                 key={d}
-                className={`week-day ${d === snapshot.today ? "active" : ""} ${!info.workday ? "rest" : ""}`}
+                className={`week-day ${d === snapshot.today ? "active" : ""} ${!scheduled.length ? "rest" : ""}`}
+                title={scheduled.map((j) => j.name).join("、")}
               >
                 <span>周{["一", "二", "三", "四", "五", "六", "日"][i]}</span>
                 <strong>{Number(d.slice(-2))}</strong>
                 <small>
                   {d === snapshot.today
                     ? "今天"
-                    : info.workday
-                      ? "上班"
+                    : scheduled.length
+                      ? showJobs
+                        ? scheduled.length + " 份工作"
+                        : "上班"
                       : "休息"}
                 </small>
               </div>

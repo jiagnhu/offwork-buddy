@@ -1,5 +1,5 @@
 import { leaveSeconds } from "./leave";
-import type { LeaveInterval } from "../shared/model";
+import type { LeaveInterval, LedgerEntry } from "../shared/model";
 import Decimal from "decimal.js";
 import type {
   CalendarData,
@@ -8,6 +8,7 @@ import type {
   RuleVersion,
 } from "../shared/model";
 import { countScheduledDays, resolveDay } from "./calendar";
+import { biweeklyAllocation } from "./biweekly";
 import { dateKey, secondsIntoDay } from "./date";
 export const emptyProgress: DayProgress = {
   status: "unconfigured",
@@ -25,6 +26,7 @@ export function calculateDayDetail(
   calendar: CalendarData,
   overrides: Record<DateKey, boolean>,
   leaves: LeaveInterval[] = [],
+  ledger: Record<string, LedgerEntry> = {},
 ) {
   const info = resolveDay(date, rule, calendar, overrides);
   if (!info.workday && !info.paidHoliday)
@@ -70,6 +72,19 @@ export function calculateDayDetail(
     budget = count ? budget.div(count) : new Decimal(0);
   }
   if (rule.mode === "hourly") budget = budget.mul(total).div(3600);
+  if (rule.mode === "biweekly") {
+    const allocation = biweeklyAllocation(
+      date,
+      rule.periodStart!,
+      rule.amount,
+      rule,
+      calendar,
+      overrides,
+      ledger,
+    );
+    budget = new Decimal(allocation.cents).div(100);
+    denominator = allocation.days;
+  }
   const status: DayProgress["status"] =
     seconds < start
       ? "before"

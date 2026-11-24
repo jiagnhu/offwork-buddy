@@ -1,4 +1,5 @@
 import type { RuleVersion, State } from "../src/shared/model";
+import { defaultJob } from "../src/shared/migration";
 export const rule: RuleVersion = {
   id: "r1",
   effectiveFrom: "2026-01-01",
@@ -15,7 +16,10 @@ export const rule: RuleVersion = {
 };
 export function fixture(): State {
   return {
-    schemaVersion: 3,
+    schemaVersion: 4,
+    primaryJob: defaultJob(),
+    otherJobs: [],
+    personalPlans: {},
     growth: { points: 0, days: {} },
     reminderHistory: {},
     configured: true,

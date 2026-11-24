@@ -16,6 +16,10 @@ import { ChatController, chatTransport } from "./chat-controller";
 import { loadChat, saveChat } from "./chat-store";
 import { characterName, normalizeCharacter } from "../shared/characters";
 import { setLeave } from "../core/ledger";
+import {
+  archiveJob, inJobPeriod, primaryJob, saveJob, setPaydayReceived, setPrimaryJob,
+  settleAllJobs, withJob, jobState, listJobs,
+} from "../core/jobs";
 import { leaveSchema } from "../shared/schema";
 import { mergeBundledCalendar } from "../core/calendar";
 import { startCompanionController } from "./companion-controller";
@@ -74,11 +78,13 @@ import { dateKey, addDays } from "../core/date";
 import {
   ruleForDate,
   scheduleRule,
-  settleThrough,
   recalculateRange,
 } from "../core/ledger";
 import { calculateDay, emptyProgress } from "../core/earnings";
 import { parseJsonStrict } from "../shared/json";
+import { combinedDayIncome, freezeLedgerQuotes, settledJobTotals } from "../core/work-income";
+import { emptyFxBook } from "../core/fx";
+import { refreshFxRates } from "./fx-rates";
 import { earningsDetail } from "../core/earnings-detail";
 import type { NavigateTarget } from "../shared/bridge";
 let pendingNavigation: NavigateTarget | null = null;
@@ -99,6 +105,50 @@ function serial<T>(fn: () => Promise<T>): Promise<T> {
   );
   return next;
 }
+let settledCache: { state: State; date: string; totals: ReturnType<typeof settledJobTotals> } | undefined;
+let fxRequest: symbol | undefined;
+let fxNextAttempt = 0;
+let fxRange = "";
+function resetExchangeRates() {
+  fxRequest = undefined;
+  fxNextAttempt = 0;
+  fxRange = "";
+}
+function prepareJobHistory(input: State, now = new Date()) {
+  return freezeLedgerQuotes(settleAllJobs(input, now), dateKey(now));
+}
+function updateExchangeRates() {
+  const today = dateKey(new Date());
+  const usdJobs = listJobs(state).filter(j => j.currency === "USD");
+  if (fxRequest || !usdJobs.length) return;
+  const from = usdJobs.reduce((start, j) => j.startDate < start ? j.startDate : start, today);
+  const to = usdJobs.reduce((end, j) => {
+    const last = j.endDate && j.endDate < today ? j.endDate : today;
+    return last > end ? last : end;
+  }, from);
+  const range = from + "/" + to;
+  if (range === fxRange && Date.now() < fxNextAttempt) return;
+  const request = Symbol();
+  fxRequest = request;
+  fxRange = range;
+  const book = state.fxBook ?? emptyFxBook();
+  void refreshFxRates(book, from, to, today)
+    .then(async updated => {
+      if (request !== fxRequest) return;
+      fxNextAttempt = Date.now() + 30 * 60_000;
+      if (updated === book) return;
+      await serial(async () => {
+        if (request !== fxRequest || !listJobs(state).some(j => j.currency === "USD")) return;
+        const merged = { rates: { ...updated.rates, ...state.fxBook?.rates }, coverage: { ...state.fxBook?.coverage } };
+        for (const [start, end] of Object.entries(updated.coverage)) {
+          if (!(start in merged.coverage) || merged.coverage[start] < end) merged.coverage[start] = end;
+        }
+        if (JSON.stringify(merged) !== JSON.stringify(state.fxBook)) await commit({ ...state, fxBook: merged });
+      });
+    })
+    .catch(() => { if (request === fxRequest) fxNextAttempt = Date.now() + 5 * 60_000; })
+    .finally(() => { if (request === fxRequest) fxRequest = undefined; });
+}
 function snapshot(): Snapshot {
   const now = new Date(),
     today = dateKey(now),
@@ -114,12 +164,13 @@ function snapshot(): Snapshot {
         state.calendar,
         state.overrides,
         state.leaves?.[today],
+        state.ledger,
       )
     : emptyProgress;
-  const settledCents = Object.values(state.ledger).reduce(
-    (sum, e) => sum + e.amountCents,
-    0,
-  );
+  if (settledCache?.state !== state || settledCache.date !== today)
+    settledCache = { state, date: today, totals: settledJobTotals(state, today) };
+  const historical = settledCache.totals;
+  const daily = combinedDayIncome(state, today, now);
   return {
     state,
     behavior,
@@ -130,8 +181,9 @@ function snapshot(): Snapshot {
         state.preferences.reducedMotion,
     },
     progress,
-    settledCents,
-    totalCents: settledCents + (state.ledger[today] ? 0 : progress.earnedCents),
+    settledCents: historical.settledCny,
+    totalCents: historical.settledCny + daily.cnyCents,
+    incomeTotals: { ...historical, todayCny: daily.cnyCents, todayPendingUsd: daily.pendingUsdCents },
     today,
     notice,
   };
@@ -143,6 +195,7 @@ function broadcast() {
   return s;
 }
 async function commit(next: State) {
+  next = freezeLedgerQuotes(next, dateKey(new Date()));
   const unlocked = unlocks(next.growth.points);
   if (
     next.preferences.accessory !== "none" &&
@@ -158,6 +211,7 @@ async function commit(next: State) {
     throw new Error(notice);
   }
   state = next;
+  updateExchangeRates();
   if (notice?.startsWith("保存失败")) notice = null;
   applyPreferences(state.preferences);
   return broadcast();
@@ -249,7 +303,7 @@ else {
       } catch {
         notice = "内置日历不可用，可在日历页导入年度数据。";
       }
-      state = settleThrough(state, new Date());
+      state = prepareJobHistory(state);
       await saveState(directory, state);
       lastDate = dateKey(new Date());
       createWindows(
@@ -372,6 +426,12 @@ else {
           return result.response === 1 ? chat.clear(kind) : chat.get();
         },
         getSnapshot: () => snapshot(),
+        saveJob: (input: unknown) => serial(() => commit(saveJob(state, input, new Date()))),
+        archiveJob: (id: string, endDate: string) => serial(() =>
+          commit(archiveJob(state, id, endDate, new Date()))),
+        setPrimaryJob: (id: string) => serial(() => commit(setPrimaryJob(state, id))),
+        setPaydayReceived: (id: string, date: string, received: unknown) => serial(() =>
+          commit(setPaydayReceived(state, id, date, z.boolean().parse(received), new Date()))),
         saveSettings: (input: unknown) =>
           serial(async () => {
             const data = z
@@ -392,7 +452,7 @@ else {
               next.rules[0].effectiveFrom = data.startDate;
             } else next.startDate = data.startDate;
             next = scheduleRule(next, rule, new Date());
-            return commit(settleThrough(parseState(next), new Date()));
+            return commit(settleAllJobs(parseState(next), new Date()));
           }),
         setPreferences: (input: unknown) =>
           serial(async () => {
@@ -413,34 +473,45 @@ else {
               }),
             });
           }),
-        setLeave: (date: unknown, input: unknown) =>
+        setLeave: (date: unknown, input: unknown, jobId?: string) =>
           serial(() =>
-            commit(
-              setLeave(
-                state,
-                dateSchema.parse(date),
-                leaveSchema.parse(input),
-                new Date(),
-              ),
-            ),
+            commit(withJob(state, jobId, scoped => {
+              const d = dateSchema.parse(date);
+              if (!inJobPeriod(primaryJob(scoped), d)) throw new Error("请假日期须在工作起止日期内");
+              return setLeave(scoped, d, leaveSchema.parse(input), new Date());
+            })),
           ),
-        setDayOverride: (date: unknown, value: unknown) =>
+        setDayOverride: (date: unknown, value: unknown, jobId?: string) =>
           serial(() => {
             const d = dateSchema.parse(date),
-              v = z.boolean().nullable().parse(value),
-              next = structuredClone(state);
-            if (v === null) delete next.overrides[d];
-            else next.overrides[d] = v;
-            return commit(next);
+              v = z.boolean().nullable().parse(value);
+            return commit(withJob(state, jobId, scoped => {
+              if (!inJobPeriod(primaryJob(scoped), d)) throw new Error("调班日期须在工作起止日期内");
+              const overrides = { ...scoped.overrides };
+              if (v === null) delete overrides[d];
+              else overrides[d] = v;
+              return { ...scoped, overrides };
+            }));
           }),
-        updatePlan: (date: unknown, input: unknown) =>
+        updatePlan: (date: unknown, input: unknown, jobId?: string) =>
           serial(async () => {
             const d = dateSchema.parse(date),
               action = planActionSchema.parse(input);
-            const previous = state.plans[d]?.find(
+            const plans = jobId === "personal" ? state.personalPlans : jobState(state, jobId).plans;
+            const previous = plans[d]?.find(
               (p) => p.id === action.id,
             )?.completed;
-            const next = applyPlanAction(state, d, action, new Date());
+            let next: State;
+            if (jobId === "personal") {
+              const updated = applyPlanAction({ ...state, plans }, d, action, new Date());
+              next = { ...state, personalPlans: updated.plans, growth: updated.growth };
+            } else {
+              next = withJob(state, jobId, scoped => {
+                if (action.type === "add" && !inJobPeriod(primaryJob(scoped), d))
+                  throw new Error("计划日期须在工作起止日期内");
+                return applyPlanAction(scoped, d, action, new Date());
+              });
+            }
             const result = await commit(next);
             if (
               action.type === "complete" &&
@@ -466,7 +537,7 @@ else {
               );
             return result;
           }),
-        recalculate: (from: unknown, to: unknown) =>
+        recalculate: (from: unknown, to: unknown, jobId?: string) =>
           serial(async () => {
             const f = dateSchema.parse(from),
               t = dateSchema.parse(to);
@@ -479,7 +550,7 @@ else {
               detail: "将用各日工资版本与当前日历覆盖这段历史记录。",
             });
             if (answer.response !== 1) return snapshot();
-            return commit(recalculateRange(state, f, t, new Date()));
+            return commit(withJob(state, jobId, scoped => recalculateRange(scoped, f, t, new Date())));
           }),
         exportBackup: () =>
           serial(async () => {
@@ -514,9 +585,11 @@ else {
             });
             if (r.response !== 1) return false;
             await chat.flush();
-            const restored = await importFullBackup(directory, raw);
+            const restored = await importFullBackup(directory, raw, prepareJobHistory);
             state = restored.state;
+            resetExchangeRates();
             if (restored.chat) await chat.replace(restored.chat, false);
+            updateExchangeRates();
             applyPreferences(state.preferences);
             broadcast();
             return true;
@@ -529,8 +602,8 @@ else {
             await commit({ ...state, calendar: { ...state.calendar, ...c } });
             return true;
           }),
-        getEarningsDetail: (date: unknown) =>
-          earningsDetail(state, dateSchema.parse(date), new Date()),
+        getEarningsDetail: (date: unknown, id?: unknown) =>
+          earningsDetail(id === undefined ? state : jobState(state, z.string().parse(id)), dateSchema.parse(date), new Date()),
         takeNavigation: () => {
           const target = pendingNavigation;
           pendingNavigation = null;
@@ -540,8 +613,8 @@ else {
           if (input !== undefined) {
             const target = z
               .union([
-                z.object({ page: z.literal("calendar"), date: dateSchema }),
-                z.object({ page: z.literal("earnings"), date: dateSchema }),
+                z.object({ page: z.literal("calendar"), date: dateSchema, jobId: z.string().optional() }),
+                z.object({ page: z.literal("earnings"), date: dateSchema, jobId: z.string().optional() }),
                 z.object({ page: z.literal("growth") }),
                 z.object({ page: z.literal("chat") }),
               ])
@@ -628,9 +701,10 @@ else {
       screen.on("display-metrics-changed", () => mover.resume());
       app.on("before-quit", () => mover.stop());
       const tick = () => {
+        updateExchangeRates();
         if (dateKey(new Date()) !== lastDate)
           void serial(async () => {
-            await commit(settleThrough(state, new Date()));
+            await commit(settleAllJobs(state, new Date()));
             lastDate = dateKey(new Date());
           }).catch((e) => {
             notice = e.message;

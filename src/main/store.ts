@@ -27,7 +27,7 @@ export async function loadState(directory: string): Promise<LoadResult> {
     }
     const version = (raw as { schemaVersion?: unknown } | undefined)
       ?.schemaVersion;
-    if (typeof version === "number" && version > 3)
+    if (typeof version === "number" && version > 4)
       throw new Error("数据来自更新版本，请升级软件后再打开。原文件已保留。");
     try {
       parseState(raw);
@@ -35,7 +35,7 @@ export async function loadState(directory: string): Promise<LoadResult> {
       raw = undefined; /* recovered below */
     }
     if (
-      [1, 2].includes(
+      [1, 2, 3].includes(
         (raw as { schemaVersion?: number } | undefined)?.schemaVersion ?? 0,
       )
     ) {
@@ -73,7 +73,7 @@ export async function loadState(directory: string): Promise<LoadResult> {
       const state = parseState(parseJsonStrict(backupText));
       if (
         (parseJsonStrict(backupText) as { schemaVersion: number })
-          .schemaVersion < 3
+          .schemaVersion < 4
       )
         await preserveLegacy(
           directory,
@@ -110,10 +110,7 @@ async function preserveLegacy(
   text: string,
   version: number,
 ) {
-  const file = path.join(
-    directory,
-    version === 1 ? "state.pre-v2.json" : "state.pre-v3.json",
-  );
+  const file = path.join(directory, `state.pre-v${version + 1}.json`);
   try {
     await writeFile(file, text, { flag: "wx" });
   } catch (e) {

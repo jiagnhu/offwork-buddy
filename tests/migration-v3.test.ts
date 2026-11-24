@@ -38,7 +38,7 @@ test("v2 migration preserves money, plans, growth, accessories and roaming", () 
   expect(result).toEqual({
     leaves: {},
     ...old,
-    schemaVersion: 3,
+    schemaVersion: 4,
     preferences: {
       ...old.preferences,
       character: "haru",
@@ -64,6 +64,7 @@ test("only v3 accepts Haru and rejects unknown versions", () => {
   expect(parseState(next)).toEqual({
     leaves: {},
     ...next,
+    schemaVersion: 4,
     preferences: {
       ...next.preferences,
       haruName: "Haru",
@@ -82,7 +83,7 @@ test("v2 original bytes are preserved and backup failure stops upgrade", async (
     await expect(loadState(dir)).rejects.toThrow();
     expect(await readFile(join(dir, "state.json"), "utf8")).toBe(raw);
     await rm(join(dir, "state.pre-v3.json"), { recursive: true });
-    expect((await loadState(dir)).state.schemaVersion).toBe(3);
+    expect((await loadState(dir)).state.schemaVersion).toBe(4);
     expect(await readFile(join(dir, "state.pre-v3.json"), "utf8")).toBe(raw);
   } finally {
     await rm(dir, { recursive: true, force: true });

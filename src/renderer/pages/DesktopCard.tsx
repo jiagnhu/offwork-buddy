@@ -5,15 +5,23 @@ import {
   countdown,
   countdownLabels,
   money,
+  nativeMoney,
   statusLabels,
 } from "../components/format";
 import { useCompanionEvent, useDesktopScale } from "../hooks/useCompanionEvent";
+import { primaryJob, listJobs } from "../../core/jobs";
+import { jobDayIncome } from "../../core/work-income";
 export default function DesktopCard({ snapshot }: { snapshot: Snapshot }) {
   const { state, progress, today } = snapshot,
     { event, dismiss } = useCompanionEvent();
   const [expanded, setExpanded] = useState(false),
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false);
+  const job = primaryJob(state);
+  const usdIncome =
+    job.currency === "USD"
+      ? jobDayIncome(state, job.id, today, new Date())
+      : null;
   const scale = useDesktopScale(state.preferences.scale, 440),
     plans = state.plans[today] ?? [],
     done = plans.filter((p) => p.completed).length;
@@ -25,7 +33,11 @@ export default function DesktopCard({ snapshot }: { snapshot: Snapshot }) {
     setBusy(true);
     setError("");
     try {
-      await window.buddy.updatePlan(today, { type: "complete", id, completed });
+      await window.buddy.updatePlan(
+        today,
+        { type: "complete", id, completed },
+        job.id,
+      );
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -41,6 +53,7 @@ export default function DesktopCard({ snapshot }: { snapshot: Snapshot }) {
         <header>
           <span className="drag-handle card-drag">
             <GripHorizontal size={14} />
+            {listJobs(state).length > 1 && job.name + " · "}
             {statusLabels[progress.status]}
           </span>
           <button
@@ -88,11 +101,22 @@ export default function DesktopCard({ snapshot }: { snapshot: Snapshot }) {
                   aria-label="查看今日工资明细"
                   onClick={() =>
                     run(
-                      window.buddy.openPanel({ page: "earnings", date: today }),
+                      window.buddy.openPanel({
+                        page: "earnings",
+                        date: today,
+                        jobId: job.id,
+                      }),
                     )
                   }
                 >
-                  <b>¥ {money(progress.earnedCents)}</b>
+                  <b>{nativeMoney(progress.earnedCents, job.currency)}</b>
+                  {usdIncome && (
+                    <small>
+                      {usdIncome.cnyCents === null
+                        ? "待折算"
+                        : ` ≈ ¥${money(usdIncome.cnyCents)}`}
+                    </small>
+                  )}
                 </button>
               </div>
             </div>
@@ -122,7 +146,13 @@ export default function DesktopCard({ snapshot }: { snapshot: Snapshot }) {
             <button
               className="text-button"
               onClick={() =>
-                run(window.buddy.openPanel({ page: "calendar", date: today }))
+                run(
+                  window.buddy.openPanel({
+                    page: "calendar",
+                    date: today,
+                    jobId: job.id,
+                  }),
+                )
               }
             >
               添加今日计划

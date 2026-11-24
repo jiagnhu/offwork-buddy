@@ -1,5 +1,23 @@
-import type { LegacyState, State, StateV2 } from "./model";
-export function migrateV2(input: StateV2): State {
+import type { JobMeta, LegacyState, State, StateV2, StateV3 } from "./model";
+export function defaultJob(): JobMeta {
+  return {
+    id: "primary",
+    name: "主业",
+    color: "#4686ed",
+    currency: "CNY",
+    receivedPaydays: {},
+  };
+}
+export function migrateV3(input: StateV3): State {
+  return {
+    ...input,
+    schemaVersion: 4,
+    primaryJob: defaultJob(),
+    otherJobs: [],
+    personalPlans: {},
+  };
+}
+export function migrateV2(input: StateV2): StateV3 {
   return { ...input, schemaVersion: 3 };
 }
 export function migrateV1(input: LegacyState): StateV2 {

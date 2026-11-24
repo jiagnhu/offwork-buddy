@@ -19,10 +19,12 @@ export function validateBackup(input: unknown): State {
 export async function importBackup(
   directory: string,
   input: unknown,
+  prepareState?: (state: State) => State,
 ): Promise<State> {
-  const state = validateBackup(input);
+  const checked = validateBackup(input);
+  const state = prepareState ? prepareState(checked) : checked;
   const version = (input as { schemaVersion?: number })?.schemaVersion;
-  if (version === 1 || version === 2)
+  if (version === 1 || version === 2 || version === 3)
     await writeFile(
       path.join(directory, `imported-v${version}-${Date.now()}.json`),
       JSON.stringify(input, null, 2),
@@ -92,9 +94,14 @@ export async function recoverFullBackup(directory: string) {
   }
   await rm(journal, { force: true });
 }
-export async function importFullBackup(directory: string, input: unknown) {
+export async function importFullBackup(
+  directory: string,
+  input: unknown,
+  prepareState?: (state: State) => State,
+) {
   const checked = validateFullBackup(input);
-  if (!checked.chat) return { state: await importBackup(directory, input) };
+  if (!checked.chat) return { state: await importBackup(directory, input, prepareState) };
+  if (prepareState) checked.state = prepareState(checked.state);
   await mkdir(directory, { recursive: true });
   const old = {
     state: await readOptional(path.join(directory, "state.json")),

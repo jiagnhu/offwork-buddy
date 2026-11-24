@@ -5,10 +5,13 @@ import type { DateKey, RuleInput, RuleVersion, State } from "../shared/model";
 import { addDays, dateKey, validDate } from "./date";
 import { calculateDayDetail } from "./earnings";
 import { countScheduledDays, resolveDay } from "./calendar";
+import { biweeklyPeriod } from "./biweekly";
 export function ruleForDate(
   state: State,
   date: DateKey,
 ): RuleVersion | undefined {
+  if (state.primaryJob?.endDate && date > state.primaryJob.endDate)
+    return undefined;
   return state.rules
     .filter((r) => r.effectiveFrom <= date)
     .sort((a, b) => b.effectiveFrom.localeCompare(a.effectiveFrom))[0];
@@ -18,6 +21,7 @@ export function settleThrough(state: State, now: Date): State {
   const result = structuredClone(state);
   const today = dateKey(now);
   for (let d = state.startDate; d < today; d = addDays(d, 1)) {
+    if (state.primaryJob?.endDate && d > state.primaryJob.endDate) break;
     if (result.ledger[d]) continue;
     const rule = ruleForDate(state, d);
     if (!rule) continue;
@@ -29,6 +33,7 @@ export function settleThrough(state: State, now: Date): State {
       state.calendar,
       state.overrides,
       state.leaves?.[d],
+      result.ledger,
     );
     result.ledger[d] = {
       baseBudgetDecimal: detail.dailyBudgetDecimal,
@@ -41,15 +46,28 @@ export function settleThrough(state: State, now: Date): State {
       amountCents: detail.progress.earnedCents,
       rule: structuredClone(rule),
       calendarSnapshot: day,
-      workdayCount: countScheduledDays(d.slice(0, 7), rule),
+      workdayCount:
+        rule.mode === "biweekly"
+          ? (detail.denominator ?? 0)
+          : countScheduledDays(d.slice(0, 7), rule),
     };
   }
   return result;
 }
+export function nextRuleDate(state: State, now: Date): string {
+  const today = dateKey(now);
+  if (!state.configured || today < state.startDate) return state.startDate;
+  const current = ruleForDate(state, today);
+  if (current?.mode === "biweekly" && current.periodStart && current.payDate) {
+    return addDays(
+      biweeklyPeriod(today, current.periodStart, current.payDate).end,
+      1,
+    );
+  }
+  return addDays(today, 1);
+}
 export function scheduleRule(state: State, input: RuleInput, now: Date): State {
-  const effectiveFrom = state.configured
-    ? addDays(dateKey(now), 1)
-    : state.startDate;
+  const effectiveFrom = nextRuleDate(state, now);
   const result = structuredClone(state);
   result.rules = result.rules.filter((r) => r.effectiveFrom !== effectiveFrom);
   result.rules.push({ ...input, id: crypto.randomUUID(), effectiveFrom });
@@ -74,7 +92,12 @@ export function recalculateRange(
   const result = structuredClone(state);
   for (const d of Object.keys(result.ledger))
     if (d >= from && d <= to) delete result.ledger[d];
-  return settleThrough(result, now);
+  const settled = settleThrough(result, now);
+  for (const [date, entry] of Object.entries(settled.ledger)) {
+    if (date >= from && date <= to && state.ledger[date]?.fxQuote)
+      entry.fxQuote = state.ledger[date].fxQuote;
+  }
+  return settled;
 }
 
 export function setLeave(
